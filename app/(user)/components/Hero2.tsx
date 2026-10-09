@@ -26,8 +26,8 @@ export default function Hero2() {
       {/* Hero Content Section */}
       <main className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-10 pb-28 md:py-20 flex-grow flex flex-col justify-center">
         <div className="max-w-2xl">
-          {/* Subtitle Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-zinc-200 tracking-wider mb-6">
+          {/* Subtitle Pill  inline-flex*/}
+          <div className="hidden  items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-zinc-200 tracking-wider mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
             East Africa's Premiere Luxury Safari Specialist
           </div>

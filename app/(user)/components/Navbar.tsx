@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, Search, MapPin, Phone, ChevronDown } from 'lucide-react';
-import logo from '@/public/logo.jpeg';
+import logo from '@/public/logo2.png';
 import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
@@ -63,12 +63,13 @@ export default function Navbar() {
           
 
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500 group-hover:scale-110 transition-transform">
-              <Image 
-                src={logo} 
-                alt="Acasia Safaris" 
-                fill 
-                className="object-cover"
+            <div className="relative  ">
+          <Image
+                src={logo}
+                alt="Acasia Safaris Logo"
+                width={60}
+                height={60}
+                className=""
               />
             </div>
             <div className="flex flex-col hidden">

@@ -1,17 +1,17 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Facebook, 
-  Instagram, 
-  Twitter, 
-  Youtube, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  ArrowRight 
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight
 } from 'lucide-react';
-import logo from '@/public/logo.jpeg';
+import logo from '@/public/logo2.png';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -19,22 +19,22 @@ const Footer = () => {
   return (
     <footer className="bg-[#0a120b] text-white pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-6">
-        
+
         {/* Top Section: Branding & Newsletter */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pb-16 border-b border-white/10">
-          
+
           {/* Column 1: Brand Story */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <Image 
-                src={logo} 
-                alt="Acasia Safaris Logo" 
-                width={60} 
-                height={60} 
-                className="rounded-full border border-emerald-500/30"
+              <Image
+                src={logo}
+                alt="Acasia Safaris Logo"
+                width={60}
+                height={60}
+                className=""
               />
               <span className="text-2xl font-bold tracking-tighter">
-                ACASIA<span className="text-emerald-500"> SAFARIS</span>
+                ACASIA<span className="text-(--accent-gold)"> SAFARIS</span>
               </span>
             </div>
             <p className="text-gray-400 leading-relaxed max-w-sm">
@@ -42,9 +42,9 @@ const Footer = () => {
             </p>
             <div className="flex gap-4">
               {[Facebook, Instagram, Twitter, Youtube].map((Icon, index) => (
-                <a 
-                  key={index} 
-                  href="#" 
+                <a
+                  key={index}
+                  href="#"
                   className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-emerald-600 transition-all duration-300 hover:-translate-y-1"
                 >
                   <Icon size={18} />
@@ -80,26 +80,26 @@ const Footer = () => {
             <h4 className="text-lg font-semibold">Join the Adventure</h4>
             <p className="text-gray-400 text-sm">Subscribe for travel tips and exclusive safari offers.</p>
             <div className="relative">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
+              <input
+                type="email"
+                placeholder="Your email address"
                 className="w-full bg-white/5 border border-white/10 rounded-lg py-4 px-6 focus:outline-none focus:border-emerald-500 transition-colors"
               />
-              <button className="absolute right-2 top-2 bg-emerald-600 p-2.5 rounded-full hover:bg-emerald-500 transition-colors">
+              <button className="absolute right-2 top-2 bg-(--accent-gold) p-2.5 rounded-full hover:bg-(--accent-gold) transition-colors">
                 <ArrowRight size={20} />
               </button>
             </div>
             <div className="space-y-3 pt-4">
               <div className="flex items-center gap-3 text-gray-400">
-                <Phone size={18} className="text-emerald-500" />
+                <Phone size={18} className="text-(--accent-gold)" />
                 <span className="text-sm">+250 7XX XXX XXX</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400">
-                <Mail size={18} className="text-emerald-500" />
+                <Mail size={18} className="text-(--accent-gold)" />
                 <span className="text-sm">info@acasiasafaris.com</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400">
-                <MapPin size={18} className="text-emerald-500" />
+                <MapPin size={18} className="text-(--accent-gold)" />
                 <span className="text-sm">Kigali, Rwanda</span>
               </div>
             </div>
@@ -111,13 +111,13 @@ const Footer = () => {
           <p className="text-gray-500 text-xs tracking-widest uppercase">
             © {currentYear} ACASIA SAFARIS LTD. ALL RIGHTS RESERVED.
           </p>
-          
+
           {/* Professional Accreditations - Essential for Tourism */}
           <div className="flex items-center gap-8 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-             {/* Replace these with real travel association icons like IATA, ATTA, etc. */}
-             <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Travel Assured</div>
-             <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Eco-Certified</div>
-             <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Safe Travels</div>
+            {/* Replace these with real travel association icons like IATA, ATTA, etc. */}
+            <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Travel Assured</div>
+            <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Eco-Certified</div>
+            <div className="text-[10px] font-bold border border-white/20 px-2 py-1 uppercase">Safe Travels</div>
           </div>
         </div>
       </div>
