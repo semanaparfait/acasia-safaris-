@@ -1,542 +1,702 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 import {
-  MapPin, Clock, ArrowRight, Star, Heart,
-  ChevronDown, CheckSquare, Square,
-  CheckCircle2, ShieldCheck,
-  CalendarDays, Settings, Users, Compass,
-  Info, MessageSquare, ChevronUp, ArrowUpRight
+  MapPin,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  CalendarDays,
+  Users,
+  Minus,
+  Plus,
+  ShieldCheck,
+  Clock,
+  Sparkles,
+  Headphones,
+  MessageCircle,
+  ChevronRight,
+  X,
 } from "lucide-react";
-import { Great_Vibes } from "next/font/google";
 import { DateRangePicker } from "@/components/ui/date-picker";
+import { destinations } from "../data/destinations";
 
-const greatVibes = Great_Vibes({
-  weight: "400",
-  subsets: ["latin"],
-});
+const travelStyles = ["Luxury Safari", "Adventure", "Cultural", "Photography", "Honeymoon", "Family Trip"];
+const accommodations = ["Luxury Lodges", "Boutique Hotels", "Mid-range Hotels", "Eco Lodges", "Camping"];
+const budgets = ["$1,000 – 2,000", "$2,000 – 5,000", "$5,000 – 10,000", "$10,000+"];
 
-// Mock Data
+const steps = [
+  { title: "Destinations", short: "Where" },
+  { title: "Trip Details", short: "When & how" },
+  { title: "Your Details", short: "Who" },
+];
 
-const suggestedTours = [
-  {
-    id: 1,
-    title: "Gorilla Trekking Experience",
-    location: "Volcanoes National Park",
-    duration: "4 Days",
-    price: "$2,500",
-    rating: 5.0,
-    type: "Wildlife",
-    image: "https://i.pinimg.com/736x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg",
-  },
-  {
-    id: 2,
-    title: "Akagera Big Five Safari",
-    location: "Akagera National Park",
-    duration: "3 Days",
-    price: "$1,200",
-    rating: 4.8,
-    type: "Wildlife",
-    image: "https://i.pinimg.com/1200x/1d/3a/0e/1d3a0e7dbc04ee5e445faed00f48c164.jpg",
-  },
-  {
-    id: 3,
-    title: "Lake Kivu Retreat",
-    location: "Lake Kivu",
-    duration: "3 Days",
-    price: "$900",
-    rating: 4.9,
-    type: "Relaxation",
-    image: "https://i.pinimg.com/736x/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg",
-  },
-  {
-    id: 4,
-    title: "Nyungwe Forest Adventure",
-    location: "Nyungwe Forest",
-    duration: "4 Days",
-    price: "$1,600",
-    rating: 4.9,
-    type: "Adventure",
-    image: "https://i.pinimg.com/736x/4f/fc/84/4ffc84cb985a075626662bea126f5ec7.jpg",
-  }
+const perks = [
+  
+  { icon: Clock, text: "Reply within 24 hours" },
+  { icon: ShieldCheck, text: "No payment to send a request" },
+];
+
+const process = [
+  { title: "Send your request", desc: "Pick your destinations and tell us how you like to travel." },
+  { title: "Talk to an expert", desc: "A local specialist contacts you to fine-tune the details." },
+  { title: "Get your itinerary", desc: "Receive a personal plan with lodges, activities and price." },
+  { title: "Confirm & go", desc: "Book securely and get ready for Rwanda." },
 ];
 
 const faqs = [
   {
     q: "Do I need a visa for Rwanda?",
-    a: "Yes, but citizens of many countries can get a visa on arrival or apply for an e-Visa online prior to travel."
+    a: "Visitors from all countries can get a visa on arrival, or apply for an e-Visa online before travelling.",
   },
   {
-    q: "What is the best time to visit Rwanda?",
-    a: "The long dry season (June to September) is generally considered the best time for gorilla trekking and wildlife viewing as trails are drier."
+    q: "What is the best time to visit?",
+    a: "The dry seasons (June – September and December – February) are best for gorilla trekking and safaris, but Rwanda can be visited all year.",
   },
   {
     q: "Is gorilla trekking safe?",
-    a: "Absolutely. Trekking is led by highly trained, armed rangers and guides who know the mountains and habituated gorilla families intimately."
+    a: "Yes. Treks are led by experienced rangers and guides who know the gorilla families and the mountains very well.",
   },
   {
-    q: "Can trips be customized?",
-    a: "Yes, every aspect of your journey can be tailored. From accommodation styles to specific activities and dietary needs, our luxury experts design it for you."
-  }
+    q: "Can I customise my trip?",
+    a: "Absolutely. Every part of your journey, from lodges to activities and dietary needs, is tailored to you.",
+  },
 ];
 
-const processSteps = [
-  { step: "01", title: "Submit Request", desc: "Share your vision, preferred destinations, and travel style through our planning form." },
-  { step: "02", title: "Expert Consultation", desc: "Our travel designers review your preferences and contact you to refine the intimate details." },
-  { step: "03", title: "Custom Itinerary", desc: "Receive a deeply personalized journey proposal, complete with curated lodges and activities." },
-  { step: "04", title: "Confirm & Journey", desc: "Finalize your booking securely, and prepare for an unforgettable adventure across Rwanda." }
-];
+const inputClass =
+  "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all";
+const labelClass = "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
-const destinationsList = [
-  "Gorilla Trekking – Volcanoes",
-  "Big Five Safari – Akagera",
-  "Canopy Walk – Nyungwe",
-  "Lake Kivu Relaxation",
-  "Kigali Cultural Tour",
-  "Other"
-];
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`text-sm px-4 py-2 rounded-full border transition-all duration-200 ${
+        active
+          ? "bg-[#12231a] border-[#12231a] text-[#c5a86d]"
+          : "bg-white border-[#0a120b]/15 text-[#0a120b]/70 hover:border-[#c5a86d]"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
-const travelStyles = ["Luxury Safari", "Adventure Expedition", "Cultural Experience", "Photography Tour", "Honeymoon Package", "Family Trip"];
-const accommodations = ["Luxury Lodges", "Boutique Hotels", "Mid-range Hotels", "Eco Lodges", "Camping"];
-const budgets = ["$1000 - $2000", "$2000 - $5000", "$5000 - $10000", "$10000+"];
+function Counter({ label, value, min, onChange }: { label: string; value: number; min: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 py-2.5">
+      <span className="text-sm text-[#0a120b]/70">{label}</span>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          disabled={value <= min}
+          aria-label={`Fewer ${label.toLowerCase()}`}
+          className="w-8 h-8 rounded-full border border-[#0a120b]/15 flex items-center justify-center hover:border-[#0a120b] disabled:opacity-30 transition-all"
+        >
+          <Minus size={14} />
+        </button>
+        <span className="w-5 text-center font-medium">{value}</span>
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          aria-label={`More ${label.toLowerCase()}`}
+          className="w-8 h-8 rounded-full border border-[#0a120b]/15 flex items-center justify-center hover:border-[#0a120b] transition-all"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
-export default function BookingPage() {
-  const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
-  const [customDestination, setCustomDestination] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState("");
-  const [selectedAccommodation, setSelectedAccommodation] = useState("");
-  const [selectedBudget, setSelectedBudget] = useState("");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [travelDates, setTravelDates] = useState<{ from: Date | undefined, to: Date | undefined }>({ from: undefined, to: undefined });
+export default function BookingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ destination?: string }>;
+}) {
+  // Pre-select a destination when arriving from a "Book Now" link, e.g. /booking?destination=gorillas
+  const preselected = destinations.find((d) => d.id === use(searchParams).destination);
 
-  const toggleDestination = (dest: string) => {
-    setSelectedDestinations(prev =>
-      prev.includes(dest) ? prev.filter(d => d !== dest) : [...prev, dest]
-    );
+  const [step, setStep] = useState(0);
+  const [selected, setSelected] = useState<string[]>(preselected ? [preselected.id] : []);
+  const [otherDestination, setOtherDestination] = useState("");
+  const [heroDestination, setHeroDestination] = useState(preselected?.id ?? "");
+  const [dates, setDates] = useState<{ from: Date | undefined; to?: Date | undefined }>({ from: undefined });
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(0);
+  const [style, setStyle] = useState("");
+  const [accommodation, setAccommodation] = useState("");
+  const [budget, setBudget] = useState("");
+  const [details, setDetails] = useState({ name: "", email: "", phone: "", country: "", notes: "" });
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  useEffect(() => {
+    if (preselected) {
+      document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [preselected]);
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const chosen = destinations.filter((d) => selected.includes(d.id));
+  const hasDestination = chosen.length > 0 || otherDestination.trim() !== "";
+
+  const goTo = (next: number) => {
+    if (next > 0 && !hasDestination) {
+      setError("Please choose at least one destination.");
+      return;
+    }
+    setError("");
+    setStep(next);
+    document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Hero booking bar: add the destination to the trip and jump into the planner
+  const startBooking = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (heroDestination) {
+      setSelected((prev) => (prev.includes(heroDestination) ? prev : [...prev, heroDestination]));
+      setError("");
+      setStep(1);
+    }
+    document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step < steps.length - 1) {
+      goTo(step + 1);
+      return;
+    }
+    // TODO: send the request to the backend / email service
+    setSubmitted(true);
+    document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const dateText = dates.from
+    ? dates.to
+      ? `${format(dates.from, "MMM d")} – ${format(dates.to, "MMM d, yyyy")}`
+      : format(dates.from, "MMM d, yyyy")
+    : "Flexible";
+
   return (
-    <div className="bg-[#fcfcfc] text-[#0a120b] font-serif overflow-hidden">
-      {/* Back Home Button */}
-      <div className="p-6 mb-7">
-        <a href="/" className="inline-flex items-center gap-2 px-4 py-2 bg-[#0a120b] text-white rounded hover:bg-[#1a2a1b] transition-colors text-xs font-bold uppercase tracking-widest">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-          Back Home
-        </a>
-      </div>
-
-
-      <section className="relative h-[80vh] flex items-center justify-center hidden">
-        <div className="absolute inset-0 bg-[#0a120b]">
+    <div className="bg-white font-sans text-[#0a120b] selection:bg-[#c5a86d] selection:text-black">
+      {/* Hero */}
+      <section className="relative z-30 w-full bg-[#0a1811] text-white px-6">
+        <div className="absolute inset-0 overflow-hidden">
           <img
-            src="https://i.pinimg.com/736x/8f/c9/2c/8fc92cd9d9ac6218d6e3c0ea0fe1f4c7.jpg"
-            alt="Safari Jeep"
-            className="w-full h-full object-cover opacity-40 grayscale-[20%]"
+            src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80"
+            alt="Traveller with a suitcase watching a plane take off"
+            className="w-full h-full object-cover object-center brightness-[0.85]"
           />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center px-6 mt-20">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`text-(--primary-dark) text-5xl md:text-6xl tracking-wide mb-6 block ${greatVibes.className}`}
-          >
-            Design Your Journey
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-light tracking-tight text-white max-w-4xl leading-[1.2] mb-6"
-          >
-            Plan Your Perfect <span className="italic text-white/70">Rwanda Adventure.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-white/60 text-lg md:text-xl font-serif italic max-w-2xl mb-10"
-          >
-            Tell us your travel preferences and our experts will design a deeply personalized itinerary just for you.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex gap-4 flex-wrap justify-center"
-          >
-            <button
-              onClick={() => document.getElementById('trip-planner')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-[#0a120b] px-10 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-colors"
-            >
-              Start Planning
-            </button>
-            <button
-              onClick={() => document.getElementById('suggested-tours')?.scrollIntoView({ behavior: 'smooth' })}
-              className="border border-white/20 text-white px-10 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-white/10 transition-colors"
-            >
-              View Tours
-            </button>
+        <div className="relative z-10 max-w-5xl mx-auto pt-40 pb-16 md:pb-20 text-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+            <nav className="flex items-center justify-center gap-1.5 text-xs text-zinc-300 mb-6" aria-label="Breadcrumb">
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+              <ChevronRight size={12} />
+              <span className="text-[#c5a86d]">Booking</span>
+            </nav>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-serif uppercase tracking-[0.06em] leading-none mb-5">
+              Book Your <span className="text-[#c5a86d]">Trip</span>
+            </h1>
+            <p className="text-sm md:text-base text-zinc-300 font-light max-w-md mx-auto mb-10">
+              Choose your destination, dates and guests to get started.
+            </p>
           </motion.div>
-        </div>
-      </section>
 
-      {/* 2. Trip Planning Form */}
-      <section id="trip-planner" className="py-24 bg-white border-b border-[#0a120b]/5 relative -mt-8 z-20 rounded-t-[3rem] px-6">
-        <div className="max-w-5xl mx-auto">
-
-          <div className="text-center mb-16">
-            <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">
-              Plan Your Journey
-            </span>
-            <h2 className="text-4xl md:text-5xl font-light tracking-tight">
-              Design your <span className="italic text-gray-400">Adventure</span>
-            </h2>
-          </div>
-
-          <form className="space-y-16">
-
-            {/* Basic Info */}
-            <div>
-              <h3 className="text-xl md:text-2xl mb-8 flex items-center gap-3">
-                <span className="text-(--primary-dark)"><Users size={20} /></span>
-                Traveler Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Full Name</label>
-                  <input type="text" placeholder="John Doe" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Email Address</label>
-                  <input type="email" placeholder="john@example.com" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Phone Number</label>
-                  <input type="tel" placeholder="+1 234 567 890" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Country of Residence</label>
-                  <input type="text" placeholder="e.g. United States" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-              </div>
-            </div>
-
-            {/* Travel Details */}
-            <div>
-              <h3 className="text-xl md:text-2xl mb-8 flex items-center gap-3">
-                <span className="text-(--primary-dark)"><CalendarDays size={20} /></span>
-                Travel Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Estimated Travel Dates</label>
-                  <DateRangePicker
-                    date={travelDates}
-                    onSelect={(range) => setTravelDates({ from: range?.from, to: range?.to })}
-                    className="w-full"
-                    placeholder="Select your travel dates"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Adults</label>
-                  <input type="number" min="1" placeholder="2" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Children</label>
-                  <input type="number" min="0" placeholder="0" className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif text-lg outline-none focus:border-(--primary-dark) transition-colors" />
-                </div>
-              </div>
-            </div>
-
-            {/* Destinations */}
-            <div>
-              <h3 className="text-xl md:text-2xl mb-8 flex items-center gap-3">
-                <span className="text-(--primary-dark)"><MapPin size={20} /></span>
-                Destinations
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {destinationsList.map((dest, i) => (
-                  <div
-                    key={i}
-                    onClick={() => toggleDestination(dest)}
-                    className={`flex items-center gap-4 p-4 border cursor-pointer transition-all ${selectedDestinations.includes(dest) ? 'border-(--primary-dark) bg-(--primary-dark)/5' : 'border-[#0a120b]/10 hover:border-[#0a120b]/30'
-                      }`}
-                  >
-                    {selectedDestinations.includes(dest) ? (
-                      <CheckSquare className="text-(--primary-dark)" size={20} />
-                    ) : (
-                      <Square className="text-[#0a120b]/20" size={20} />
-                    )}
-                    <span className={`${selectedDestinations.includes(dest) ? 'text-[#0a120b]' : 'text-[#0a120b]/70'} transition-colors`}>{dest}</span>
-                  </div>
+          {/* Booking bar */}
+          <motion.form
+            onSubmit={startBooking}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-left bg-white text-[#0a120b] rounded-2xl shadow-2xl p-2 grid grid-cols-1 md:grid-cols-[1.3fr_1.3fr_1fr_auto] gap-1"
+          >
+            <label className="relative rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors cursor-pointer">
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
+                <MapPin size={12} className="text-[#c5a86d]" /> Destination
+              </span>
+              <select
+                value={heroDestination}
+                onChange={(e) => setHeroDestination(e.target.value)}
+                className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
+              >
+                <option value="">Where to?</option>
+                {destinations.map((d) => (
+                  <option key={d.id} value={d.id}>{d.title}</option>
                 ))}
-              </div>
-
-              <AnimatePresence>
-                {selectedDestinations.includes("Other") && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginTop: 24 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex flex-col gap-2">
-                      <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Please Specify Destination(s)</label>
-                      <input
-                        type="text"
-                        value={customDestination}
-                        onChange={(e) => setCustomDestination(e.target.value)}
-                        placeholder="e.g. Twin Lakes, Muhazi, etc."
-                        className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors w-full md:w-1/2"
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Preferences */}
-            <div>
-              <h3 className="text-xl md:text-2xl mb-8 flex items-center gap-3">
-                <span className="text-(--primary-dark)"><Settings size={20} /></span>
-                Travel Preferences
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div className="flex flex-col gap-2 relative">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Tour Type</label>
-                  <select
-                    value={selectedStyle}
-                    onChange={(e) => setSelectedStyle(e.target.value)}
-                    className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) appearance-none cursor-pointer"
-                  >
-                    <option value="" disabled>Select style...</option>
-                    {travelStyles.map((style, i) => <option key={i} value={style} className="font-sans not-italic text-sm">{style}</option>)}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-0 bottom-4 text-[#0a120b]/40 pointer-events-none" />
-                </div>
-
-                <div className="flex flex-col gap-2 relative">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Accommodation</label>
-                  <select
-                    value={selectedAccommodation}
-                    onChange={(e) => setSelectedAccommodation(e.target.value)}
-                    className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) appearance-none cursor-pointer"
-                  >
-                    <option value="" disabled>Select level...</option>
-                    {accommodations.map((acc, i) => <option key={i} value={acc} className="font-sans not-italic text-sm">{acc}</option>)}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-0 bottom-4 text-[#0a120b]/40 pointer-events-none" />
-                </div>
-
-                <div className="flex flex-col gap-2 relative">
-                  <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Budget Range (Per Person)</label>
-                  <select
-                    value={selectedBudget}
-                    onChange={(e) => setSelectedBudget(e.target.value)}
-                    className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) appearance-none cursor-pointer"
-                  >
-                    <option value="" disabled>Select budget...</option>
-                    {budgets.map((bud, i) => <option key={i} value={bud} className="font-sans not-italic text-sm">{bud}</option>)}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-0 bottom-4 text-[#0a120b]/40 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a120b]/60">Special Requests</label>
-                <textarea
-                  rows={4}
-                  placeholder="Dietary needs, photography equipment, accessibility, celebrating an anniversary..."
-                  className="border-b border-[#0a120b]/20 py-3 bg-transparent font-serif italic text-lg outline-none focus:border-(--primary-dark) transition-colors resize-none"
+              </select>
+            </label>
+            <div className="rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors md:border-l border-[#0a120b]/10">
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
+                <CalendarDays size={12} className="text-[#c5a86d]" /> Dates
+              </span>
+              <div className="[&>div>button]:border-0 [&>div>button]:py-0.5 [&>div>button]:font-sans [&>div>button]:text-sm [&>div>button]:font-medium">
+                <DateRangePicker
+                  date={dates}
+                  onSelect={(range) => setDates({ from: range?.from, to: range?.to })}
+                  placeholder="Add dates"
                 />
               </div>
             </div>
+            <label className="rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors md:border-l border-[#0a120b]/10 cursor-pointer">
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
+                <Users size={12} className="text-[#c5a86d]" /> Guests
+              </span>
+              <select
+                value={adults}
+                onChange={(e) => setAdults(Number(e.target.value))}
+                className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n} adult{n > 1 ? "s" : ""}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="submit"
+              className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-4 rounded-xl transition-all"
+            >
+              Book Now
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </motion.form>
 
-            <div className="pt-8 border-t border-[#0a120b]/10 flex justify-end">
-              <button type="button" className="bg-[#0a120b] text-white px-12 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-(--primary-dark) transition-colors">
-                Submit Request
-              </button>
-            </div>
-
-          </form>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-6">
+            {perks.map((p) => (
+              <span key={p.text} className="flex items-center gap-2 text-xs md:text-sm text-zinc-200">
+                <p.icon size={15} className="text-[#c5a86d]" /> {p.text}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 3. Suggested Tours */}
-      <section id="suggested-tours" className="py-32 bg-[#fcfcfc] hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+      {/* Planner */}
+      <section id="planner" className="relative z-20 px-6 pt-16 pb-24 scroll-mt-24">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Form card */}
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_20px_50px_-15px_rgba(10,24,17,0.35)] border border-[#0a120b]/5">
+            {submitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-10 md:p-16 text-center"
+              >
+                <div className="w-20 h-20 rounded-full bg-[#12231a] text-[#c5a86d] flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={36} />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide mb-3">
+                  Request sent{details.name ? `, ${details.name.split(" ")[0]}` : ""}!
+                </h2>
+                <p className="text-sm text-[#0a120b]/60 max-w-md mx-auto leading-relaxed mb-8">
+                  Thank you for choosing Acasia Safaris. One of our travel experts will contact
+                  you within 24 hours with your personalised itinerary.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Link href="/destination" className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all">
+                    Explore Destinations
+                  </Link>
+                  <Link href="/" className="border border-[#0a120b]/20 hover:border-[#0a120b] text-sm px-7 py-3 rounded-sm transition-all">
+                    Back to Home
+                  </Link>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                {/* Stepper */}
+                <div className="px-6 md:px-10 pt-8">
+                  <div className="flex items-center">
+                    {steps.map((s, i) => (
+                      <React.Fragment key={s.title}>
+                        <button
+                          type="button"
+                          onClick={() => i !== step && goTo(i)}
+                          className="flex items-center gap-3 text-left shrink-0"
+                        >
+                          <span
+                            className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                              i < step
+                                ? "bg-[#1F5A42] text-white"
+                                : i === step
+                                  ? "bg-[#c5a86d] text-[#0e1d16] shadow-[0_0_0_5px_rgba(197,168,109,0.2)]"
+                                  : "bg-[#f7f5f0] text-[#0a120b]/40"
+                            }`}
+                          >
+                            {i < step ? <Check size={16} /> : i + 1}
+                          </span>
+                          <span className="hidden sm:block">
+                            <span className="block text-[10px] uppercase tracking-widest text-[#0a120b]/40">{s.short}</span>
+                            <span className={`block text-sm font-medium ${i === step ? "text-[#0a120b]" : "text-[#0a120b]/55"}`}>{s.title}</span>
+                          </span>
+                        </button>
+                        {i < steps.length - 1 && (
+                          <div className="flex-1 h-0.5 mx-3 sm:mx-5 bg-[#f7f5f0] rounded-full overflow-hidden">
+                            <motion.div
+                              className="h-full bg-[#1F5A42]"
+                              initial={false}
+                              animate={{ width: i < step ? "100%" : "0%" }}
+                              transition={{ duration: 0.4 }}
+                            />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-            <div className="max-w-xl">
-              <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">
-                Inspiration
-              </span>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight">
-                Suggested <span className="italic text-gray-400">Itineraries</span>
-              </h2>
-            </div>
-            <button className="flex items-center gap-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] hover:text-[#0a120b]/50 transition-colors">
-              View All Tours <ArrowRight size={14} />
-            </button>
+                <form onSubmit={handleSubmit} className="p-6 md:p-10">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={step}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Step 1: destinations */}
+                      {step === 0 && (
+                        <div>
+                          <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Where would you like to go?</h2>
+                          <p className="text-sm text-[#0a120b]/55 mb-6">Pick as many as you like.</p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {destinations.map((d) => {
+                              const active = selected.includes(d.id);
+                              return (
+                                <button
+                                  key={d.id}
+                                  type="button"
+                                  onClick={() => toggle(d.id)}
+                                  aria-pressed={active}
+                                  className={`group relative h-32 sm:h-36 rounded-xl overflow-hidden text-left ring-2 transition-all duration-300 ${
+                                    active ? "ring-[#c5a86d] shadow-lg" : "ring-transparent hover:ring-[#c5a86d]/40"
+                                  }`}
+                                >
+                                  <img src={d.image} alt={d.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                  <div className={`absolute inset-0 transition-colors ${active ? "bg-[#12231a]/55" : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"}`} />
+                                  <span
+                                    className={`absolute top-2.5 right-2.5 w-6 h-6 rounded-full flex items-center justify-center border transition-all ${
+                                      active ? "bg-[#c5a86d] border-[#c5a86d] text-[#0e1d16]" : "border-white/70 bg-black/20"
+                                    }`}
+                                  >
+                                    {active && <Check size={14} />}
+                                  </span>
+                                  <span className="absolute bottom-3 left-3 right-3 text-white">
+                                    <span className="block font-serif uppercase tracking-wide text-sm leading-tight">{d.title}</span>
+                                    <span className="block text-[10px] text-zinc-300 truncate">{d.location}</span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-5">
+                            <label htmlFor="other" className={labelClass}>Somewhere else?</label>
+                            <input
+                              id="other"
+                              value={otherDestination}
+                              onChange={(e) => setOtherDestination(e.target.value)}
+                              placeholder="e.g. Gishwati forest, Kigali city tour…"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Step 2: trip details */}
+                      {step === 1 && (
+                        <div className="space-y-7">
+                          <div>
+                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Tell us about your trip</h2>
+                            <p className="text-sm text-[#0a120b]/55">Not sure yet? Leave anything blank and we&apos;ll help you decide.</p>
+                          </div>
+                          <div>
+                            <p className={labelClass}>Travel dates</p>
+                            <div className="rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 [&>div>button]:border-0 [&>div>button]:py-2.5 [&>div>button]:font-sans [&>div>button]:text-sm">
+                              <DateRangePicker
+                                date={dates}
+                                onSelect={(range) => setDates({ from: range?.from, to: range?.to })}
+                                placeholder="Select your travel dates"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Counter label="Adults" value={adults} min={1} onChange={setAdults} />
+                            <Counter label="Children" value={children} min={0} onChange={setChildren} />
+                          </div>
+                          <div>
+                            <p className={labelClass}>Travel style</p>
+                            <div className="flex flex-wrap gap-2">
+                              {travelStyles.map((s) => (
+                                <Chip key={s} label={s} active={style === s} onClick={() => setStyle(style === s ? "" : s)} />
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className={labelClass}>Accommodation</p>
+                            <div className="flex flex-wrap gap-2">
+                              {accommodations.map((a) => (
+                                <Chip key={a} label={a} active={accommodation === a} onClick={() => setAccommodation(accommodation === a ? "" : a)} />
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className={labelClass}>Budget per person</p>
+                            <div className="flex flex-wrap gap-2">
+                              {budgets.map((b) => (
+                                <Chip key={b} label={b} active={budget === b} onClick={() => setBudget(budget === b ? "" : b)} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Step 3: contact details */}
+                      {step === 2 && (
+                        <div className="space-y-5">
+                          <div>
+                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Almost there!</h2>
+                            <p className="text-sm text-[#0a120b]/55">Where should we send your itinerary?</p>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                              <label htmlFor="name" className={labelClass}>Full name *</label>
+                              <input id="name" required value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} placeholder="Jane Doe" className={inputClass} />
+                            </div>
+                            <div>
+                              <label htmlFor="email" className={labelClass}>Email *</label>
+                              <input id="email" type="email" required value={details.email} onChange={(e) => setDetails({ ...details, email: e.target.value })} placeholder="jane@example.com" className={inputClass} />
+                            </div>
+                            <div>
+                              <label htmlFor="phone" className={labelClass}>Phone / WhatsApp</label>
+                              <input id="phone" type="tel" value={details.phone} onChange={(e) => setDetails({ ...details, phone: e.target.value })} placeholder="+1 555 000 000" className={inputClass} />
+                            </div>
+                            <div>
+                              <label htmlFor="country" className={labelClass}>Country</label>
+                              <input id="country" value={details.country} onChange={(e) => setDetails({ ...details, country: e.target.value })} placeholder="e.g. United States" className={inputClass} />
+                            </div>
+                          </div>
+                          <div>
+                            <label htmlFor="notes" className={labelClass}>Anything else?</label>
+                            <textarea
+                              id="notes"
+                              rows={4}
+                              value={details.notes}
+                              onChange={(e) => setDetails({ ...details, notes: e.target.value })}
+                              placeholder="Special occasions, dietary needs, accessibility…"
+                              className={`${inputClass} resize-none`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {error && <p className="mt-5 text-sm text-red-600">{error}</p>}
+
+                  {/* Navigation */}
+                  <div className="mt-8 pt-6 border-t border-[#0a120b]/5 flex items-center justify-between gap-4">
+                    {step > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => goTo(step - 1)}
+                        className="group inline-flex items-center gap-2 border-2 border-[#12231a] text-[#12231a] hover:bg-[#12231a] hover:text-white font-medium text-sm px-6 py-3 rounded-sm transition-all"
+                      >
+                        <ArrowLeft size={16} /> Back
+                      </button>
+                    ) : (
+                      <span className="text-xs text-[#0a120b]/45">Step 1 of {steps.length}</span>
+                    )}
+                    <button
+                      type="submit"
+                      className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all"
+                    >
+                      {step === steps.length - 1 ? "Send My Request" : "Continue"}
+                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {suggestedTours.map((tour) => (
+          {/* Summary sidebar */}
+          <aside className="lg:sticky lg:top-28 space-y-6">
+            <div className="rounded-2xl bg-[#12231a] text-white p-6 shadow-xl">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">Your trip</p>
+
+              {chosen.length > 0 || otherDestination ? (
+                <ul className="space-y-2.5 mb-5">
+                  {chosen.map((d) => (
+                    <li key={d.id} className="flex items-center gap-3">
+                      <img src={d.image} alt="" className="w-11 h-11 rounded-lg object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate">{d.title}</p>
+                        <p className="text-[11px] text-zinc-400 truncate">{d.location}</p>
+                      </div>
+                      {!submitted && (
+                        <button onClick={() => toggle(d.id)} aria-label={`Remove ${d.title}`} className="text-zinc-500 hover:text-white">
+                          <X size={14} />
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                  {otherDestination && (
+                    <li className="flex items-center gap-3">
+                      <span className="w-11 h-11 rounded-lg bg-white/10 flex items-center justify-center">
+                        <MapPin size={16} className="text-[#c5a86d]" />
+                      </span>
+                      <p className="text-sm truncate">{otherDestination}</p>
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <div className="rounded-lg border border-dashed border-white/20 p-5 text-center text-sm text-zinc-400 mb-5">
+                  <MapPin size={20} className="mx-auto mb-2 text-[#c5a86d]" />
+                  No destinations yet
+                </div>
+              )}
+
+              <dl className="space-y-3 text-sm border-t border-white/10 pt-4">
+                <div className="flex justify-between gap-4">
+                  <dt className="flex items-center gap-2 text-zinc-400"><CalendarDays size={14} /> Dates</dt>
+                  <dd className="text-right">{dateText}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="flex items-center gap-2 text-zinc-400"><Users size={14} /> Travelers</dt>
+                  <dd>
+                    {adults} adult{adults > 1 ? "s" : ""}
+                    {children > 0 && `, ${children} child${children > 1 ? "ren" : ""}`}
+                  </dd>
+                </div>
+                {style && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-zinc-400">Style</dt>
+                    <dd>{style}</dd>
+                  </div>
+                )}
+                {accommodation && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-zinc-400">Stay</dt>
+                    <dd>{accommodation}</dd>
+                  </div>
+                )}
+                {budget && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-zinc-400">Budget</dt>
+                    <dd>{budget}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            <div className="rounded-2xl border border-[#0a120b]/10 p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="w-10 h-10 rounded-full bg-[#f7f5f0] text-[#1F5A42] flex items-center justify-center">
+                  <Headphones size={18} />
+                </span>
+                <div>
+                  <p className="font-serif uppercase tracking-wide">Need help?</p>
+                  <p className="text-xs text-[#0a120b]/50">Talk to a travel expert</p>
+                </div>
+              </div>
+              <a
+                href="https://wa.me/250798635578"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 w-full inline-flex items-center justify-center gap-2 border border-[#0a120b]/15 hover:border-[#1F5A42] hover:text-[#1F5A42] text-sm px-5 py-2.5 rounded-sm transition-all"
+              >
+                <MessageCircle size={16} /> Chat on WhatsApp
+              </a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="bg-[#f7f5f0] px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">Simple & easy</span>
+            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">How it works</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {process.map((p, i) => (
               <motion.div
-                key={tour.id}
+                key={p.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="group bg-white flex flex-col sm:flex-row border border-[#0a120b]/5 shadow-sm hover:shadow-md transition-shadow"
+                transition={{ delay: i * 0.1 }}
+                className="relative bg-white rounded-xl p-6 border border-[#0a120b]/5"
               >
-                <div className="w-full sm:w-2/5 aspect-[4/3] sm:aspect-auto relative overflow-hidden bg-gray-100">
-                  <img src={tour.image} alt={tour.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 flex items-center gap-1 text-[#0a120b]">
-                    <Star size={10} className="fill-current" />
-                    <span className="font-sans text-[10px] font-bold tracking-widest">{tour.rating}</span>
-                  </div>
-                </div>
-
-                <div className="p-8 sm:w-3/5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-[#0a120b]/40 font-sans font-bold text-[9px] uppercase tracking-[0.2em]">{tour.type}</span>
-                    </div>
-                    <h3 className="text-2xl mb-4 group-hover:text-[#0a120b]/70 transition-colors">{tour.title}</h3>
-                    <div className="flex flex-col gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-[#0a120b]/50 mb-6">
-                      <div className="flex items-center gap-2"><Clock size={12} /> {tour.duration}</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-6 border-t border-[#0a120b]/10 flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="font-sans text-[8px] uppercase tracking-widest text-[#0a120b]/40">From</span>
-                      <span className="text-xl italic">{tour.price}</span>
-                    </div>
-                    <button className="flex items-center gap-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] hover:text-[#0a120b]/50 transition-colors">
-                      View Details <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
+                <span className="text-4xl font-serif text-[#c5a86d]/40">0{i + 1}</span>
+                <h3 className="font-serif text-lg uppercase tracking-wide mt-2 mb-2">{p.title}</h3>
+                <p className="text-sm text-[#0a120b]/55 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
           </div>
-
         </div>
       </section>
 
-      {/* 4. Trip Process Section & 5. Why Book With Us */}
-      <section className="py-32 bg-white border-y border-[#0a120b]/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 lg:gap-32">
-
-          {/* Booking Process */}
-          <div>
-            <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">The Process</span>
-            <h2 className="text-4xl font-light tracking-tight mb-16">How it <span className="italic text-gray-400">Works</span></h2>
-
-            <div className="flex flex-col gap-10">
-              {processSteps.map((step, i) => (
-                <div key={i} className="flex gap-6 group">
-                  <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-(--primary-dark) pt-2">
-                    {step.step}.
-                  </div>
-                  <div className="border-l border-[#0a120b]/10 pl-6 group-hover:border-(--primary-dark) transition-colors">
-                    <h4 className="text-xl mb-3 text-[#0a120b]">{step.title}</h4>
-                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/50 leading-relaxed max-w-sm">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* FAQ */}
+      <section className="px-6 py-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">Good to know</span>
+            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">Questions</h2>
           </div>
-
-          {/* Why Book With Us */}
-          <div className="bg-[#f9f9fb] p-12 lg:p-16 flex flex-col justify-center">
-            <Compass size={32} className="text-(--primary-dark) mb-8" strokeWidth={1} />
-            <h3 className="text-3xl font-light tracking-tight mb-10">Why travel with <span className="italic text-gray-400">Acasia Safaris?</span></h3>
-
-            <ul className="space-y-6">
-              <li className="flex items-start gap-4">
-                <CheckCircle2 size={18} className="text-(--primary-dark) shrink-0 mt-0.5" />
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/70 leading-relaxed">
-                  Local Rwanda travel experts and guides
-                </span>
-              </li>
-              <li className="flex items-start gap-4">
-                <CheckCircle2 size={18} className="text-(--primary-dark) shrink-0 mt-0.5" />
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/70 leading-relaxed">
-                  Deeply personalized trip planning
-                </span>
-              </li>
-              <li className="flex items-start gap-4">
-                <CheckCircle2 size={18} className="text-(--primary-dark) shrink-0 mt-0.5" />
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/70 leading-relaxed">
-                  Exclusive luxury accommodation partners
-                </span>
-              </li>
-              <li className="flex items-start gap-4">
-                <CheckCircle2 size={18} className="text-(--primary-dark) shrink-0 mt-0.5" />
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/70 leading-relaxed">
-                  24/7 on-the-ground travel support
-                </span>
-              </li>
-            </ul>
-          </div>
-
-        </div>
-      </section>
-
-
-
-      {/* 7. FAQ */}
-      <section className="py-32 bg-white border-y border-[#0a120b]/5">
-        <div className="max-w-4xl mx-auto px-6 md:px-12">
-          <div className="text-center mb-16">
-            <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">Information</span>
-            <h2 className="text-4xl md:text-5xl font-light tracking-tight">Frequently Asked <span className="italic text-gray-400">Questions</span></h2>
-          </div>
-
-          <div className="flex flex-col border-t border-[#0a120b]/10">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border-b border-[#0a120b]/10">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full py-8 flex items-center justify-between text-left hover:text-[var(--primary-dark)] transition-colors group"
-                >
-                  <h4 className="text-xl md:text-2xl font-light">{faq.q}</h4>
-                  {openFaq === i
-                    ? <ChevronUp size={20} className="text-[#0a120b]/40" />
-                    : <ChevronDown size={20} className="text-[#0a120b]/40 group-hover:text-[var(--primary-dark)]" />
-                  }
-                </button>
-                <AnimatePresence>
-                  {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
+          <div className="divide-y divide-[#0a120b]/10 border-y border-[#0a120b]/10">
+            {faqs.map((faq, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={faq.q}>
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    aria-expanded={open}
+                    className="w-full flex items-center justify-between gap-6 py-5 text-left group"
+                  >
+                    <span className="font-serif text-lg group-hover:text-[#1F5A42] transition-colors">{faq.q}</span>
+                    <span
+                      className={`shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                        open ? "bg-[#12231a] border-[#12231a] text-[#c5a86d] rotate-45" : "border-[#0a120b]/15 text-[#0a120b]/60"
+                      }`}
                     >
-                      <p className="pb-8 text-lg font-serif italic text-[#0a120b]/60 leading-relaxed">
-                        {faq.a}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+                      <Plus size={14} />
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="pb-5 pr-12 text-sm text-[#0a120b]/60 leading-relaxed">{faq.a}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
-
-
-
     </div>
   );
 }
