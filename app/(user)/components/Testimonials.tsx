@@ -3,79 +3,75 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Quote, Star } from 'lucide-react';
 
+// TODO: replace with real guest reviews
 const reviews = [
   {
-    text: "An extraordinary journey. The attention to detail and the deep knowledge of our guide made our gorilla trek in Rwanda an experience we will cherish forever.",
+    text: "The attention to detail and the deep knowledge of our guide made our gorilla trek in Rwanda an experience we will cherish forever.",
     author: "James Harrington",
     origin: "London, UK",
-    rating: 5
+    trip: "Gorilla Trekking",
+    rating: 5,
   },
   {
-    text: "Acasia Safaris redefined luxury for us. From the private savannah dinners to the seamless logistics, every moment felt curated just for our family.",
+    text: "From the private savannah dinners to the seamless logistics, every moment felt curated just for our family.",
     author: "Elena Rodriguez",
     origin: "Madrid, Spain",
-    rating: 5
-  }
+    trip: "Family Safari",
+    rating: 5,
+  },
 ];
 
 export default function Testimonials() {
   return (
-    <section className="py-24 bg-[#f9f9fb] text-[#0a120b] px-6 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
-
-        {/* Editorial Header */}
-        <div className="text-center mb-16">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-emerald-700 font-bold text-[10px] uppercase tracking-[0.4em] block mb-4"
-          >
-            Guest Perspectives
-          </motion.span>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase">
-            Stories from the <br />
-            <span className="italic font-serif font-light text-emerald-800/70 normal-case">heart of the wild.</span>
+    <section className="py-20 bg-[#F8F6F1] text-[#0a120b] px-6 font-sans">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10">
+          <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
+            Guest Stories
+          </span>
+          <h2 className="text-2xl md:text-4xl font-serif uppercase tracking-wide text-[#12231a]">
+            What our <span className="text-[#c5a86d]">guests say</span>
           </h2>
         </div>
 
-        {/* Testimonial Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {reviews.map((review, idx) => (
-            <motion.div
-              key={idx}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {reviews.map((r, i) => (
+            <motion.figure
+              key={r.author}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2 }}
-              className="bg-white p-10 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between"
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="relative bg-white rounded-2xl p-6 border border-[#0a120b]/5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
-              <div className="mb-8 text-emerald-800/20">
-                <Quote size={40} fill="currentColor" />
-              </div>
+              <Quote size={32} className="absolute top-5 right-5 text-[#c5a86d]/20" fill="currentColor" />
 
-              <p className="text-lg md:text-xl font-medium leading-relaxed text-[#0a120b] mb-10 italic font-serif">
-                "{review.text}"
-              </p>
-
-              <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest mb-1">{review.author}</h4>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{review.origin}</p>
-                </div>
-                <div className="flex gap-1">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} size={10} className="fill-emerald-700 text-emerald-700" />
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex gap-0.5">
+                  {Array.from({ length: r.rating }).map((_, s) => (
+                    <Star key={s} size={14} className="fill-[#c5a86d] text-[#c5a86d]" />
                   ))}
                 </div>
+                <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#F8F6F1] text-[#1F5A42]">
+                  {r.trip}
+                </span>
               </div>
-            </motion.div>
-          ))}
-        </div>
 
-        {/* Trust Logos */}
-        <div className="mt-20 flex flex-wrap justify-center items-center gap-12 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-          <span className="text-xs font-black uppercase tracking-[0.3em]">TripAdvisor</span>
-          <span className="text-xs font-black uppercase tracking-[0.3em]">SafariBookings</span>
-          <span className="text-xs font-black uppercase tracking-[0.3em]">National Geographic</span>
+              <blockquote className="text-[15px] leading-relaxed text-[#0a120b]/75 mb-5">
+                &ldquo;{r.text}&rdquo;
+              </blockquote>
+
+              <figcaption className="flex items-center gap-3">
+                <span className="w-10 h-10 rounded-full bg-[#12231a] text-[#c5a86d] flex items-center justify-center font-serif">
+                  {r.author.charAt(0)}
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-[#12231a]">{r.author}</span>
+                  <span className="block text-xs text-[#0a120b]/50">{r.origin}</span>
+                </span>
+              </figcaption>
+            </motion.figure>
+          ))}
         </div>
       </div>
     </section>

@@ -1,99 +1,123 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight, Trees } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
+import founders from '@/public/aboutus/founders.png';
+import teamLake from '@/public/aboutus/shema.jpeg';
+import teamLodge from '@/public/aboutus/yassel.jpeg';
+
+const features = [
+  "Expert-Led Private Expeditions",
+  "Luxury Wilderness Lodging",
+  "Authentic Cultural Encounters",
+  "Tailored Conservation Journeys",
+];
+
+// TODO: confirm these figures before going live
+const stats = [
+  { value: "10,000+", label: "Yearly visitors" },
+  { value: "94%", label: "Satisfaction rate" },
+  { value: "12+", label: "Industry awards" },
+];
 
 export default function AboutUs() {
-  const features = [
-    "Expert-Led Private Expeditions",
-    "Luxury Wilderness Lodging",
-    "Authentic Cultural Encounters",
-    "Tailored Conservation Journeys",
-  ];
-
   return (
+    <section className="py-24 px-10 bg-[#F8F6F1] text-[#0a120b] overflow-hidden font-sans">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-    <section className="py-24 px-6 md:px-10 bg-[#f9f9fb] text-[#0a120b] overflow-hidden">
+        {/* Left: text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <span className="w-10 h-px bg-[#c5a86d]" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">About Acasia</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-[1.1] text-[#12231a] mb-6">
+            A Premier <br />
+            <span className="text-[#c5a86d]">Safari Legacy</span>
+          </h2>
+          <p className="text-[#0a120b]/60 text-base leading-relaxed max-w-md mb-8">
+            Acasia Safaris Ltd is dedicated to crafting immersive journeys that connect you to the
+            raw, untouched beauty of the African wild.
+          </p>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-2 items-center justify-center">
-        
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-10 max-w-lg">
+            {features.map((f) => (
+              <li key={f} className="flex items-center gap-3 text-sm text-[#0a120b]/75">
+                <span className="w-6 h-6 rounded-full bg-[#12231a] text-[#c5a86d] flex items-center justify-center shrink-0">
+                  <Check size={13} />
+                </span>
+                {f}
+              </li>
+            ))}
+          </ul>
 
-        <div className="flex flex-col justify-center space-y-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="text-emerald-700 font-bold text-xs mb-3 block uppercase tracking-widest">About Acasia</span>
-            <h2 className="text-5xl font-bold mb-6 leading-tight">
-              A Premier <br /> Safari Legacy
-            </h2>
-            <p className="text-gray-500 text-sm max-w-md leading-relaxed mb-10">
-              Acasia Safaris Ltd is dedicated to crafting immersive journeys that connect you to the raw, untouched beauty of the African wild.
-            </p>
-
-            <div className="grid grid-cols-2 gap-y-8 mb-10">
-              <div>
-                <h4 className="text-3xl font-bold text-(--primary-color)">10,000+</h4>
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Yearly Visitors</p>
+          <div className="grid grid-cols-3 gap-4 max-w-lg mb-10 py-6 border-y border-[#0a120b]/10">
+            {stats.map((s) => (
+              <div key={s.label}>
+                <p className="text-2xl md:text-4xl font-serif text-[#1F5A42]">{s.value}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-[#0a120b]/50 mt-1">{s.label}</p>
               </div>
-              <div>
-                <h4 className="text-3xl font-bold text-(--primary-color)">94%</h4>
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Satisfaction Rate</p>
-              </div>
-              <div>
-                <h4 className="text-3xl font-bold text-(--primary-color)">Top 100</h4>
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Global Destination</p>
-              </div>
-              <div>
-                <h4 className="text-3xl font-bold text-(--primary-color)">12+</h4>
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Industry Awards</p>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <button className="bg-emerald-800 text-white px-8 py-3 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg">
-              Learn More <ArrowRight size={16} />
-            </button>
-          </motion.div>
-        </div>
-
-        <div className="relative h-[600px] w-full flex items-center justify-center lg:justify-end">
-          
-
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }}
-            className="absolute top-10 left-0 xl:-right-15 w-[260px] h-[160px] rounded-2xl shadow-xl z-10 border-8 border-white"
+          <Link
+            href="/aboutus"
+            className="group inline-flex items-center gap-2 bg-[#12231a] hover:bg-[#1F5A42] text-white font-medium text-sm px-8 py-4 rounded-full shadow-lg transition-all"
           >
-            <img src="https://i.pinimg.com/1200x/15/d9/bd/15d9bdd92790068e0cec9a1d7b179196.jpg" 
-            className="w-full h-full object-cover rounded-xl" 
-            alt="Safari Detail" />
-          </motion.div>
+            Learn More About Us
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </motion.div>
+
+        {/* Right: image collage */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="relative h-[480px] sm:h-[580px]"
+        >
+          {/* Main: the founders */}
+          <div className="absolute right-0 top-0 w-[92%] h-[66%] rounded-[2rem] overflow-hidden shadow-2xl">
+            <Image
+              src={founders}
+              alt="The Acasia Safaris founders beside their safari vehicle"
+              fill
+              sizes="(max-width: 1024px) 90vw, 45vw"
+              className="object-cover object-[center_25%] hover:scale-105 transition-transform duration-700"
+            />
+            <span className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-[0.2em] text-[#12231a]">
+              Meet our founders
+            </span>
+          </div>
+          <div className="absolute left-0 bottom-0 w-[50%] h-[42%] rounded-[1.5rem] overflow-hidden shadow-xl border-8 border-[#F8F6F1]">
+            <Image
+              src={teamLake}
+              alt="Acasia guide on safari by the lake"
+              fill
+              sizes="(max-width: 1024px) 45vw, 22vw"
+              className="object-cover object-[center_30%]"
+            />
+          </div>
+          <div className="absolute right-6 bottom-4 w-[38%] h-[30%] rounded-[1.5rem] overflow-hidden shadow-xl border-8 border-[#F8F6F1]">
+            <Image
+              src={teamLodge}
+              alt="Acasia guide at a safari lodge"
+              fill
+              sizes="(max-width: 1024px) 40vw, 18vw"
+              className="object-cover object-top"
+            />
+          </div>
 
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
-            className="relative w-[340px] h-[380px] z-0 shadow-2xl"
-          >
-            <img src="https://i.pinimg.com/736x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg" 
-            className="w-full h-full object-cover rounded-2xl"
-             alt="Main Wildlife" />
-            
-
-            <div className="absolute top-1/2 -right-16 -translate-y-1/2 bg-emerald-700 text-white p-5 rounded-2xl shadow-2xl z-30 flex flex-col items-center gap-2 min-w-[140px]">
-              <div className="w-9 h-9 rounded-full border border-white/30 flex items-center justify-center">
-                 <Trees size={18} />
-              </div>
-              <p className="text-[11px] font-bold text-center uppercase tracking-tighter leading-tight">Embrace <br/> the wild</p>
-            </div>
-          </motion.div>
-
-
-
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }}
-            className="absolute bottom-10 left-8 w-[240px] h-[160px] rounded-2xl border-8 border-white z-10 shadow-xl"
-          >
-            <img src="https://i.pinimg.com/736x/48/42/4b/48424b75b7f6fa0114c5664b86296ab8.jpg"
-             className="w-full h-full object-cover rounded-xl"
-              alt="Lodge Detail" />
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
