@@ -35,7 +35,7 @@ export default function PerfectGridGallery() {
   };
 
   return (
-    <section className="py-24 bg-white min-h-screen flex items-center justify-center font-serif">
+    <section className="hidden py-24 bg-white min-h-screen flex items-center justify-center font-serif">
       <div className="bg-white p-12   w-full relative ">
 
         {/* Gallery Header */}
