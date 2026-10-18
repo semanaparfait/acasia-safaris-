@@ -89,8 +89,8 @@ export default function Contact() {
       <section className="relative min-h-[60vh] w-full bg-[#0a1811] text-white flex flex-col justify-center overflow-hidden px-6">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=2000&q=80"
-            alt="Sunset over the African savannah"
+            src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2000&q=80"
+            alt="Two people shaking hands"
             className="w-full h-full object-cover object-center brightness-[0.8]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
