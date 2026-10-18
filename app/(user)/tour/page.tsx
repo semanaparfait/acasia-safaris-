@@ -131,7 +131,7 @@ export default function page() {
           <span className="text-xs uppercase tracking-[0.3em] font-bold text-[#D4AF37] block mb-2 transition-all duration-300">
             {currentHero.tag}
           </span>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold tracking-tight leading-tight mb-2 transition-all duration-300">
+          <h1 className="text-3xl  md:text-5xl font-serif font-bold tracking-tight leading-tight mb-2 transition-all duration-300">
             {currentHero.title}
           </h1>
           <p className="text-lg sm:text-2xl font-serif text-amber-100 font-light mb-4 transition-all duration-300">

@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X, Play, Camera, ZoomIn, Mountain, Users, Heart } from "lucide-react";
-import { Great_Vibes } from "next/font/google";
+import {
+  ArrowRight,
+  X,
+  Play,
+  MapPin,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Images,
+} from "lucide-react";
 
-const greatVibes = Great_Vibes({
-  weight: "400",
-  subsets: ["latin"],
-});
-
-// Categories
 const categories = ["All", "Wildlife", "Landscapes", "Culture", "People"];
 
-// Images Data for Masonry
 const galleryImages = [
   { id: 1, src: "https://i.pinimg.com/736x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg", category: "Wildlife", title: "Majestic Elephant", location: "Akagera Park" },
   { id: 2, src: "https://i.pinimg.com/736x/29/c6/d9/29c6d9f0c66cbefe2dfd664176627428.jpg", category: "Wildlife", title: "Golden Monkey", location: "Volcanoes Park" },
@@ -26,279 +29,447 @@ const galleryImages = [
   { id: 9, src: "https://i.pinimg.com/736x/0f/84/de/0f84dec8e96fc7763eb982ef71295fe8.jpg", category: "Culture", title: "Artisan Crafting", location: "Nyanza" },
 ];
 
-// Highlight Stories
 const highlights = [
   {
     title: "The Gorilla Trek",
     desc: "Intimate moments with the endangered mountain gorillas in the misty bamboo forests.",
     img: "https://i.pinimg.com/736x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg",
+    category: "Wildlife",
   },
   {
     title: "Golden Hour at Kivu",
     desc: "Serene sunsets and the gentle ripples of Rwanda's most stunning lake.",
     img: "https://i.pinimg.com/736x/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg",
+    category: "Landscapes",
   },
   {
     title: "Spirit of the Culture",
-    desc: "The vibrant energy, rich traditions, and profound resilience of the Rwandan people.",
+    desc: "The vibrant energy, rich traditions and profound resilience of the Rwandan people.",
     img: "https://i.pinimg.com/736x/80/8d/91/808d91821c1f5c2342c222215223cbc6.jpg",
-  }
+    category: "Culture",
+  },
 ];
+
+const VIDEO_ID = "Ov8JhHzPUKo";
 
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [lightboxImage, setLightboxImage] = useState<typeof galleryImages[0] | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [playVideo, setPlayVideo] = useState(false);
 
-  // Filter images
-  const filteredImages = activeCategory === "All"
-    ? galleryImages
-    : galleryImages.filter(img => img.category === activeCategory);
+  const filteredImages =
+    activeCategory === "All"
+      ? galleryImages
+      : galleryImages.filter((img) => img.category === activeCategory);
+
+  const countFor = (category: string) =>
+    category === "All"
+      ? galleryImages.length
+      : galleryImages.filter((img) => img.category === category).length;
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showNext = useCallback(
+    () => setLightboxIndex((i) => (i === null ? i : (i + 1) % filteredImages.length)),
+    [filteredImages.length]
+  );
+  const showPrev = useCallback(
+    () =>
+      setLightboxIndex((i) =>
+        i === null ? i : (i - 1 + filteredImages.length) % filteredImages.length
+      ),
+    [filteredImages.length]
+  );
+
+  // Keyboard navigation + lock page scroll while the lightbox is open
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowRight") showNext();
+      if (e.key === "ArrowLeft") showPrev();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [lightboxIndex, closeLightbox, showNext, showPrev]);
+
+  const openCollection = (category: string) => {
+    setActiveCategory(category);
+    document.getElementById("gallery-grid")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const current = lightboxIndex !== null ? filteredImages[lightboxIndex] : null;
 
   return (
-    <div className="bg-[#fcfcfc] text-[#0a120b] font-serif overflow-hidden">
-
-      {/* Lightbox Modal */}
+    <div className="bg-white text-[#0a120b] font-sans overflow-hidden selection:bg-[#c5a86d] selection:text-black">
+      {/* Lightbox */}
       <AnimatePresence>
-        {lightboxImage && (
+        {current && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#0a120b]/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10"
-            onClick={() => setLightboxImage(null)}
+            className="fixed inset-0 z-[100] bg-[#0a1811]/95 backdrop-blur-md flex flex-col"
+            onClick={closeLightbox}
           >
-            <button
-              className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
-              onClick={() => setLightboxImage(null)}
-            >
-              <X size={32} strokeWidth={1} />
-            </button>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-5xl w-full max-h-[85vh] flex flex-col items-center"
-            >
-              <img
-                src={lightboxImage.src}
-                alt={lightboxImage.title}
-                className="w-full h-full max-h-[75vh] object-contain shadow-2xl"
-              />
-              <div className="mt-6 text-center text-white">
-                <h3 className="text-2xl font-light tracking-wide">{lightboxImage.title}</h3>
-                <p className="text-[10px] font-sans font-bold uppercase tracking-[0.3em] text-white/50 mt-2">
-                  {lightboxImage.category} • {lightboxImage.location}
-                </p>
-              </div>
-            </motion.div>
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-5 md:px-10 py-5 text-white">
+              <span className="text-xs tracking-[0.25em] uppercase text-zinc-400">
+                {(lightboxIndex ?? 0) + 1} / {filteredImages.length}
+              </span>
+              <button
+                onClick={closeLightbox}
+                aria-label="Close"
+                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center hover:bg-white hover:text-[#0e1d16] transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Image */}
+            <div className="relative flex-1 flex items-center justify-center px-4 md:px-24 min-h-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showPrev();
+                }}
+                aria-label="Previous photo"
+                className="absolute left-3 md:left-8 z-10 w-12 h-12 rounded-full bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all"
+              >
+                <ChevronLeft size={22} />
+              </button>
+
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={current.id}
+                  src={current.src}
+                  alt={current.title}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                />
+              </AnimatePresence>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showNext();
+                }}
+                aria-label="Next photo"
+                className="absolute right-3 md:right-8 z-10 w-12 h-12 rounded-full bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all"
+              >
+                <ChevronRight size={22} />
+              </button>
+            </div>
+
+            {/* Caption */}
+            <div className="px-6 py-6 text-center text-white" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-2xl font-serif uppercase tracking-wide">{current.title}</h3>
+              <p className="mt-2 inline-flex items-center gap-2 text-xs text-zinc-400">
+                <span className="px-2.5 py-1 rounded-full bg-[#c5a86d]/15 text-[#c5a86d] uppercase tracking-widest text-[10px]">
+                  {current.category}
+                </span>
+                <MapPin size={12} /> {current.location}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 1. Hero / Intro Section */}
-      <section className="relative h-screen flex items-center justify-center">
-        <div className="absolute inset-0 overflow-hidden bg-[#0a120b]">
+      {/* Hero */}
+      <section className="relative min-h-[70vh] w-full bg-[#0a1811] text-white flex flex-col justify-center px-6">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <img
-            src="https://i.pinimg.com/1200x/6d/cd/14/6dcd140b80b210ac445a0eddfc40784a.jpg"
-            alt="Gallery Hero"
-            className="w-full h-full object-cover opacity-50 grayscale-[10%]"
+            src="https://images.unsplash.com/photo-1504173010664-32509aeebb62?auto=format&fit=crop&w=2000&q=80"
+            alt="Two lionesses watching from the grass"
+            className="w-full h-full object-cover object-[70%_center] brightness-[0.9]"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center px-6 mt-20">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`text-(--primary-dark) text-5xl md:text-7xl tracking-wide mb-6 block ${greatVibes.className}`}
-          >
-            Moments from Rwanda
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-7xl font-light tracking-tight text-white max-w-4xl leading-[1.1] mb-8 uppercase"
-          >
-            A visual <span className="italic font-serif normal-case font-light text-white/70">journey.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-white/60 text-lg md:text-xl font-serif italic max-w-2xl mb-12"
-          >
-            Discover the breathtaking beauty, vibrant culture, and untamed adventures captured through our lens.
-          </motion.p>
+        <div className="relative z-10 w-full max-w-7xl mx-auto md:px-6 pt-36 pb-24">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-2xl"
           >
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal uppercase tracking-wide leading-[1.08] mb-6">
+              Moments From <br />
+              <span className="text-[#c5a86d]">The Wild</span>
+            </h1>
+            <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed max-w-xl mb-8">
+              Gorillas in the mist, golden sunsets over Lake Kivu and the warm smiles
+              of the people we meet along the way. Take a look at the moments our guests
+              and guides have captured.
+            </p>
             <button
-              className="bg-white text-[#0a120b] px-12 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-colors"
-              onClick={() => {
-                document.getElementById('gallery-grid')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() =>
+                document.getElementById("gallery-grid")?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md hover:shadow-lg transition-all duration-300"
             >
-              Explore Gallery
+              Browse Photos
+              <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
             </button>
           </motion.div>
         </div>
       </section>
 
-      {/* 2. Filter / Categories */}
-      <section id="gallery-grid" className="py-24 max-w-7xl mx-auto px-6 md:px-12 border-b border-[#0a120b]/5">
-        <div className="flex flex-col items-center text-center mb-16">
-          <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">
-            Curated Collections
-          </span>
-          <h2 className="text-4xl md:text-5xl font-light tracking-tight">
-            Through the <span className="italic text-gray-400">Lens</span>
-          </h2>
-        </div>
-
-        {/* Categories Tabs */}
-        <div className="flex justify-center flex-wrap gap-4 md:gap-8 pb-4">
-          {categories.map((category, idx) => (
-            <button
-              key={idx}
-              onClick={() => setActiveCategory(category)}
-              className={`font-sans text-[10px] font-bold uppercase tracking-[0.2em] transition-all pb-2 border-b-2 ${activeCategory === category
-                  ? 'border-[var(--primary-dark)] text-[#0a120b]'
-                  : 'border-transparent text-[#0a120b]/40 hover:text-[#0a120b]/70'
-                }`}
-            >
-              {category}
-            </button>
-          ))}
+      {/* Filters */}
+      <section id="gallery-grid" className="relative z-20 px-6 -mt-10 scroll-mt-24">
+        <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-[0_20px_50px_-15px_rgba(10,24,17,0.35)] border border-[#0a120b]/5 p-3 sm:p-4">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {categories.map((category) => {
+              const active = activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  aria-pressed={active}
+                  className={`inline-flex items-center gap-2 text-sm px-5 py-2.5 rounded-full transition-all duration-300 ${
+                    active
+                      ? "bg-[#12231a] text-[#c5a86d] shadow-md"
+                      : "text-[#0a120b]/65 hover:bg-[#f7f5f0] hover:text-[#0a120b]"
+                  }`}
+                >
+                  {category}
+                  <span
+                    className={`text-[10px] min-w-5 h-5 px-1.5 rounded-full flex items-center justify-center ${
+                      active ? "bg-[#c5a86d] text-[#0e1d16]" : "bg-[#0a120b]/5 text-[#0a120b]/50"
+                    }`}
+                  >
+                    {countFor(category)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* 3. Image Grid / Masonry Layout */}
-      <section className="pb-32 bg-[#fcfcfc]">
-        <div className="max-w-[90rem] mx-auto px-6 md:px-12">
-          {/* CSS Columns Approach to Masonry */}
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 pt-10">
-            <AnimatePresence>
-              {filteredImages.map((img) => (
-                <motion.div
+      {/* Masonry grid */}
+      <section className="px-6 pt-16 pb-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between gap-4 mb-10">
+            <div>
+              <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
+                Curated Collection
+              </span>
+              <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
+                {activeCategory === "All" ? "Through Our Lens" : activeCategory}
+              </h2>
+            </div>
+            <p className="hidden sm:flex items-center gap-2 text-sm text-[#0a120b]/50">
+              <Images size={16} />
+              {filteredImages.length} photos
+            </p>
+          </div>
+
+          <motion.div layout className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+            <AnimatePresence mode="popLayout">
+              {filteredImages.map((img, i) => (
+                <motion.button
                   key={img.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4 }}
-                  className="relative group overflow-hidden cursor-pointer bg-gray-100 break-inside-avoid"
-                  onClick={() => setLightboxImage(img)}
+                  onClick={() => setLightboxIndex(i)}
+                  className="group relative block w-full mb-5 overflow-hidden rounded-xl bg-[#f7f5f0] break-inside-avoid text-left shadow-sm hover:shadow-2xl transition-shadow duration-500"
                 >
                   <img
                     src={img.src}
                     alt={img.title}
                     loading="lazy"
-                    className="w-full h-auto object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center text-white">
-                    <ZoomIn size={32} strokeWidth={1} className="mb-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500" />
-                    <h4 className="text-xl font-light tracking-wide transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">{img.title}</h4>
-                    <p className="text-[9px] font-sans font-bold uppercase tracking-[0.2em] text-white/70 mt-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-widest text-[#12231a]">
+                    {img.category}
+                  </span>
+                  <span className="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#c5a86d] text-[#0e1d16] flex items-center justify-center opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                    <Maximize2 size={15} />
+                  </span>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <h3 className="text-lg md:text-xl font-serif leading-snug">{img.title}</h3>
+                    <p className="flex items-center gap-1.5 text-xs text-zinc-300 mt-1">
+                      <MapPin size={12} className="text-[#c5a86d]" />
                       {img.location}
                     </p>
                   </div>
-                </motion.div>
+                </motion.button>
               ))}
             </AnimatePresence>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* 4. Featured Video Section */}
-      <section className="py-32 bg-[#0a120b] text-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row items-center gap-16">
-            <div className="w-full md:w-1/2 flex flex-col items-start">
-              <span className="text-white/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-6">
-                Featured Film
+      {/* Featured film */}
+      <section className="bg-[#12231a] text-white px-6 py-24">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">
+              Featured Film
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide leading-tight mb-6">
+              Feel the rhythm <br /> of the wild
+            </h2>
+            <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed mb-8 max-w-md">
+              There is a heartbeat in Rwanda. It echoes through the canopies of Nyungwe,
+              pulses through the streets of Kigali and settles quietly in the mist of the
+              Virungas. Press play and feel it for yourself.
+            </p>
+
+            <button
+              onClick={() => setPlayVideo(true)}
+              className="group inline-flex items-center gap-3 text-sm font-medium tracking-wide text-white transition-colors duration-300 hover:text-[#c5a86d]"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/50 transition-all duration-300 group-hover:border-[#c5a86d] group-hover:bg-[#c5a86d] group-hover:text-[#0e1d16]">
+                <Play size={15} className="ml-0.5 fill-current" />
               </span>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight mb-8">
-                Feel the rhythm of <span className="italic font-serif normal-case text-white/60">the wild.</span>
-              </h2>
-              <p className="text-lg text-white/60 italic font-serif leading-relaxed mb-10">
-                "There is a palpable heartbeat in Rwanda. It reverberates in the dense canopies of Nyungwe, pulses through the streets of Kigali, and settles quietly in the mist of the Virungas."
-              </p>
-              <button className="flex items-center gap-4 text-[11px] font-sans font-bold uppercase tracking-[0.2em] hover:text-white/70 transition-colors group">
-                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-[#0a120b] transition-all">
-                  <Play size={14} className="ml-1 fill-current" />
-                </div>
-                Watch Short Film
-              </button>
-            </div>
 
-            <div className="w-full md:w-1/2 relative aspect-[4/3] overflow-hidden group">
+              <span className="border-b border-white/40 pb-1 transition-colors duration-300 group-hover:border-[#c5a86d]">
+                Watch the film
+              </span>
+            </button>
+
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black"
+          >
+            {playVideo ? (
               <iframe
-                className="w-full h-full pointer-events-none opacity-60"
-                src="https://www.youtube.com/embed/Ov8JhHzPUKo?autoplay=1&mute=1&loop=1&playlist=Ov8JhHzPUKo&controls=0&showinfo=0&modestbranding=1"
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
                 title="Visit Rwanda"
-                allow="autoplay; fullscreen"
-              ></iframe>
-              <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-            </div>
-          </div>
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <button
+                onClick={() => setPlayVideo(true)}
+                aria-label="Play film"
+                className="group absolute inset-0 w-full h-full"
+              >
+                <img
+                  src={`https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`}
+                  alt="Visit Rwanda film"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:bg-[#c5a86d] group-hover:border-[#c5a86d] transition-all duration-300">
+                    <Play size={26} className="ml-1 fill-white text-white group-hover:fill-[#0e1d16] group-hover:text-[#0e1d16]" />
+                  </span>
+                </span>
+              </button>
+            )}
+          </motion.div>
         </div>
       </section>
 
-      {/* 5. Gallery Highlights / Stories */}
-      <section className="py-32 bg-white border-b border-[#0a120b]/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="text-center mb-24">
-            <span className="text-[#0a120b]/40 font-sans font-bold text-[10px] uppercase tracking-[0.4em] block mb-4">Portfolios</span>
-            <h2 className="text-4xl md:text-5xl font-light tracking-tight">Visual <span className="italic text-gray-400">Stories</span></h2>
+      {/* Visual stories */}
+      <section className="px-6 py-24 bg-[#f7f5f0]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
+              Collections
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
+              Visual Stories
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {highlights.map((story, idx) => (
-              <div key={idx} className="group cursor-pointer">
-                <div className="relative aspect-[3/4] overflow-hidden mb-8 bg-gray-100">
-                  <img
-                    src={story.img}
-                    alt={story.title}
-                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {highlights.map((story, i) => (
+              <motion.button
+                key={story.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.6 }}
+                onClick={() => openCollection(story.category)}
+                className="group relative rounded-xl overflow-hidden shadow-xl h-[420px] flex flex-col justify-end p-6 text-left border border-white/10 hover:border-[#c5a86d]/40 transition-all duration-500"
+              >
+                <img
+                  src={story.img}
+                  alt={story.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
+                <div className="relative z-10 text-white">
+                  <h3 className="text-xl sm:text-2xl font-serif mb-2 leading-snug">{story.title}</h3>
+                  <p className="text-sm text-zinc-300 leading-relaxed mb-4">{story.desc}</p>
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-[#c5a86d] uppercase tracking-widest">
+                    View {story.category}
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </div>
-                <div className="text-center">
-                  <h3 className="text-2xl mb-4 text-[#0a120b] group-hover:text-[var(--primary-dark)] transition-colors">{story.title}</h3>
-                  <p className="font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-[#0a120b]/50 leading-relaxed max-w-xs mx-auto">
-                    {story.desc}
-                  </p>
-                </div>
-              </div>
+              </motion.button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. CTA / Explore Tours */}
-      <section className="py-32 px-6 flex flex-col items-center text-center bg-[#fcfcfc]">
-        <div className="mb-10 text-[var(--primary-dark)] opacity-40">
-          <Camera size={32} strokeWidth={1} />
-        </div>
-        <h2 className="text-4xl md:text-6xl font-light tracking-tight mb-6">
-          Step into the <span className="italic text-gray-400">picture.</span>
-        </h2>
-        <p className="text-xl text-[#0a120b]/60 font-serif italic mb-12 max-w-2xl">
-          Don't just look at the moments—live them. Let us craft your unforgettable Rwandan journey.
-        </p>
-        <div className="flex gap-6 flex-wrap justify-center">
-          <button className="bg-[var(--primary-dark)] text-white px-10 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-emerald-800 transition-colors">
-            Book Your Adventure
-          </button>
-          <button className="border border-[#0a120b]/20 text-[#0a120b] px-10 py-5 text-[10px] font-sans font-bold uppercase tracking-[0.3em] hover:bg-[#0a120b] hover:text-white transition-colors">
-            View Itineraries
-          </button>
+      {/* CTA */}
+      <section className="px-6 py-24">
+        <div className="relative max-w-6xl mx-auto rounded-2xl overflow-hidden bg-[#0a1811] text-white">
+          <img
+            src="https://i.pinimg.com/736x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a1811] via-[#0a1811]/85 to-transparent" />
+          <div className="relative z-10 px-8 py-16 md:px-16 md:py-20 max-w-2xl">
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">
+              Your turn
+            </span>
+            <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-tight mb-5">
+              Step into the picture
+            </h2>
+            <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed mb-8 max-w-lg">
+              Don&apos;t just look at these moments, live them. Let us create an
+              unforgettable African adventure for you.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/tour"
+                className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                Explore Tours
+              </Link>
+              <Link
+                href="/contact"
+                className="border border-white/40 hover:border-white bg-white/5 hover:bg-white/10 backdrop-blur-sm text-white text-sm px-7 py-3 rounded-sm transition-all duration-300"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
-
     </div>
   );
 }
