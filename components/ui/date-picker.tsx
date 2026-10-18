@@ -22,17 +22,18 @@ export function DateRangePicker({ date, onSelect, className, placeholder = "Sele
     const [currentMonth, setCurrentMonth] = useState(date?.from || new Date());
     const [hoverDate, setHoverDate] = useState<Date | null>(null);
 
-    // Local state to manage selection before applying, if needed, but direct is fine too.
-    const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(date);
+    // The selection comes straight from the parent (controlled component)
+    const selectedRange = date;
+
+    // Jump the calendar to a newly chosen start date (adjusting state during render, no effect needed)
+    const [prevFrom, setPrevFrom] = useState(date?.from);
+    if (date?.from !== prevFrom) {
+        setPrevFrom(date?.from);
+        if (date?.from) setCurrentMonth(date.from);
+    }
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        setSelectedRange(date);
-        if (date?.from) {
-            setCurrentMonth(date.from);
-        }
-    }, [date]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -52,18 +53,15 @@ export function DateRangePicker({ date, onSelect, className, placeholder = "Sele
         if (!selectedRange?.from || (selectedRange.from && selectedRange.to)) {
             // Start a new range
             const newRange = { from: day, to: undefined };
-            setSelectedRange(newRange);
             onSelect?.(newRange);
         } else {
             // Complete the range
             if (isBefore(day, selectedRange.from)) {
                 // If selected day is before 'from', make it the new 'from'
                 const newRange = { from: day, to: undefined };
-                setSelectedRange(newRange);
                 onSelect?.(newRange);
             } else {
                 const newRange = { from: selectedRange.from, to: day };
-                setSelectedRange(newRange);
                 onSelect?.(newRange);
                 // Optional: auto-close upon complete selection after a short delay
                 setTimeout(() => setIsOpen(false), 300);
@@ -73,7 +71,6 @@ export function DateRangePicker({ date, onSelect, className, placeholder = "Sele
 
     const clearSelection = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setSelectedRange(undefined);
         onSelect?.(undefined);
     };
 

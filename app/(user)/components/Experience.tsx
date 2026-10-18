@@ -1,12 +1,15 @@
 import React from "react";
 import shemaCEO from "@/public/aboutus/shema.jpeg"
 import Image from "next/image"
+import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 
 interface ExperienceItem {
   id: string;
   title: string;
   description: string;
   image: string;
+  href: string;
 }
 
 export default function Experience() {
@@ -15,7 +18,8 @@ export default function Experience() {
       id: "gorilla",
       title: "Gorilla & Primate Trekking",
       description:
-        "Precious, face-to-face encounters in Rwanda's Volcanoes National Park and Uganda's Bwindi.",
+        "Face-to-face encounters with mountain gorillas in Volcanoes National Park and chimpanzees in Nyungwe.",
+      href: "/booking?destination=gorillas",
       image:
         "https://i.pinimg.com/736x/a8/51/a1/a851a155910cf89acc36f7598a83ee84.jpg",
     },
@@ -23,7 +27,8 @@ export default function Experience() {
       id: "savannah",
       title: "Savannah & Big Five",
       description:
-        "Exclusive private game drives across the vast plains of the Serengeti and Maasai Mara.",
+        "Private game drives and boat safaris among lions, elephants and rhinos in Akagera National Park.",
+      href: "/booking?destination=wildlife",
       image:
         "https://i.pinimg.com/736x/f5/b0/19/f5b019021de4fdaaa46fc56b4fde7c4f.jpg",
     },
@@ -31,7 +36,8 @@ export default function Experience() {
       id: "lodges",
       title: "Ultra-Luxury Lodges",
       description:
-        "Inspirational stays at Africa's most exclusive 5-star wild eco-lodges and private camps.",
+        "Hand-picked eco-lodges, lakeside resorts and boutique hotels across Rwanda.",
+      href: "/booking?destination=luxury",
       image:
         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
     },
@@ -50,8 +56,9 @@ export default function Experience() {
         {/* Experiences 3-Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {experiences.map((exp) => (
-            <div
+            <Link
               key={exp.id}
+              href={exp.href}
               className="group relative rounded-xl overflow-hidden shadow-2xl h-[420px] sm:h-[460px] flex flex-col justify-end p-6 border border-white/10 hover:border-[#c5a86d]/40 transition-all duration-500"
             >
               {/* Background Image */}
@@ -69,11 +76,15 @@ export default function Experience() {
                 <h3 className="text-xl sm:text-2xl font-serif text-white mb-2 leading-snug">
                   {exp.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed">
+                <p className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed mb-4">
                   {exp.description}
                 </p>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-[#c5a86d]">
+                  Explore
+                  <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -84,7 +95,7 @@ export default function Experience() {
             <div className="space-y-3 text-center sm:text-left">
               <p className="italic text-xs sm:text-[13px] leading-relaxed text-[#2a362f] max-w-lg">
                 &ldquo;Every journey we craft is an intimate story of adventure,
-                conservation, and luxury. We don't just show you East Africa—we
+                conservation, and luxury. We don&apos;t just show you East Africa—we
                 invite you to experience its soul.&rdquo;
               </p>
               <div className="text-[11px] sm:text-xs tracking-wider uppercase font-semibold text-[#18231c]">

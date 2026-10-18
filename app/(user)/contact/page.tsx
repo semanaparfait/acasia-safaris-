@@ -36,7 +36,7 @@ const contactCards = [
     label: "WhatsApp",
     value: "Chat with a planner",
     note: "Fastest way to reach us",
-    href: "https://wa.me/2507XXXXXXXX",
+    href: "https://wa.me/250798635578",
   },
   {
     icon: MapPin,

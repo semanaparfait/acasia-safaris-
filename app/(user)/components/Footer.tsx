@@ -146,7 +146,7 @@ const Footer = () => {
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d]">Stay in Touch</h4>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li>
-                <a href="tel:+2507XXXXXXXX" className="flex items-center gap-3 hover:text-white transition-colors">
+                <a href="tel:+250798635578" className="flex items-center gap-3 hover:text-white transition-colors">
                   <Phone size={16} className="text-[#c5a86d] shrink-0" />
                   +250 7XX XXX XXX
                 </a>
