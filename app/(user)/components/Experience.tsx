@@ -1,4 +1,6 @@
 import React from "react";
+import shemaCEO from "@/public/aboutus/shema.jpeg"
+import Image from "next/image"
 
 interface ExperienceItem {
   id: string;
@@ -95,8 +97,8 @@ export default function Experience() {
 
             {/* CEO Headshot */}
             <div className="shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80"
+              <Image
+                src={shemaCEO}
                 alt="Shema Alain - CEO"
                 className="w-16 h-16 sm:w-18 sm:h-18 rounded-lg object-cover shadow-md border border-black/10"
               />
