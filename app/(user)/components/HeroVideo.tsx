@@ -2,9 +2,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
-const POSTER = "https://i.pinimg.com/1200x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg";
+const POSTER =
+  "https://i.pinimg.com/1200x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg";
 
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -38,7 +46,7 @@ export default function HeroVideo() {
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
-        src="/heroVideo.mp4"
+        src="/acacia.mp4"
         poster={POSTER}
         autoPlay
         muted
@@ -59,7 +67,7 @@ export default function HeroVideo() {
           className="flex items-center gap-3 text-[11px] md:text-xs uppercase tracking-[0.4em] text-[#c5a86d] mb-6"
         >
           <span className="w-8 h-px bg-[#c5a86d]" />
-          Acasia Safaris
+          acacia Safaris
           <span className="w-8 h-px bg-[#c5a86d]" />
         </motion.p>
 
@@ -93,7 +101,10 @@ export default function HeroVideo() {
             className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-4 rounded-full shadow-lg hover:shadow-[0_15px_40px_-10px_rgba(197,168,109,0.7)] transition-all duration-300"
           >
             Book Your Trip
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight
+              size={16}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </Link>
           <Link
             href="/destination"
@@ -111,7 +122,11 @@ export default function HeroVideo() {
           aria-label={playing ? "Pause video" : "Play video"}
           className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/25 transition-colors"
         >
-          {playing ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
+          {playing ? (
+            <Pause size={16} />
+          ) : (
+            <Play size={16} className="ml-0.5" />
+          )}
         </button>
         <button
           onClick={toggleMute}
@@ -124,7 +139,9 @@ export default function HeroVideo() {
 
       {/* Scroll cue */}
       <motion.button
-        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
+        onClick={() =>
+          window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+        }
         aria-label="Scroll down"
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

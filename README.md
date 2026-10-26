@@ -35,61 +35,60 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-
-acasia_tourism/
+acacia_tourism/
 │
 ├── src/
-│   │
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx                 → Home page
-│   │   │
-│   │   ├── (user)/                  → Public user routes
-│   │   │   ├── tours/
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── [id]/page.tsx
-│   │   │   │
-│   │   │   ├── destinations/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── booking/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   └── about/
-│   │   │       └── page.tsx
-│   │   │
-│   │   ├── (admin)/                 → Admin dashboard
-│   │   │   ├── dashboard/page.tsx
-│   │   │   ├── tours/page.tsx
-│   │   │   └── bookings/page.tsx
-│   │   │
-│   │   └── api/                     → API routes (optional)
-│   │       └── bookings/route.ts
-│   │
-│   ├── components/                  → Shared UI components
-│   │   ├── Navbar.tsx
-│   │   ├── Footer.tsx
-│   │   ├── TourCard.tsx
-│   │   └── Button.tsx
-│   │
-│   ├── lib/                         → Helpers / utilities
-│   │   ├── fetchTours.ts
-│   │   └── utils.ts
-│   │
-│   ├── services/                    → API calls
-│   │   └── tourService.ts
-│   │
-│   ├── hooks/
-│   │   └── useTours.ts
-│   │
-│   ├── types/
-│   │   └── tour.ts
-│   │
-│   └── styles/
-│       └── globals.css
+│ │
+│ ├── app/
+│ │ ├── layout.tsx
+│ │ ├── page.tsx → Home page
+│ │ │
+│ │ ├── (user)/ → Public user routes
+│ │ │ ├── tours/
+│ │ │ │ ├── page.tsx
+│ │ │ │ └── [id]/page.tsx
+│ │ │ │
+│ │ │ ├── destinations/
+│ │ │ │ └── page.tsx
+│ │ │ │
+│ │ │ ├── booking/
+│ │ │ │ └── page.tsx
+│ │ │ │
+│ │ │ └── about/
+│ │ │ └── page.tsx
+│ │ │
+│ │ ├── (admin)/ → Admin dashboard
+│ │ │ ├── dashboard/page.tsx
+│ │ │ ├── tours/page.tsx
+│ │ │ └── bookings/page.tsx
+│ │ │
+│ │ └── api/ → API routes (optional)
+│ │ └── bookings/route.ts
+│ │
+│ ├── components/ → Shared UI components
+│ │ ├── Navbar.tsx
+│ │ ├── Footer.tsx
+│ │ ├── TourCard.tsx
+│ │ └── Button.tsx
+│ │
+│ ├── lib/ → Helpers / utilities
+│ │ ├── fetchTours.ts
+│ │ └── utils.ts
+│ │
+│ ├── services/ → API calls
+│ │ └── tourService.ts
+│ │
+│ ├── hooks/
+│ │ └── useTours.ts
+│ │
+│ ├── types/
+│ │ └── tour.ts
+│ │
+│ └── styles/
+│ └── globals.css
 │
 ├── public/
-│   └── images/
+│ └── images/
 │
 ├── tsconfig.json
 ├── next.config.ts

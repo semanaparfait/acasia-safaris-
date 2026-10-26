@@ -25,9 +25,27 @@ import {
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { destinations } from "../data/destinations";
 
-const travelStyles = ["Luxury Safari", "Adventure", "Cultural", "Photography", "Honeymoon", "Family Trip"];
-const accommodations = ["Luxury Lodges", "Boutique Hotels", "Mid-range Hotels", "Eco Lodges", "Camping"];
-const budgets = ["$1,000 – 2,000", "$2,000 – 5,000", "$5,000 – 10,000", "$10,000+"];
+const travelStyles = [
+  "Luxury Safari",
+  "Adventure",
+  "Cultural",
+  "Photography",
+  "Honeymoon",
+  "Family Trip",
+];
+const accommodations = [
+  "Luxury Lodges",
+  "Boutique Hotels",
+  "Mid-range Hotels",
+  "Eco Lodges",
+  "Camping",
+];
+const budgets = [
+  "$1,000 – 2,000",
+  "$2,000 – 5,000",
+  "$5,000 – 10,000",
+  "$10,000+",
+];
 
 const steps = [
   { title: "Destinations", short: "Where" },
@@ -36,15 +54,23 @@ const steps = [
 ];
 
 const perks = [
-  
   { icon: Clock, text: "Reply within 24 hours" },
   { icon: ShieldCheck, text: "No payment to send a request" },
 ];
 
 const process = [
-  { title: "Send your request", desc: "Pick your destinations and tell us how you like to travel." },
-  { title: "Talk to an expert", desc: "A local specialist contacts you to fine-tune the details." },
-  { title: "Get your itinerary", desc: "Receive a personal plan with lodges, activities and price." },
+  {
+    title: "Send your request",
+    desc: "Pick your destinations and tell us how you like to travel.",
+  },
+  {
+    title: "Talk to an expert",
+    desc: "A local specialist contacts you to fine-tune the details.",
+  },
+  {
+    title: "Get your itinerary",
+    desc: "Receive a personal plan with lodges, activities and price.",
+  },
   { title: "Confirm & go", desc: "Book securely and get ready for Rwanda." },
 ];
 
@@ -69,9 +95,18 @@ const faqs = [
 
 const inputClass =
   "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all";
-const labelClass = "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
+const labelClass =
+  "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -88,7 +123,17 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   );
 }
 
-function Counter({ label, value, min, onChange }: { label: string; value: number; min: number; onChange: (v: number) => void }) {
+function Counter({
+  label,
+  value,
+  min,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  onChange: (v: number) => void;
+}) {
   return (
     <div className="flex items-center justify-between rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 py-2.5">
       <span className="text-sm text-[#0a120b]/70">{label}</span>
@@ -122,31 +167,48 @@ export default function BookingPage({
   searchParams: Promise<{ destination?: string }>;
 }) {
   // Pre-select a destination when arriving from a "Book Now" link, e.g. /booking?destination=gorillas
-  const preselected = destinations.find((d) => d.id === use(searchParams).destination);
+  const preselected = destinations.find(
+    (d) => d.id === use(searchParams).destination,
+  );
 
   const [step, setStep] = useState(0);
-  const [selected, setSelected] = useState<string[]>(preselected ? [preselected.id] : []);
+  const [selected, setSelected] = useState<string[]>(
+    preselected ? [preselected.id] : [],
+  );
   const [otherDestination, setOtherDestination] = useState("");
   const [heroDestination, setHeroDestination] = useState(preselected?.id ?? "");
-  const [dates, setDates] = useState<{ from: Date | undefined; to?: Date | undefined }>({ from: undefined });
+  const [dates, setDates] = useState<{
+    from: Date | undefined;
+    to?: Date | undefined;
+  }>({ from: undefined });
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [style, setStyle] = useState("");
   const [accommodation, setAccommodation] = useState("");
   const [budget, setBudget] = useState("");
-  const [details, setDetails] = useState({ name: "", email: "", phone: "", country: "", notes: "" });
+  const [details, setDetails] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    country: "",
+    notes: "",
+  });
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
     if (preselected) {
-      document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+      document
+        .getElementById("planner")
+        ?.scrollIntoView({ behavior: "smooth" });
     }
   }, [preselected]);
 
   const toggle = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const chosen = destinations.filter((d) => selected.includes(d.id));
   const hasDestination = chosen.length > 0 || otherDestination.trim() !== "";
@@ -165,7 +227,9 @@ export default function BookingPage({
   const startBooking = (e: React.FormEvent) => {
     e.preventDefault();
     if (heroDestination) {
-      setSelected((prev) => (prev.includes(heroDestination) ? prev : [...prev, heroDestination]));
+      setSelected((prev) =>
+        prev.includes(heroDestination) ? prev : [...prev, heroDestination],
+      );
       setError("");
       setStep(1);
     }
@@ -204,9 +268,18 @@ export default function BookingPage({
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto pt-40 pb-16 md:pb-20 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <nav className="flex items-center justify-center gap-1.5 text-xs text-zinc-300 mb-6" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <nav
+              className="flex items-center justify-center gap-1.5 text-xs text-zinc-300 mb-6"
+              aria-label="Breadcrumb"
+            >
+              <Link href="/" className="hover:text-white transition-colors">
+                Home
+              </Link>
               <ChevronRight size={12} />
               <span className="text-[#c5a86d]">Booking</span>
             </nav>
@@ -237,7 +310,9 @@ export default function BookingPage({
               >
                 <option value="">Where to?</option>
                 {destinations.map((d) => (
-                  <option key={d.id} value={d.id}>{d.title}</option>
+                  <option key={d.id} value={d.id}>
+                    {d.title}
+                  </option>
                 ))}
               </select>
             </label>
@@ -248,7 +323,9 @@ export default function BookingPage({
               <div className="[&>div>button]:border-0 [&>div>button]:py-0.5 [&>div>button]:font-sans [&>div>button]:text-sm [&>div>button]:font-medium">
                 <DateRangePicker
                   date={dates}
-                  onSelect={(range) => setDates({ from: range?.from, to: range?.to })}
+                  onSelect={(range) =>
+                    setDates({ from: range?.from, to: range?.to })
+                  }
                   placeholder="Add dates"
                 />
               </div>
@@ -263,7 +340,9 @@ export default function BookingPage({
                 className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>{n} adult{n > 1 ? "s" : ""}</option>
+                  <option key={n} value={n}>
+                    {n} adult{n > 1 ? "s" : ""}
+                  </option>
                 ))}
               </select>
             </label>
@@ -272,13 +351,19 @@ export default function BookingPage({
               className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-4 rounded-xl transition-all"
             >
               Book Now
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight
+                size={16}
+                className="group-hover:translate-x-1 transition-transform"
+              />
             </button>
           </motion.form>
 
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-6">
             {perks.map((p) => (
-              <span key={p.text} className="flex items-center gap-2 text-xs md:text-sm text-zinc-200">
+              <span
+                key={p.text}
+                className="flex items-center gap-2 text-xs md:text-sm text-zinc-200"
+              >
                 <p.icon size={15} className="text-[#c5a86d]" /> {p.text}
               </span>
             ))}
@@ -287,7 +372,10 @@ export default function BookingPage({
       </section>
 
       {/* Planner */}
-      <section id="planner" className="relative z-20 px-6 pt-16 pb-24 scroll-mt-24">
+      <section
+        id="planner"
+        className="relative z-20 px-6 pt-16 pb-24 scroll-mt-24"
+      >
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Form card */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_20px_50px_-15px_rgba(10,24,17,0.35)] border border-[#0a120b]/5">
@@ -301,17 +389,25 @@ export default function BookingPage({
                   <CheckCircle2 size={36} />
                 </div>
                 <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide mb-3">
-                  Request sent{details.name ? `, ${details.name.split(" ")[0]}` : ""}!
+                  Request sent
+                  {details.name ? `, ${details.name.split(" ")[0]}` : ""}!
                 </h2>
                 <p className="text-sm text-[#0a120b]/60 max-w-md mx-auto leading-relaxed mb-8">
-                  Thank you for choosing Acasia Safaris. One of our travel experts will contact
-                  you within 24 hours with your personalised itinerary.
+                  Thank you for choosing acacia Safaris. One of our travel
+                  experts will contact you within 24 hours with your
+                  personalised itinerary.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
-                  <Link href="/destination" className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all">
+                  <Link
+                    href="/destination"
+                    className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all"
+                  >
                     Explore Destinations
                   </Link>
-                  <Link href="/" className="border border-[#0a120b]/20 hover:border-[#0a120b] text-sm px-7 py-3 rounded-sm transition-all">
+                  <Link
+                    href="/"
+                    className="border border-[#0a120b]/20 hover:border-[#0a120b] text-sm px-7 py-3 rounded-sm transition-all"
+                  >
                     Back to Home
                   </Link>
                 </div>
@@ -340,8 +436,14 @@ export default function BookingPage({
                             {i < step ? <Check size={16} /> : i + 1}
                           </span>
                           <span className="hidden sm:block">
-                            <span className="block text-[10px] uppercase tracking-widest text-[#0a120b]/40">{s.short}</span>
-                            <span className={`block text-sm font-medium ${i === step ? "text-[#0a120b]" : "text-[#0a120b]/55"}`}>{s.title}</span>
+                            <span className="block text-[10px] uppercase tracking-widest text-[#0a120b]/40">
+                              {s.short}
+                            </span>
+                            <span
+                              className={`block text-sm font-medium ${i === step ? "text-[#0a120b]" : "text-[#0a120b]/55"}`}
+                            >
+                              {s.title}
+                            </span>
                           </span>
                         </button>
                         {i < steps.length - 1 && (
@@ -371,8 +473,12 @@ export default function BookingPage({
                       {/* Step 1: destinations */}
                       {step === 0 && (
                         <div>
-                          <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Where would you like to go?</h2>
-                          <p className="text-sm text-[#0a120b]/55 mb-6">Pick as many as you like.</p>
+                          <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
+                            Where would you like to go?
+                          </h2>
+                          <p className="text-sm text-[#0a120b]/55 mb-6">
+                            Pick as many as you like.
+                          </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {destinations.map((d) => {
                               const active = selected.includes(d.id);
@@ -383,32 +489,50 @@ export default function BookingPage({
                                   onClick={() => toggle(d.id)}
                                   aria-pressed={active}
                                   className={`group relative h-32 sm:h-36 rounded-xl overflow-hidden text-left ring-2 transition-all duration-300 ${
-                                    active ? "ring-[#c5a86d] shadow-lg" : "ring-transparent hover:ring-[#c5a86d]/40"
+                                    active
+                                      ? "ring-[#c5a86d] shadow-lg"
+                                      : "ring-transparent hover:ring-[#c5a86d]/40"
                                   }`}
                                 >
-                                  <img src={d.image} alt={d.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                                  <div className={`absolute inset-0 transition-colors ${active ? "bg-[#12231a]/55" : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"}`} />
+                                  <img
+                                    src={d.image}
+                                    alt={d.title}
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                  />
+                                  <div
+                                    className={`absolute inset-0 transition-colors ${active ? "bg-[#12231a]/55" : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"}`}
+                                  />
                                   <span
                                     className={`absolute top-2.5 right-2.5 w-6 h-6 rounded-full flex items-center justify-center border transition-all ${
-                                      active ? "bg-[#c5a86d] border-[#c5a86d] text-[#0e1d16]" : "border-white/70 bg-black/20"
+                                      active
+                                        ? "bg-[#c5a86d] border-[#c5a86d] text-[#0e1d16]"
+                                        : "border-white/70 bg-black/20"
                                     }`}
                                   >
                                     {active && <Check size={14} />}
                                   </span>
                                   <span className="absolute bottom-3 left-3 right-3 text-white">
-                                    <span className="block font-serif uppercase tracking-wide text-sm leading-tight">{d.title}</span>
-                                    <span className="block text-[10px] text-zinc-300 truncate">{d.location}</span>
+                                    <span className="block font-serif uppercase tracking-wide text-sm leading-tight">
+                                      {d.title}
+                                    </span>
+                                    <span className="block text-[10px] text-zinc-300 truncate">
+                                      {d.location}
+                                    </span>
                                   </span>
                                 </button>
                               );
                             })}
                           </div>
                           <div className="mt-5">
-                            <label htmlFor="other" className={labelClass}>Somewhere else?</label>
+                            <label htmlFor="other" className={labelClass}>
+                              Somewhere else?
+                            </label>
                             <input
                               id="other"
                               value={otherDestination}
-                              onChange={(e) => setOtherDestination(e.target.value)}
+                              onChange={(e) =>
+                                setOtherDestination(e.target.value)
+                              }
                               placeholder="e.g. Gishwati forest, Kigali city tour…"
                               className={inputClass}
                             />
@@ -420,28 +544,50 @@ export default function BookingPage({
                       {step === 1 && (
                         <div className="space-y-7">
                           <div>
-                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Tell us about your trip</h2>
-                            <p className="text-sm text-[#0a120b]/55">Not sure yet? Leave anything blank and we&apos;ll help you decide.</p>
+                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
+                              Tell us about your trip
+                            </h2>
+                            <p className="text-sm text-[#0a120b]/55">
+                              Not sure yet? Leave anything blank and we&apos;ll
+                              help you decide.
+                            </p>
                           </div>
                           <div>
                             <p className={labelClass}>Travel dates</p>
                             <div className="rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 [&>div>button]:border-0 [&>div>button]:py-2.5 [&>div>button]:font-sans [&>div>button]:text-sm">
                               <DateRangePicker
                                 date={dates}
-                                onSelect={(range) => setDates({ from: range?.from, to: range?.to })}
+                                onSelect={(range) =>
+                                  setDates({ from: range?.from, to: range?.to })
+                                }
                                 placeholder="Select your travel dates"
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <Counter label="Adults" value={adults} min={1} onChange={setAdults} />
-                            <Counter label="Children" value={children} min={0} onChange={setChildren} />
+                            <Counter
+                              label="Adults"
+                              value={adults}
+                              min={1}
+                              onChange={setAdults}
+                            />
+                            <Counter
+                              label="Children"
+                              value={children}
+                              min={0}
+                              onChange={setChildren}
+                            />
                           </div>
                           <div>
                             <p className={labelClass}>Travel style</p>
                             <div className="flex flex-wrap gap-2">
                               {travelStyles.map((s) => (
-                                <Chip key={s} label={s} active={style === s} onClick={() => setStyle(style === s ? "" : s)} />
+                                <Chip
+                                  key={s}
+                                  label={s}
+                                  active={style === s}
+                                  onClick={() => setStyle(style === s ? "" : s)}
+                                />
                               ))}
                             </div>
                           </div>
@@ -449,7 +595,16 @@ export default function BookingPage({
                             <p className={labelClass}>Accommodation</p>
                             <div className="flex flex-wrap gap-2">
                               {accommodations.map((a) => (
-                                <Chip key={a} label={a} active={accommodation === a} onClick={() => setAccommodation(accommodation === a ? "" : a)} />
+                                <Chip
+                                  key={a}
+                                  label={a}
+                                  active={accommodation === a}
+                                  onClick={() =>
+                                    setAccommodation(
+                                      accommodation === a ? "" : a,
+                                    )
+                                  }
+                                />
                               ))}
                             </div>
                           </div>
@@ -457,7 +612,14 @@ export default function BookingPage({
                             <p className={labelClass}>Budget per person</p>
                             <div className="flex flex-wrap gap-2">
                               {budgets.map((b) => (
-                                <Chip key={b} label={b} active={budget === b} onClick={() => setBudget(budget === b ? "" : b)} />
+                                <Chip
+                                  key={b}
+                                  label={b}
+                                  active={budget === b}
+                                  onClick={() =>
+                                    setBudget(budget === b ? "" : b)
+                                  }
+                                />
                               ))}
                             </div>
                           </div>
@@ -468,34 +630,101 @@ export default function BookingPage({
                       {step === 2 && (
                         <div className="space-y-5">
                           <div>
-                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">Almost there!</h2>
-                            <p className="text-sm text-[#0a120b]/55">Where should we send your itinerary?</p>
+                            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
+                              Almost there!
+                            </h2>
+                            <p className="text-sm text-[#0a120b]/55">
+                              Where should we send your itinerary?
+                            </p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
-                              <label htmlFor="name" className={labelClass}>Full name *</label>
-                              <input id="name" required value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} placeholder="Jane Doe" className={inputClass} />
+                              <label htmlFor="name" className={labelClass}>
+                                Full name *
+                              </label>
+                              <input
+                                id="name"
+                                required
+                                value={details.name}
+                                onChange={(e) =>
+                                  setDetails({
+                                    ...details,
+                                    name: e.target.value,
+                                  })
+                                }
+                                placeholder="Jane Doe"
+                                className={inputClass}
+                              />
                             </div>
                             <div>
-                              <label htmlFor="email" className={labelClass}>Email *</label>
-                              <input id="email" type="email" required value={details.email} onChange={(e) => setDetails({ ...details, email: e.target.value })} placeholder="jane@example.com" className={inputClass} />
+                              <label htmlFor="email" className={labelClass}>
+                                Email *
+                              </label>
+                              <input
+                                id="email"
+                                type="email"
+                                required
+                                value={details.email}
+                                onChange={(e) =>
+                                  setDetails({
+                                    ...details,
+                                    email: e.target.value,
+                                  })
+                                }
+                                placeholder="jane@example.com"
+                                className={inputClass}
+                              />
                             </div>
                             <div>
-                              <label htmlFor="phone" className={labelClass}>Phone / WhatsApp</label>
-                              <input id="phone" type="tel" value={details.phone} onChange={(e) => setDetails({ ...details, phone: e.target.value })} placeholder="+1 555 000 000" className={inputClass} />
+                              <label htmlFor="phone" className={labelClass}>
+                                Phone / WhatsApp
+                              </label>
+                              <input
+                                id="phone"
+                                type="tel"
+                                value={details.phone}
+                                onChange={(e) =>
+                                  setDetails({
+                                    ...details,
+                                    phone: e.target.value,
+                                  })
+                                }
+                                placeholder="+1 555 000 000"
+                                className={inputClass}
+                              />
                             </div>
                             <div>
-                              <label htmlFor="country" className={labelClass}>Country</label>
-                              <input id="country" value={details.country} onChange={(e) => setDetails({ ...details, country: e.target.value })} placeholder="e.g. United States" className={inputClass} />
+                              <label htmlFor="country" className={labelClass}>
+                                Country
+                              </label>
+                              <input
+                                id="country"
+                                value={details.country}
+                                onChange={(e) =>
+                                  setDetails({
+                                    ...details,
+                                    country: e.target.value,
+                                  })
+                                }
+                                placeholder="e.g. United States"
+                                className={inputClass}
+                              />
                             </div>
                           </div>
                           <div>
-                            <label htmlFor="notes" className={labelClass}>Anything else?</label>
+                            <label htmlFor="notes" className={labelClass}>
+                              Anything else?
+                            </label>
                             <textarea
                               id="notes"
                               rows={4}
                               value={details.notes}
-                              onChange={(e) => setDetails({ ...details, notes: e.target.value })}
+                              onChange={(e) =>
+                                setDetails({
+                                  ...details,
+                                  notes: e.target.value,
+                                })
+                              }
                               placeholder="Special occasions, dietary needs, accessibility…"
                               className={`${inputClass} resize-none`}
                             />
@@ -505,7 +734,9 @@ export default function BookingPage({
                     </motion.div>
                   </AnimatePresence>
 
-                  {error && <p className="mt-5 text-sm text-red-600">{error}</p>}
+                  {error && (
+                    <p className="mt-5 text-sm text-red-600">{error}</p>
+                  )}
 
                   {/* Navigation */}
                   <div className="mt-8 pt-6 border-t border-[#0a120b]/5 flex items-center justify-between gap-4">
@@ -518,14 +749,21 @@ export default function BookingPage({
                         <ArrowLeft size={16} /> Back
                       </button>
                     ) : (
-                      <span className="text-xs text-[#0a120b]/45">Step 1 of {steps.length}</span>
+                      <span className="text-xs text-[#0a120b]/45">
+                        Step 1 of {steps.length}
+                      </span>
                     )}
                     <button
                       type="submit"
                       className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all"
                     >
-                      {step === steps.length - 1 ? "Send My Request" : "Continue"}
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      {step === steps.length - 1
+                        ? "Send My Request"
+                        : "Continue"}
+                      <ArrowRight
+                        size={16}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
                     </button>
                   </div>
                 </form>
@@ -536,19 +774,31 @@ export default function BookingPage({
           {/* Summary sidebar */}
           <aside className="lg:sticky lg:top-28 space-y-6">
             <div className="rounded-2xl bg-[#12231a] text-white p-6 shadow-xl">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">Your trip</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">
+                Your trip
+              </p>
 
               {chosen.length > 0 || otherDestination ? (
                 <ul className="space-y-2.5 mb-5">
                   {chosen.map((d) => (
                     <li key={d.id} className="flex items-center gap-3">
-                      <img src={d.image} alt="" className="w-11 h-11 rounded-lg object-cover" />
+                      <img
+                        src={d.image}
+                        alt=""
+                        className="w-11 h-11 rounded-lg object-cover"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate">{d.title}</p>
-                        <p className="text-[11px] text-zinc-400 truncate">{d.location}</p>
+                        <p className="text-[11px] text-zinc-400 truncate">
+                          {d.location}
+                        </p>
                       </div>
                       {!submitted && (
-                        <button onClick={() => toggle(d.id)} aria-label={`Remove ${d.title}`} className="text-zinc-500 hover:text-white">
+                        <button
+                          onClick={() => toggle(d.id)}
+                          aria-label={`Remove ${d.title}`}
+                          className="text-zinc-500 hover:text-white"
+                        >
                           <X size={14} />
                         </button>
                       )}
@@ -572,14 +822,19 @@ export default function BookingPage({
 
               <dl className="space-y-3 text-sm border-t border-white/10 pt-4">
                 <div className="flex justify-between gap-4">
-                  <dt className="flex items-center gap-2 text-zinc-400"><CalendarDays size={14} /> Dates</dt>
+                  <dt className="flex items-center gap-2 text-zinc-400">
+                    <CalendarDays size={14} /> Dates
+                  </dt>
                   <dd className="text-right">{dateText}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="flex items-center gap-2 text-zinc-400"><Users size={14} /> Travelers</dt>
+                  <dt className="flex items-center gap-2 text-zinc-400">
+                    <Users size={14} /> Travelers
+                  </dt>
                   <dd>
                     {adults} adult{adults > 1 ? "s" : ""}
-                    {children > 0 && `, ${children} child${children > 1 ? "ren" : ""}`}
+                    {children > 0 &&
+                      `, ${children} child${children > 1 ? "ren" : ""}`}
                   </dd>
                 </div>
                 {style && (
@@ -609,8 +864,12 @@ export default function BookingPage({
                   <Headphones size={18} />
                 </span>
                 <div>
-                  <p className="font-serif uppercase tracking-wide">Need help?</p>
-                  <p className="text-xs text-[#0a120b]/50">Talk to a travel expert</p>
+                  <p className="font-serif uppercase tracking-wide">
+                    Need help?
+                  </p>
+                  <p className="text-xs text-[#0a120b]/50">
+                    Talk to a travel expert
+                  </p>
                 </div>
               </div>
               <a
@@ -630,8 +889,12 @@ export default function BookingPage({
       <section className="bg-[#f7f5f0] px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">Simple & easy</span>
-            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">How it works</h2>
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
+              Simple & easy
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
+              How it works
+            </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {process.map((p, i) => (
@@ -643,9 +906,15 @@ export default function BookingPage({
                 transition={{ delay: i * 0.1 }}
                 className="relative bg-white rounded-xl p-6 border border-[#0a120b]/5"
               >
-                <span className="text-4xl font-serif text-[#c5a86d]/40">0{i + 1}</span>
-                <h3 className="font-serif text-lg uppercase tracking-wide mt-2 mb-2">{p.title}</h3>
-                <p className="text-sm text-[#0a120b]/55 leading-relaxed">{p.desc}</p>
+                <span className="text-4xl font-serif text-[#c5a86d]/40">
+                  0{i + 1}
+                </span>
+                <h3 className="font-serif text-lg uppercase tracking-wide mt-2 mb-2">
+                  {p.title}
+                </h3>
+                <p className="text-sm text-[#0a120b]/55 leading-relaxed">
+                  {p.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -656,8 +925,12 @@ export default function BookingPage({
       <section className="px-6 py-20">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">Good to know</span>
-            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">Questions</h2>
+            <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
+              Good to know
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
+              Questions
+            </h2>
           </div>
           <div className="divide-y divide-[#0a120b]/10 border-y border-[#0a120b]/10">
             {faqs.map((faq, i) => {
@@ -669,10 +942,14 @@ export default function BookingPage({
                     aria-expanded={open}
                     className="w-full flex items-center justify-between gap-6 py-5 text-left group"
                   >
-                    <span className="font-serif text-lg group-hover:text-[#1F5A42] transition-colors">{faq.q}</span>
+                    <span className="font-serif text-lg group-hover:text-[#1F5A42] transition-colors">
+                      {faq.q}
+                    </span>
                     <span
                       className={`shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${
-                        open ? "bg-[#12231a] border-[#12231a] text-[#c5a86d] rotate-45" : "border-[#0a120b]/15 text-[#0a120b]/60"
+                        open
+                          ? "bg-[#12231a] border-[#12231a] text-[#c5a86d] rotate-45"
+                          : "border-[#0a120b]/15 text-[#0a120b]/60"
                       }`}
                     >
                       <Plus size={14} />
@@ -687,7 +964,9 @@ export default function BookingPage({
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <p className="pb-5 pr-12 text-sm text-[#0a120b]/60 leading-relaxed">{faq.a}</p>
+                        <p className="pb-5 pr-12 text-sm text-[#0a120b]/60 leading-relaxed">
+                          {faq.a}
+                        </p>
                       </motion.div>
                     )}
                   </AnimatePresence>

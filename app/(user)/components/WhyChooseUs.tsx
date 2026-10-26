@@ -1,37 +1,36 @@
 "use client";
-import React from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShieldCheck, Compass, Leaf, Sparkles, ArrowRight } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ShieldCheck, Compass, Leaf, Sparkles, ArrowRight } from "lucide-react";
 
 const pillars = [
   {
     icon: ShieldCheck,
     title: "Secure & Certified",
-    desc: "Fully licensed by the RDB with traveler insurance for total peace of mind."
+    desc: "Fully licensed by the RDB with traveler insurance for total peace of mind.",
   },
   {
     icon: Compass,
     title: "Expert Local Guides",
-    desc: "Professionals who know every trail, park and story across Rwanda."
+    desc: "Professionals who know every trail, park and story across Rwanda.",
   },
   {
     icon: Sparkles,
     title: "Tailor-Made Trips",
-    desc: "Every journey built around your dates, travel style and budget."
+    desc: "Every journey built around your dates, travel style and budget.",
   },
   {
     icon: Leaf,
     title: "Eco-Conscious Travel",
-    desc: "Every booking supports conservation and empowers local communities."
-  }
+    desc: "Every booking supports conservation and empowers local communities.",
+  },
 ];
 
 export default function WhyChooseUs() {
   return (
     <section className="py-24 bg-white text-[#0a120b] px-10 overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
         {/* Left: images */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -65,8 +64,12 @@ export default function WhyChooseUs() {
               <ShieldCheck size={20} />
             </span>
             <span>
-              <span className="block text-[10px] uppercase tracking-[0.25em] text-[#c5a86d]">Licensed by RDB</span>
-              <span className="block text-sm font-semibold">Trusted local operator</span>
+              <span className="block text-[10px] uppercase tracking-[0.25em] text-[#c5a86d]">
+                Licensed by RDB
+              </span>
+              <span className="block text-sm font-semibold">
+                Trusted local operator
+              </span>
             </span>
           </motion.div>
         </motion.div>
@@ -81,15 +84,18 @@ export default function WhyChooseUs() {
           >
             <div className="flex items-center gap-3 mb-5">
               <span className="w-10 h-px bg-[#c5a86d]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">The Acasia Standard</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">
+                The acacia Standard
+              </span>
             </div>
             <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-[1.1] text-[#12231a] mb-6">
               Why our guests <br />
-              <span className="text-[#c5a86d]">choose Acasia</span>
+              <span className="text-[#c5a86d]">choose acacia</span>
             </h2>
             <p className="text-[#0a120b]/60 text-base leading-relaxed max-w-md mb-10">
-              We believe in safaris that are as refined as they are raw. Our commitment to quality
-              ensures your journey is safe, authentic, and perfectly tailored.
+              We believe in safaris that are as refined as they are raw. Our
+              commitment to quality ensures your journey is safe, authentic, and
+              perfectly tailored.
             </p>
           </motion.div>
 
@@ -106,8 +112,12 @@ export default function WhyChooseUs() {
                 <span className="w-12 h-12 rounded-xl bg-[#12231a] text-[#c5a86d] flex items-center justify-center mb-5 group-hover:bg-[#c5a86d] group-hover:text-[#0e1d16] transition-colors duration-300">
                   <p.icon size={22} />
                 </span>
-                <h3 className="font-serif text-lg uppercase tracking-wide text-[#12231a] mb-2">{p.title}</h3>
-                <p className="text-sm text-[#0a120b]/55 leading-relaxed">{p.desc}</p>
+                <h3 className="font-serif text-lg uppercase tracking-wide text-[#12231a] mb-2">
+                  {p.title}
+                </h3>
+                <p className="text-sm text-[#0a120b]/55 leading-relaxed">
+                  {p.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -117,7 +127,10 @@ export default function WhyChooseUs() {
             className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-4 rounded-full shadow-lg transition-all"
           >
             Plan Your Trip
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight
+              size={16}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </Link>
         </div>
       </div>

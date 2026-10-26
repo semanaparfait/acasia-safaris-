@@ -5,7 +5,7 @@ import { FaWhatsapp } from "react-icons/fa";
 
 // TODO: replace with the real WhatsApp number (country code + number, digits only)
 const WHATSAPP_NUMBER = "250798635578";
-const MESSAGE = "Hello Acasia Safaris! I'd like to plan a trip to Rwanda.";
+const MESSAGE = "Hello acacia Safaris! I'd like to plan a trip to Rwanda.";
 
 export default function WhatsAppButton() {
   const pathname = usePathname();

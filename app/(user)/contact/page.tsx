@@ -27,9 +27,9 @@ const contactCards = [
   {
     icon: Mail,
     label: "Email Us",
-    value: "info@acasiasafaris.com",
+    value: "info@acaciasafaris.com",
     note: "Reply within 24 hours",
-    href: "mailto:info@acasiasafaris.com",
+    href: "mailto:info@acaciasafaris.com",
   },
   {
     icon: MessageCircle,
@@ -176,7 +176,7 @@ export default function Contact() {
               <ul className="space-y-5">
                 {[
                   { icon: Phone, text: "+250 7XX XXX XXX" },
-                  { icon: Mail, text: "info@acasiasafaris.com" },
+                  { icon: Mail, text: "info@acaciasafaris.com" },
                   { icon: MapPin, text: "Kigali, Rwanda" },
                 ].map((item) => (
                   <li
@@ -388,7 +388,7 @@ export default function Contact() {
               width="100%"
               height="100%"
               allowFullScreen
-              title="Acasia Safaris office location"
+              title="acacia Safaris office location"
               style={{ border: 0, filter: "grayscale(0.4) contrast(1.1)" }}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -398,7 +398,7 @@ export default function Contact() {
                 <div className="w-9 h-9 rounded-full bg-[#c5a86d] text-[#0e1d16] flex items-center justify-center">
                   <MapPin size={16} />
                 </div>
-                <p className="font-serif text-lg">Acasia Safaris Ltd</p>
+                <p className="font-serif text-lg">acacia Safaris Ltd</p>
               </div>
               <p className="text-xs text-zinc-300 leading-relaxed mb-4">
                 Kigali, Rwanda. Visits by appointment. Give us a call before you

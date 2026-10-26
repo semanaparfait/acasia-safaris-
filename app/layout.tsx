@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ACASIA SAFARIS LTD",
-  description: "acasia safaris ltd is a tour and travel company based in kenya, we offer a wide range of tour and travel services to our clients, we are committed to providing our clients with the best possible service and we strive to exceed their expectations.",
+  title: "acacia SAFARIS LTD",
+  description:
+    "acacia safaris ltd is a tour and travel company based in kenya, we offer a wide range of tour and travel services to our clients, we are committed to providing our clients with the best possible service and we strive to exceed their expectations.",
 };
 
 export default function RootLayout({
