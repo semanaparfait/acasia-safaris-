@@ -1,11 +1,8 @@
 // Tour packages: the single source of truth for the website and the admin panel.
 // This is seed (mock) data. Admins edit it from /admin/packages and the site reads
-// the edited copy through usePackages() in ./packageStore. When the backend exists,
-// these map to tables:
-//   packages            -> TourPackage (minus the lists below)
-//   package_itinerary   -> ItineraryDay  (package_id, day, ...)
-//   package_route_stops / package_inclusions / package_exclusions / package_perks -> string lists
-// The duration is never stored: it is the number of itinerary days.
+// the edited copy through usePackages() in ./packageStore. The real tables live in
+// backend/prisma/schema.prisma (Package + ItineraryDay; route/inclusions/exclusions/perks
+// are text-list columns). The duration is never stored: it is the number of itinerary days.
 
 export type ItineraryDay = {
   title: string;

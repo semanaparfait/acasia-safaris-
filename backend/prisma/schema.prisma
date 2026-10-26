@@ -1,0 +1,116 @@
+// Database schema: each "model" below becomes a table in your Neon Postgres database.
+// After changing this file run:  npm run db:migrate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection, used by the app
+  directUrl = env("DIRECT_URL") // direct connection, used by migrations
+}
+
+// ---------- Tour packages ----------
+
+model Package {
+  id          String         @id // readable id, e.g. "7-day-gorilla"
+  title       String
+  category    String // "Gorilla Trekking", "Wildlife Safari", ...
+  badge       String?
+  location    String
+  description String
+  tripType    String
+  lodging     String
+  image       String
+  price       Int // USD per person
+  active      Boolean        @default(true) // false = draft, hidden from the website
+  route       String[] // stops in travel order
+  inclusions  String[]
+  exclusions  String[]
+  perks       String[]
+  itinerary   ItineraryDay[] // the number of days = the package duration
+  bookings    Booking[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ItineraryDay {
+  id          Int     @id @default(autoincrement())
+  day         Int // 1, 2, 3 ...
+  title       String
+  description String
+  image       String
+  packageId   String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, day])
+}
+
+// ---------- Destinations ----------
+
+model Destination {
+  id          String   @id // e.g. "gorillas"
+  title       String
+  description String
+  group       String // "Wildlife", "Nature", "Culture", ...
+  location    String
+  image       String
+  highlights  String[]
+  bestTime    String
+  fromKigali  String
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Workers (staff) ----------
+
+model Worker {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String
+  role      String // "Tour Guide", "Driver", "Tour Manager", "Customer Support", "Admin"
+  languages String[]
+  status    String   @default("Active") // "Active", "On leave", "Inactive"
+  joined    DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Bookings ----------
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  customer  String
+  email     String
+  phone     String?
+  country   String
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  startDate DateTime
+  endDate   DateTime
+  travelers Int
+  amount    Int // total in USD
+  status    String   @default("Pending") // "Pending", "Confirmed", "Completed", "Cancelled"
+  payment   String   @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Messages (contact form) ----------
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String
+  subject    String
+  body       String
+  source     String   @default("Contact form") // "Contact form", "Booking request", "WhatsApp"
+  read       Boolean  @default(false)
+  starred    Boolean  @default(false)
+  receivedAt DateTime @default(now())
+}
