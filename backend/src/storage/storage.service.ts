@@ -80,13 +80,15 @@ export class StorageService {
     }
   }
 
-  // Deletes a file if the URL points to our storage (other URLs are ignored)
+  // Deletes a file if the URL points to our storage (other URLs are ignored).
+  // Works whatever the address in front is (localhost, Render, ...):
+  // only the ".../api/files/<bucket>/<key>" part matters.
   async deleteByUrl(url: string | null | undefined) {
-    const prefix = this.publicUrl('', '').slice(0, -1); // ".../api/files/"
-    if (!this.client || !url || !url.startsWith(prefix)) return;
+    const match = url?.match(/\/api\/files\/([^/]+)\/([^/?#]+)/);
+    if (!this.client || !match) return;
 
-    const [bucket, key] = url.slice(prefix.length).split('/');
-    if (!BUCKETS.includes(bucket) || !key) return;
+    const [, bucket, key] = match;
+    if (!BUCKETS.includes(bucket)) return;
 
     await this.client.send(
       new DeleteObjectCommand({ Bucket: bucket, Key: key }),
