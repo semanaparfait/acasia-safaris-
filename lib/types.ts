@@ -46,8 +46,15 @@ export type Destination = {
 
 export type DestinationInput = Omit<Destination, "id">;
 
-export const workerRoles = ["Tour Guide", "Driver", "Tour Manager", "Customer Support", "Admin"] as const;
-export type WorkerRole = (typeof workerRoles)[number];
+// Worker roles are managed in Admin > Roles
+export type Role = {
+  id: number;
+  name: string; // e.g. "Tour Guide"
+  description: string;
+  workerCount?: number; // how many workers have this role
+};
+
+export type RoleInput = { name: string; description: string };
 export type WorkerStatus = "Active" | "On leave" | "Inactive";
 
 export type Worker = {
@@ -55,7 +62,7 @@ export type Worker = {
   name: string;
   email: string;
   phone: string;
-  role: WorkerRole;
+  role: string; // name of a Role
   languages: string[];
   status: WorkerStatus;
   joined: string;

@@ -71,7 +71,7 @@ model Worker {
   name      String
   email     String   @unique
   phone     String
-  role      String // "Tour Guide", "Driver", "Tour Manager", "Customer Support", "Admin"
+  role      String // name of a Role, e.g. "Tour Guide"
   languages String[]
   status    String   @default("Active") // "Active", "On leave", "Inactive"
   joined    DateTime @default(now())
@@ -87,6 +87,18 @@ model Worker {
   isOwner   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ---------- Worker roles (managed in Admin > Roles) ----------
+
+// Worker.role holds the role's name. Renaming a role updates its workers too,
+// and a role cannot be deleted while workers have it.
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g. "Tour Guide"
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ---------- Bookings ----------

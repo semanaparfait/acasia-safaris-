@@ -98,7 +98,8 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | POST / PUT / DELETE | `/api/packages[/:id]` | 🔒 |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |
-| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
+| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
+| GET / POST / PUT / DELETE | `/api/roles[/:id]` | 🔒 `{ name, description }`. Renaming updates workers; a role in use cannot be deleted |
 | POST | `/api/bookings` | website: `{ customer, email, phone?, country, packageId, startDate, travelers, notes? }`. End date and price are calculated by the server |
 | GET / PATCH / DELETE | `/api/bookings[/:id]` | 🔒 PATCH body: `{ status?, payment?, notes? }` |
 | POST | `/api/messages` | website contact form: `{ name, email, subject, body }` |

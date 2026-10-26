@@ -10,6 +10,7 @@ import { MessagesModule } from './messages/messages.module';
 import { PackagesModule } from './packages/packages.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { RolesModule } from './roles/roles.module';
 import { StorageModule } from './storage/storage.module';
 import { WorkersModule } from './workers/workers.module';
 
@@ -23,6 +24,7 @@ import { WorkersModule } from './workers/workers.module';
     PackagesModule,
     DestinationsModule,
     WorkersModule,
+    RolesModule,
     BookingsModule,
     MessagesModule,
     ReviewsModule,

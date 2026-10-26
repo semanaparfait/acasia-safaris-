@@ -13,14 +13,6 @@ import {
 import { destinationGroups, groupIcon } from "@/lib/helpers";
 import { useDestinationsStore } from "@/store/destinationsStore";
 
-const PIN = "https://i.pinimg.com/1200x";
-
-const heroSlides = [
-  { name: "Volcanoes", location: "Musanze", image: `${PIN}/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg` },
-  { name: "Akagera", location: "Eastern Province", image: `${PIN}/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg` },
-  { name: "Nyungwe", location: "Southern Province", image: `${PIN}/0f/84/de/0f84dec8e96fc7763eb982ef71295fe8.jpg` },
-  { name: "Lake Kivu", location: "Rubavu & Karongi", image: `${PIN}/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg` },
-];
 
 const groups = ["All", ...destinationGroups];
 
@@ -41,27 +33,40 @@ export default function DestinationPage() {
   const filtered =
     activeGroup === "All" ? destinations : destinations.filter((d) => d.group === activeGroup);
 
+  // Hero slideshow: the destinations marked "Featured" in Admin > Destinations
+  // (the first 4 destinations when none are featured)
+  const featured = destinations.filter((d) => d.featured);
+  const heroSlides = (featured.length > 0 ? featured : destinations).slice(0, 4).map((d) => ({
+    name: d.title,
+    location: d.location,
+    image: d.image,
+  }));
+  const current = heroSlides[slide % (heroSlides.length || 1)];
+
   // Auto-advance hero slides
   useEffect(() => {
+    if (heroSlides.length < 2) return;
     const t = setTimeout(() => setSlide((s) => (s + 1) % heroSlides.length), 6000);
     return () => clearTimeout(t);
-  }, [slide]);
+  }, [slide, heroSlides.length]);
 
   return (
     <div className="bg-white text-[#0a120b] font-sans overflow-hidden selection:bg-[#c5a86d] selection:text-black">
       {/* Hero: rotating destinations */}
       <section className="relative h-[90vh] min-h-[600px] w-full bg-[#0a1811] text-white">
         <AnimatePresence mode="sync">
+          {current?.image && (
           <motion.img
-            key={heroSlides[slide].image}
-            src={heroSlides[slide].image}
-            alt={heroSlides[slide].name}
+            key={current.image}
+            src={current.image}
+            alt={current.name}
             initial={{ opacity: 0, scale: 1.08 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.4, ease: "easeOut" }}
             className="absolute inset-0 w-full h-full object-cover"
           />
+          )}
         </AnimatePresence>
         <div className="absolute inset-0 bg-black/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a1811] via-transparent to-black/50" />
@@ -83,6 +88,7 @@ export default function DestinationPage() {
               Destinations
             </motion.h1>
             <AnimatePresence mode="wait">
+              {current && (
               <motion.p
                 key={slide}
                 initial={{ opacity: 0, y: 10 }}
@@ -92,15 +98,16 @@ export default function DestinationPage() {
                 className="mt-6 inline-flex items-center gap-2 text-sm md:text-base text-zinc-200"
               >
                 <MapPin size={16} className="text-[#c5a86d]" />
-                Now showing: <span className="text-white font-medium">{heroSlides[slide].name}</span>
+                Now showing: <span className="text-white font-medium">{current.name}</span>
               </motion.p>
+              )}
             </AnimatePresence>
           </div>
 
           {/* Slide tabs */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 pb-10">
             {heroSlides.map((s, i) => {
-              const active = i === slide;
+              const active = s === current;
               return (
                 <button key={s.name} onClick={() => setSlide(i)} className="text-left group">
                   <div className="h-0.5 w-full bg-white/20 mb-3 overflow-hidden">

@@ -9,13 +9,6 @@ import {
   MinLength,
 } from 'class-validator';
 
-export const WORKER_ROLES = [
-  'Tour Guide',
-  'Driver',
-  'Tour Manager',
-  'Customer Support',
-  'Admin',
-];
 export const WORKER_STATUSES = ['Active', 'On leave', 'Inactive'];
 
 export class WorkerDto {
@@ -28,7 +21,8 @@ export class WorkerDto {
   @IsString()
   phone: string;
 
-  @IsIn(WORKER_ROLES)
+  // Name of a role from Admin > Roles (checked in WorkersService)
+  @IsString()
   role: string;
 
   @IsArray()

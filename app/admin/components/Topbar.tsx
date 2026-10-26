@@ -25,6 +25,7 @@ const titles: Record<string, string> = {
   "/admin/bookings": "Bookings",
   "/admin/customers": "Customers",
   "/admin/workers": "Workers",
+  "/admin/roles": "Roles",
   "/admin/messages": "Messages",
   "/admin/packages": "Tour Packages",
   "/admin/destinations": "Destinations",
@@ -32,6 +33,16 @@ const titles: Record<string, string> = {
   "/admin/gallery": "Gallery",
   "/admin/settings": "Settings",
 };
+
+// "/admin/workers/5/edit" -> "Workers / Edit"
+function pageTitle(pathname: string) {
+  if (titles[pathname]) return titles[pathname];
+  const section = Object.keys(titles).filter((p) => p !== "/admin" && pathname.startsWith(p + "/"))[0];
+  if (!section) return "Admin";
+  const rest = pathname.slice(section.length + 1);
+  const sub = rest === "new" ? "New" : rest.endsWith("/edit") ? "Edit" : "Details";
+  return `${titles[section]} / ${sub}`;
+}
 
 export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
@@ -60,7 +71,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="hidden md:block text-sm text-[#0a120b]/45">
         Admin <span className="mx-1.5">/</span>
-        <span className="text-[#0a120b] font-medium">{titles[pathname] ?? "Admin"}</span>
+        <span className="text-[#0a120b] font-medium">{pageTitle(pathname)}</span>
       </div>
 
       <div className="flex-1 md:max-w-sm md:ml-auto relative">

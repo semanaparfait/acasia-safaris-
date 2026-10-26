@@ -8,6 +8,7 @@ import {
 import type { Worker } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { RolesService } from '../roles/roles.service';
 import { StorageService } from '../storage/storage.service';
 import { WorkerDto } from './dto/worker.dto';
 
@@ -24,6 +25,7 @@ export class WorkersService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private roles: RolesService,
   ) {}
 
   // Each worker gets "hasPassword" (true/false) instead of the password hash
@@ -51,6 +53,7 @@ export class WorkersService {
   async create(dto: WorkerDto, actor: Actor) {
     const email = dto.email.toLowerCase().trim();
     await this.checkEmailIsFree(email);
+    await this.roles.checkExists(dto.role);
 
     if (dto.isAdmin) {
       this.onlyMainAdmin(actor);
@@ -74,6 +77,7 @@ export class WorkersService {
     const current = await this.findOne(id);
     const email = dto.email.toLowerCase().trim();
     await this.checkEmailIsFree(email, id);
+    await this.roles.checkExists(dto.role);
 
     if (current.isOwner) {
       // Only the main admin edits their own account, and they always stay an active admin
