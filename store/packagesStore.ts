@@ -21,6 +21,7 @@ type PackagesState = {
 
   loadPublished: () => Promise<void>; // website
   loadAll: () => Promise<void>; // admin (drafts included)
+  loadOne: (id: string) => Promise<TourPackage>; // one package (details / edit pages)
   createPackage: (input: PackageInput) => Promise<TourPackage>;
   updatePackage: (id: string, input: PackageInput) => Promise<TourPackage>;
   deletePackage: (id: string) => Promise<void>;
@@ -51,6 +52,21 @@ export const usePackagesStore = create<PackagesState>()(
         } catch (error) {
           set({ error: (error as Error).message, loading: false }, false, "packages/loadAll/error");
         }
+      },
+
+      // Fetches one package and puts it in the list (replacing the old copy)
+      loadOne: async (id) => {
+        const pkg = await api<TourPackage>(`/packages/${id}`);
+        set(
+          (state) => ({
+            packages: state.packages.some((p) => p.id === id)
+              ? state.packages.map((p) => (p.id === id ? pkg : p))
+              : [...state.packages, pkg],
+          }),
+          false,
+          "packages/loadOne",
+        );
+        return pkg;
       },
 
       // Create / update / delete throw on failure, so the page can show a toast
