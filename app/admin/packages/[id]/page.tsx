@@ -1,6 +1,6 @@
 "use client";
 
-// /admin/packages/7-day-gorilla  ->  details of the "7-day-gorilla" package
+// /admin/packages/<id>  ->  details of one package
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";

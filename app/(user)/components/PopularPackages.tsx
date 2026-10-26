@@ -6,8 +6,6 @@ import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
 import { daysLabel, tourHref } from "@/lib/helpers";
 import { usePackagesStore } from "@/store/packagesStore";
 
-// Packages shown on the home page, in order
-const featuredIds = ["7-day-gorilla", "8-day-rwanda", "7-day-zanzibar"];
 
 export default function PopularPackages() {
   const allPackages = usePackagesStore((s) => s.packages);
@@ -18,9 +16,8 @@ export default function PopularPackages() {
   }, [loadPublished]);
 
   const packages = allPackages.filter((p) => p.active);
-  const featured = featuredIds
-    .map((id) => packages.find((p) => p.id === id))
-    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  // 3 packages for the home page: ones with a badge (e.g. "POPULAR", set in Admin) come first
+  const featured = [...packages].sort((a, b) => Number(Boolean(b.badge)) - Number(Boolean(a.badge))).slice(0, 3);
 
   return (
     <section className="hidden py-24 px-6 bg-white text-[#0a120b] font-sans">

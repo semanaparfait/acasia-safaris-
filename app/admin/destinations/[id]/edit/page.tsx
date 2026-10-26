@@ -1,6 +1,6 @@
 "use client";
 
-// /admin/destinations/gorillas/edit  ->  edit the "gorillas" destination
+// /admin/destinations/<id>/edit  ->  edit one destination
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import type { Destination } from "@/lib/types";

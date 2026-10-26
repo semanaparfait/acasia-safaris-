@@ -11,8 +11,8 @@ type RolesState = {
 
   load: () => Promise<void>;
   createRole: (input: RoleInput) => Promise<Role>;
-  updateRole: (id: number, input: RoleInput) => Promise<Role>;
-  deleteRole: (id: number) => Promise<void>;
+  updateRole: (id: string, input: RoleInput) => Promise<Role>;
+  deleteRole: (id: string) => Promise<void>;
 };
 
 export const useRolesStore = create<RolesState>()(

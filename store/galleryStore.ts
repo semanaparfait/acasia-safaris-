@@ -11,8 +11,8 @@ type GalleryState = {
 
   load: () => Promise<void>;
   createItem: (input: GalleryInput) => Promise<GalleryItem>; // admin
-  updateItem: (id: number, input: GalleryInput) => Promise<GalleryItem>; // admin
-  deleteItem: (id: number) => Promise<void>; // admin
+  updateItem: (id: string, input: GalleryInput) => Promise<GalleryItem>; // admin
+  deleteItem: (id: string) => Promise<void>; // admin
 };
 
 export const useGalleryStore = create<GalleryState>()(

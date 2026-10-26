@@ -29,8 +29,8 @@ type BookingsState = {
 
   load: () => Promise<void>; // admin
   createBooking: (input: BookingInput) => Promise<Booking>; // website
-  updateBooking: (id: number, changes: BookingChanges) => Promise<Booking>; // admin
-  deleteBooking: (id: number) => Promise<void>; // admin
+  updateBooking: (id: string, changes: BookingChanges) => Promise<Booking>; // admin
+  deleteBooking: (id: string) => Promise<void>; // admin
 };
 
 export const useBookingsStore = create<BookingsState>()(

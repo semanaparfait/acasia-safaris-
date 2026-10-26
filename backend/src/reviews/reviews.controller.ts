@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -40,13 +40,13 @@ export class ReviewsController {
   // PATCH /api/reviews/4   body: { "status": "Published" }   (admin)
   @Patch(':id')
   @UseGuards(AdminGuard)
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReviewDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateReviewDto) {
     return this.reviewsService.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AdminGuard)
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.reviewsService.remove(id);
   }
 }

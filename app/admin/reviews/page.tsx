@@ -31,7 +31,7 @@ export default function ReviewsPage() {
   const list = reviews.filter((r) => filter === "All" || r.status === filter);
   const avg = reviews.reduce((s, r) => s + r.rating, 0) / (reviews.length || 1);
 
-  const setStatus = async (id: number, status: Review["status"]) => {
+  const setStatus = async (id: string, status: Review["status"]) => {
     try {
       await changeStatus(id, status);
       toast.success(status === "Published" ? "Review published to website" : `Review ${status.toLowerCase()}`);
@@ -40,7 +40,7 @@ export default function ReviewsPage() {
     }
   };
 
-  const remove = async (id: number) => {
+  const remove = async (id: string) => {
     try {
       await deleteReview(id);
       toast.success("Review deleted");

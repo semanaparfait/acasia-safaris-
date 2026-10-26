@@ -10,10 +10,10 @@ type WorkersState = {
   error: string | null;
 
   load: () => Promise<void>;
-  loadOne: (id: number) => Promise<Worker>; // one worker (details / edit pages)
+  loadOne: (id: string) => Promise<Worker>; // one worker (details / edit pages)
   createWorker: (input: WorkerInput) => Promise<Worker>;
-  updateWorker: (id: number, input: WorkerInput) => Promise<Worker>;
-  deleteWorker: (id: number) => Promise<void>;
+  updateWorker: (id: string, input: WorkerInput) => Promise<Worker>;
+  deleteWorker: (id: string) => Promise<void>;
 };
 
 export const useWorkersStore = create<WorkersState>()(

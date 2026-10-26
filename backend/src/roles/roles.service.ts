@@ -23,7 +23,7 @@ export class RolesService {
     }));
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const role = await this.prisma.role.findUnique({ where: { id } });
     if (!role) throw new NotFoundException(`Role ${id} not found`);
     return role;
@@ -37,7 +37,7 @@ export class RolesService {
     });
   }
 
-  async update(id: number, dto: RoleDto) {
+  async update(id: string, dto: RoleDto) {
     const current = await this.findOne(id);
     const name = dto.name.trim();
     await this.checkNameIsFree(name, id);
@@ -56,7 +56,7 @@ export class RolesService {
     return role;
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const role = await this.findOne(id);
     const workers = await this.prisma.worker.count({
       where: { role: role.name },
@@ -80,7 +80,7 @@ export class RolesService {
     }
   }
 
-  private async checkNameIsFree(name: string, exceptId?: number) {
+  private async checkNameIsFree(name: string, exceptId?: string) {
     const existing = await this.prisma.role.findFirst({
       where: { name: { equals: name, mode: 'insensitive' } },
     });

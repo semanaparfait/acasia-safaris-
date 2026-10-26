@@ -3,6 +3,11 @@ import type React from "react";
 import { Gem, Landmark, MapPin, Mountain, PawPrint, Trees, Waves, Zap } from "lucide-react";
 import type { Booking, Message, Review, TourPackage } from "./types";
 
+// ---------- Ids ----------
+
+// Ids are long UUIDs; show the first 8 characters as a reference, e.g. "#3F2A9C1E"
+export const shortId = (id: string) => `#${id.slice(0, 8).toUpperCase()}`;
+
 // ---------- Money ----------
 
 // 2450 -> "$2,450"
@@ -23,7 +28,7 @@ export const daysLabel = (p: TourPackage) => {
 };
 
 // Link to the Tours page with a category or package open:
-//   tourHref({ package: "7-day-gorilla" })  ->  "/tour?package=7-day-gorilla"
+//   tourHref({ package: pkg.id })  ->  "/tour?package=3f2a9c1e-…"
 export const tourHref = (opts: { category?: string; package?: string } = {}) => {
   const params = new URLSearchParams();
   if (opts.category && opts.category !== "All Packages") params.set("category", opts.category);
@@ -109,7 +114,7 @@ export function recentActivity(bookings: Booking[], messages: Message[], reviews
       type: b.status === "Cancelled" ? ("cancel" as const) : ("booking" as const),
       text:
         b.status === "Cancelled"
-          ? `Booking #${b.id} by ${b.customer} was cancelled`
+          ? `Booking ${shortId(b.id)} by ${b.customer} was cancelled`
           : `New booking from ${b.customer}${b.package ? ` · ${b.package.title}` : ""}`,
       date: b.createdAt,
     })),

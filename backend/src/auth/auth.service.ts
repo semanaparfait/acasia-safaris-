@@ -4,7 +4,7 @@ import { compare } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 
 // What is stored inside the login token
-export type TokenPayload = { sub: number }; // sub = worker id
+export type TokenPayload = { sub: string }; // sub = worker id (UUID)
 
 @Injectable()
 export class AuthService {
@@ -44,6 +44,10 @@ export class AuthService {
     try {
       payload = await this.jwt.verifyAsync<TokenPayload>(token);
     } catch {
+      throw new UnauthorizedException('Please log in again');
+    }
+    // Tokens made before ids became UUIDs hold a number: ask to log in again
+    if (typeof payload.sub !== 'string') {
       throw new UnauthorizedException('Please log in again');
     }
 

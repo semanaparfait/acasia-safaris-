@@ -1,6 +1,6 @@
 "use client";
 
-// /admin/destinations/gorillas  ->  details of the "gorillas" destination
+// /admin/destinations/<id>  ->  details of one destination
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";

@@ -1,6 +1,6 @@
 "use client";
 
-// /admin/packages/7-day-gorilla/edit  ->  edit the "7-day-gorilla" package
+// /admin/packages/<id>/edit  ->  edit one package
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import type { TourPackage } from "@/lib/types";

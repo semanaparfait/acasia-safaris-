@@ -9,7 +9,7 @@ import type { Role } from "@/lib/types";
 import { useRolesStore } from "@/store/rolesStore";
 import { Button, Card, ConfirmDialog, EmptyState, Modal, PageHeader, SearchInput, inputClass, labelClass } from "../components/ui";
 
-const blankRole: Role = { id: 0, name: "", description: "" };
+const blankRole: Role = { id: "", name: "", description: "" }; // id "" = not saved yet
 
 export default function RolesPage() {
   const roles = useRolesStore((s) => s.roles);
@@ -155,7 +155,7 @@ function RoleForm({ initial, onClose, onSave }: { initial: Role; onClose: () => 
         <div>
           <label className={labelClass}>Name *</label>
           <input className={inputClass} value={form.name} maxLength={50} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Tour Guide" />
-          {initial.id > 0 && (initial.workerCount ?? 0) > 0 && (
+          {initial.id !== "" && (initial.workerCount ?? 0) > 0 && (
             <p className="text-xs text-[#0a120b]/50 mt-1">Renaming also updates the {initial.workerCount} worker(s) with this role.</p>
           )}
         </div>

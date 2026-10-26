@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
@@ -31,9 +32,9 @@ export class PackagesController {
     return this.packagesService.findAll();
   }
 
-  // GET /api/packages/7-day-gorilla
+  // GET /api/packages/<id>
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.findOne(id);
   }
 
@@ -44,17 +45,17 @@ export class PackagesController {
     return this.packagesService.create(dto);
   }
 
-  // PUT /api/packages/7-day-gorilla   (admin, send the whole package)
+  // PUT /api/packages/<id>   (admin, send the whole package)
   @Put(':id')
   @UseGuards(AdminGuard)
-  update(@Param('id') id: string, @Body() dto: PackageDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PackageDto) {
     return this.packagesService.update(id, dto);
   }
 
-  // DELETE /api/packages/7-day-gorilla   (admin)
+  // DELETE /api/packages/<id>   (admin)
   @Delete(':id')
   @UseGuards(AdminGuard)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.remove(id);
   }
 }

@@ -19,7 +19,7 @@ export class ReviewsService {
     return this.prisma.review.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException(`Review ${id} not found`);
     return review;
@@ -29,12 +29,12 @@ export class ReviewsService {
     return this.prisma.review.create({ data: { ...dto, status: 'Pending' } });
   }
 
-  async update(id: number, dto: UpdateReviewDto) {
+  async update(id: string, dto: UpdateReviewDto) {
     await this.findOne(id);
     return this.prisma.review.update({ where: { id }, data: dto });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.review.delete({ where: { id } });
     return { deleted: true };

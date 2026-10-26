@@ -11,9 +11,9 @@ import { Avatar, Badge, Button, inputClass } from "../components/ui";
 
 export const statuses: WorkerStatus[] = ["Active", "On leave", "Inactive"];
 
-// A new worker that is not saved yet (id 0)
+// A new worker that is not saved yet (id "")
 export const blankWorker: Worker = {
-  id: 0,
+  id: "",
   name: "",
   email: "",
   phone: "",
@@ -56,7 +56,7 @@ export function useRoles() {
 
 // Loads one worker by id (for the details and edit pages).
 // Shows the copy already in the store at once, then refreshes it from the API.
-export function useWorker(id: number) {
+export function useWorker(id: string) {
   const worker = useWorkersStore((s) => s.workers.find((w) => w.id === id));
   const loadOne = useWorkersStore((s) => s.loadOne);
   const [error, setError] = useState<string | null>(null);

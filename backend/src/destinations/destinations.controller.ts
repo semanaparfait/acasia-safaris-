@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
@@ -23,7 +24,7 @@ export class DestinationsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.destinationsService.findOne(id);
   }
 
@@ -35,13 +36,13 @@ export class DestinationsController {
 
   @Put(':id')
   @UseGuards(AdminGuard)
-  update(@Param('id') id: string, @Body() dto: DestinationDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: DestinationDto) {
     return this.destinationsService.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AdminGuard)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.destinationsService.remove(id);
   }
 }

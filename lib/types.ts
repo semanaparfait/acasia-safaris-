@@ -1,8 +1,9 @@
 // Shapes of the data the API returns (see backend/prisma/schema.prisma).
+// Every id is a UUID string, e.g. "3f2a9c1e-5b7d-4e2a-9c1e-5b7d4e2a9c1e".
 // Dates arrive as ISO strings, e.g. "2026-12-01T00:00:00.000Z".
 
 export type ItineraryDay = {
-  id?: number;
+  id?: string;
   day?: number; // 1, 2, 3 ... (set by the server from the order)
   title: string;
   description: string;
@@ -48,7 +49,7 @@ export type DestinationInput = Omit<Destination, "id">;
 
 // Worker roles are managed in Admin > Roles
 export type Role = {
-  id: number;
+  id: string;
   name: string; // e.g. "Tour Guide"
   description: string;
   workerCount?: number; // how many workers have this role
@@ -58,7 +59,7 @@ export type RoleInput = { name: string; description: string };
 export type WorkerStatus = "Active" | "On leave" | "Inactive";
 
 export type Worker = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -80,7 +81,7 @@ export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 export type PaymentStatus = "Unpaid" | "Deposit" | "Paid" | "Refunded";
 
 export type Booking = {
-  id: number;
+  id: string;
   customer: string;
   email: string;
   phone?: string | null;
@@ -98,7 +99,7 @@ export type Booking = {
 };
 
 export type Message = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone?: string | null;
@@ -122,7 +123,7 @@ export type MessageInput = {
 export type ReviewStatus = "Pending" | "Published" | "Hidden";
 
 export type Review = {
-  id: number;
+  id: string;
   name: string;
   country: string;
   rating: number;
@@ -135,7 +136,7 @@ export type Review = {
 export const galleryCategories = ["Wildlife", "Landscapes", "Culture", "People"] as const;
 
 export type GalleryItem = {
-  id: number;
+  id: string;
   title: string;
   category: string;
   location?: string | null;

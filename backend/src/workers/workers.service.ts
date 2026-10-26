@@ -40,7 +40,7 @@ export class WorkersService {
     }));
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const worker = await this.prisma.worker.findUnique({
       where: { id },
       omit: { passwordHash: false },
@@ -73,7 +73,7 @@ export class WorkersService {
     return { ...worker, hasPassword: Boolean(password) };
   }
 
-  async update(id: number, dto: WorkerDto, actor: Actor) {
+  async update(id: string, dto: WorkerDto, actor: Actor) {
     const current = await this.findOne(id);
     const email = dto.email.toLowerCase().trim();
     await this.checkEmailIsFree(email, id);
@@ -113,7 +113,7 @@ export class WorkersService {
     return { ...worker, hasPassword: Boolean(password) || current.hasPassword };
   }
 
-  async remove(id: number, actor: Actor) {
+  async remove(id: string, actor: Actor) {
     const worker = await this.findOne(id);
     if (worker.isOwner) {
       throw new ForbiddenException('The main admin cannot be deleted');
@@ -126,7 +126,7 @@ export class WorkersService {
   }
 
   // Two workers cannot share an email (email is @unique in the schema)
-  private async checkEmailIsFree(email: string, exceptId?: number) {
+  private async checkEmailIsFree(email: string, exceptId?: string) {
     const existing = await this.prisma.worker.findUnique({ where: { email } });
     if (existing && existing.id !== exceptId) {
       throw new ConflictException(

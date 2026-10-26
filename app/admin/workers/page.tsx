@@ -29,7 +29,7 @@ export default function WorkersPage() {
 
   const [role, setRole] = useState("All");
   const [query, setQuery] = useState("");
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [view, setView] = useState<"cards" | "table">("cards"); // cards by default
 
   const filtered = workers.filter(

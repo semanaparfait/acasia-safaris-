@@ -24,9 +24,8 @@ export class DestinationsService {
   }
 
   create(dto: DestinationDto) {
-    // id from the title plus a short suffix, e.g. "lake-kivu-m3k9x2"
-    const id = `${dto.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
-    return this.prisma.destination.create({ data: { ...dto, id } });
+    // The database gives the new destination a UUID
+    return this.prisma.destination.create({ data: dto });
   }
 
   async update(id: string, dto: DestinationDto) {

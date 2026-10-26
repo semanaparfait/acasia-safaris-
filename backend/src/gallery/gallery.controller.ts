@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
@@ -31,13 +31,13 @@ export class GalleryController {
 
   @Put(':id')
   @UseGuards(AdminGuard)
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: GalleryItemDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: GalleryItemDto) {
     return this.galleryService.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AdminGuard)
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.galleryService.remove(id);
   }
 }

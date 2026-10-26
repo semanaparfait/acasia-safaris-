@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
+import type { Destination } from "@/lib/types";
 import { useDestinationsStore } from "@/store/destinationsStore";
 import { useMessagesStore } from "@/store/messagesStore";
 
@@ -176,7 +177,8 @@ export default function BookingPage({
     loadDestinations();
   }, [loadDestinations]);
 
-  // Pre-select a destination when arriving from a "Book Now" link, e.g. /booking?destination=gorillas
+  // Pre-select a destination when arriving from a "Book Now" link:
+  //   /booking?destination=<destination id>   or   /booking?destination=Gorilla Trekking
   const preselectedId = use(searchParams).destination;
 
   const [step, setStep] = useState(0);
@@ -214,12 +216,21 @@ export default function BookingPage({
     }
   }, [preselectedId]);
 
-  const toggle = (id: string) =>
+  // A selection is a destination id, or a destination name (from a link)
+  const matches = (d: Destination, key: string) =>
+    key === d.id || key.toLowerCase() === d.title.toLowerCase();
+  const isPicked = (d: Destination) => selected.some((key) => matches(d, key));
+
+  const toggle = (d: Destination) =>
     setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+      prev.some((key) => matches(d, key))
+        ? prev.filter((key) => !matches(d, key))
+        : [...prev, d.id],
     );
 
-  const chosen = destinations.filter((d) => selected.includes(d.id));
+  const chosen = destinations.filter(isPicked);
+  const heroValue =
+    destinations.find((d) => matches(d, heroDestination))?.id ?? "";
   const hasDestination = chosen.length > 0 || otherDestination.trim() !== "";
 
   const goTo = (next: number) => {
@@ -343,7 +354,7 @@ export default function BookingPage({
                 <MapPin size={12} className="text-[#c5a86d]" /> Destination
               </span>
               <select
-                value={heroDestination}
+                value={heroValue}
                 onChange={(e) => setHeroDestination(e.target.value)}
                 className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
               >
@@ -520,12 +531,12 @@ export default function BookingPage({
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {destinations.map((d) => {
-                              const active = selected.includes(d.id);
+                              const active = isPicked(d);
                               return (
                                 <button
                                   key={d.id}
                                   type="button"
-                                  onClick={() => toggle(d.id)}
+                                  onClick={() => toggle(d)}
                                   aria-pressed={active}
                                   className={`group relative h-32 sm:h-36 rounded-xl overflow-hidden text-left ring-2 transition-all duration-300 ${
                                     active
@@ -837,7 +848,7 @@ export default function BookingPage({
                       </div>
                       {!submitted && (
                         <button
-                          onClick={() => toggle(d.id)}
+                          onClick={() => toggle(d)}
                           aria-label={`Remove ${d.title}`}
                           className="text-zinc-500 hover:text-white"
                         >

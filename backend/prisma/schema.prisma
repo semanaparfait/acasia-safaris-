@@ -1,4 +1,5 @@
 // Database schema: each "model" below becomes a table in your Neon Postgres database.
+// Every id is a UUID created by the database, e.g. "3f2a9c1e-…".
 // After changing this file run:  npm run db:migrate
 
 generator client {
@@ -14,7 +15,7 @@ datasource db {
 // ---------- Tour packages ----------
 
 model Package {
-  id          String         @id // readable id, e.g. "7-day-gorilla"
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   category    String // "Gorilla Trekking", "Wildlife Safari", ...
   badge       String?
@@ -36,12 +37,12 @@ model Package {
 }
 
 model ItineraryDay {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   day         Int // 1, 2, 3 ...
   title       String
   description String
   image       String
-  packageId   String
+  packageId   String  @db.Uuid
   package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@unique([packageId, day])
@@ -50,7 +51,7 @@ model ItineraryDay {
 // ---------- Destinations ----------
 
 model Destination {
-  id          String   @id // e.g. "gorillas"
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   description String
   group       String // "Wildlife", "Nature", "Culture", ...
@@ -67,7 +68,7 @@ model Destination {
 // ---------- Workers (staff) ----------
 
 model Worker {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   email     String   @unique
   phone     String
@@ -94,7 +95,7 @@ model Worker {
 // Worker.role holds the role's name. Renaming a role updates its workers too,
 // and a role cannot be deleted while workers have it.
 model Role {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @unique // e.g. "Tour Guide"
   description String   @default("")
   createdAt   DateTime @default(now())
@@ -104,12 +105,12 @@ model Role {
 // ---------- Bookings ----------
 
 model Booking {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customer  String
   email     String
   phone     String?
   country   String
-  packageId String?
+  packageId String?  @db.Uuid
   package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
   startDate DateTime
   endDate   DateTime
@@ -125,7 +126,7 @@ model Booking {
 // ---------- Messages (contact form) ----------
 
 model Message {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String
   email      String
   phone      String?
@@ -140,7 +141,7 @@ model Message {
 // ---------- Reviews (Testimonials on the home page) ----------
 
 model Review {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String
   country      String
   rating       Int // 1 to 5
@@ -153,7 +154,7 @@ model Review {
 // ---------- Gallery (photos on the gallery page) ----------
 
 model GalleryItem {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title     String
   category  String // "Wildlife", "Landscapes", "Culture", "People"
   location  String?

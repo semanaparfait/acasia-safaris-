@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
 } from 'class-validator';
@@ -33,7 +34,7 @@ export class CreateBookingDto {
   @IsString()
   country: string;
 
-  @IsString()
+  @IsUUID()
   packageId: string;
 
   // e.g. "2026-12-01"

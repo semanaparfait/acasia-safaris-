@@ -2,7 +2,7 @@
 
 // The add / edit package form, shown as a full page:
 //   /admin/packages/new                 -> add a package
-//   /admin/packages/7-day-gorilla/edit  -> edit "7-day-gorilla"
+//   /admin/packages/<id>/edit  -> edit one package
 import { useState } from "react";
 import Link from "next/link";
 import {

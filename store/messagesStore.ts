@@ -12,8 +12,8 @@ type MessagesState = {
 
   load: () => Promise<void>; // admin
   sendMessage: (input: MessageInput) => Promise<void>; // website
-  updateMessage: (id: number, changes: { read?: boolean; starred?: boolean }) => Promise<void>; // admin
-  deleteMessage: (id: number) => Promise<void>; // admin
+  updateMessage: (id: string, changes: { read?: boolean; starred?: boolean }) => Promise<void>; // admin
+  deleteMessage: (id: string) => Promise<void>; // admin
 };
 
 export const useMessagesStore = create<MessagesState>()(

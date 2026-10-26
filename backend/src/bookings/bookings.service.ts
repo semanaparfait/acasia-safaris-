@@ -24,7 +24,7 @@ export class BookingsService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },
       include: withPackage,
@@ -61,7 +61,7 @@ export class BookingsService {
     });
   }
 
-  async update(id: number, dto: UpdateBookingDto) {
+  async update(id: string, dto: UpdateBookingDto) {
     await this.findOne(id);
     return this.prisma.booking.update({
       where: { id },
@@ -70,7 +70,7 @@ export class BookingsService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.booking.delete({ where: { id } });
     return { deleted: true };

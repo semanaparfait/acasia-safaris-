@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Post,
   Put,
   Req,
@@ -26,9 +26,9 @@ export class WorkersController {
     return this.workersService.findAll();
   }
 
-  // ParseIntPipe turns "5" from the URL into the number 5 (and returns 400 for "abc")
+  // ParseUUIDPipe checks the id in the URL is a UUID (and returns 400 for "abc")
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.workersService.findOne(id);
   }
 
@@ -39,7 +39,7 @@ export class WorkersController {
 
   @Put(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: WorkerDto,
     @Req() request: AdminRequest,
   ) {
@@ -47,7 +47,7 @@ export class WorkersController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AdminRequest) {
+  remove(@Param('id', ParseUUIDPipe) id: string, @Req() request: AdminRequest) {
     return this.workersService.remove(id, request.worker);
   }
 }

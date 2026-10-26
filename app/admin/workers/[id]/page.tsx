@@ -13,7 +13,7 @@ import { AdminBadge, LanguageChips, WorkerPhoto, useRoles, useWorker, useWorkerP
 
 export default function WorkerDetailsPage() {
   const router = useRouter();
-  const id = Number(useParams<{ id: string }>().id);
+  const id = useParams<{ id: string }>().id;
   const { worker: w, error } = useWorker(id);
   const roles = useRoles();
   const deleteWorker = useWorkersStore((s) => s.deleteWorker);

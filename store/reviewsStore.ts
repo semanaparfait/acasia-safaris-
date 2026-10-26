@@ -11,8 +11,8 @@ type ReviewsState = {
 
   loadPublished: () => Promise<void>; // website
   loadAll: () => Promise<void>; // admin
-  setStatus: (id: number, status: ReviewStatus) => Promise<void>; // admin
-  deleteReview: (id: number) => Promise<void>; // admin
+  setStatus: (id: string, status: ReviewStatus) => Promise<void>; // admin
+  deleteReview: (id: string) => Promise<void>; // admin
 };
 
 export const useReviewsStore = create<ReviewsState>()(

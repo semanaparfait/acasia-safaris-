@@ -94,7 +94,7 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | GET | `/api/auth/me` | 🔒 the logged-in worker |
 | GET | `/api/packages` | website: published packages |
 | GET | `/api/packages/all` | 🔒 drafts included |
-| GET | `/api/packages/:id` | website |
+| GET | `/api/packages/:id` | website (ids are UUIDs) |
 | POST / PUT / DELETE | `/api/packages[/:id]` | 🔒 |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |

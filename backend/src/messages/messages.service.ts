@@ -10,7 +10,7 @@ export class MessagesService {
     return this.prisma.message.findMany({ orderBy: { receivedAt: 'desc' } });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const message = await this.prisma.message.findUnique({ where: { id } });
     if (!message) throw new NotFoundException(`Message ${id} not found`);
     return message;
@@ -20,12 +20,12 @@ export class MessagesService {
     return this.prisma.message.create({ data: dto });
   }
 
-  async update(id: number, dto: UpdateMessageDto) {
+  async update(id: string, dto: UpdateMessageDto) {
     await this.findOne(id);
     return this.prisma.message.update({ where: { id }, data: dto });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.message.delete({ where: { id } });
     return { deleted: true };

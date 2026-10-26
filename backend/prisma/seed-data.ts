@@ -8,7 +8,6 @@ const thumb = (id: string) =>
 
 export const packages = [
   {
-    id: '7-day-gorilla',
     title: '7-Day Gorilla Trekking Adventure',
     category: 'Gorilla Trekking',
     badge: 'POPULAR',
@@ -84,7 +83,6 @@ export const packages = [
     ],
   },
   {
-    id: '5-day-wildlife',
     title: '5-Day Classic Wildlife Safari',
     category: 'Wildlife Safari',
     location: 'Tanzania – Serengeti & Ngorongoro',
@@ -143,7 +141,6 @@ export const packages = [
     ],
   },
   {
-    id: '10-day-luxury',
     title: '10-Day Luxury Safari Escape',
     category: 'Luxury Escapes',
     location: 'Kenya',
@@ -240,7 +237,6 @@ export const packages = [
     ],
   },
   {
-    id: '7-day-zanzibar',
     title: '7-Day Zanzibar Beach & Safari',
     category: 'Wildlife Safari',
     badge: 'BEST SELLER',
@@ -311,7 +307,6 @@ export const packages = [
     ],
   },
   {
-    id: '6-day-cultural',
     title: '6-Day Cultural Experiences',
     category: 'Cultural Tours',
     location: 'Kenya & Tanzania',
@@ -374,7 +369,6 @@ export const packages = [
     ],
   },
   {
-    id: '8-day-rwanda',
     title: '8-Day Rwanda Adventure',
     category: 'Gorilla Trekking',
     location: 'Rwanda',
@@ -451,7 +445,6 @@ export const packages = [
     exclusions: ['International flights', 'Visas', 'Tips & gratuities'],
   },
   {
-    id: '7-day-rwanda-luxury-villa',
     title: '7-Day Ultra-Luxury Rwanda Villa Escape',
     category: 'Luxury Escapes',
     location: 'Singita & One&Only Villas, Rwanda',
@@ -527,7 +520,6 @@ export const packages = [
     ],
   },
   {
-    id: '7-day-rwanda-cultural',
     title: '7-Day Rwanda Cultural & Heritage Tour',
     category: 'Cultural Tours',
     location: 'Rwanda',
@@ -607,7 +599,6 @@ const UNSPLASH = (id: string) =>
 
 export const destinations = [
   {
-    id: 'gorillas',
     title: 'Gorilla Trekking',
     description:
       'Spend an unforgettable hour with a wild mountain gorilla family in the misty bamboo forests.',
@@ -619,7 +610,6 @@ export const destinations = [
     fromKigali: '2.5 hrs',
   },
   {
-    id: 'wildlife',
     title: 'Wildlife Safari',
     description:
       "Rwanda's Big Five savannah, with lions, elephants and rhinos roaming open plains and lakes.",
@@ -631,7 +621,6 @@ export const destinations = [
     fromKigali: '2.5 hrs',
   },
   {
-    id: 'rainforest',
     title: 'Rainforest',
     description:
       "One of Africa's oldest rainforests, home to chimpanzees and a thrilling canopy walkway.",
@@ -643,7 +632,6 @@ export const destinations = [
     fromKigali: '5 hrs',
   },
   {
-    id: 'lakes',
     title: 'Lakes',
     description:
       'Relax on sandy shores, explore islands by boat and watch the sunset over calm waters.',
@@ -655,7 +643,6 @@ export const destinations = [
     fromKigali: '1 – 3.5 hrs',
   },
   {
-    id: 'volcanoes',
     title: 'Volcano Hiking',
     description:
       'Climb dormant volcanoes for crater lakes, alpine meadows and views across the Virungas.',
@@ -668,7 +655,6 @@ export const destinations = [
     fromKigali: '2.5 hrs',
   },
   {
-    id: 'culture',
     title: 'Cultural Heritage',
     description:
       "Step into Rwanda's royal past at the traditional King's Palace in Nyanza.",
@@ -680,7 +666,6 @@ export const destinations = [
     fromKigali: '2 hrs',
   },
   {
-    id: 'memorials',
     title: 'Memorial Sites',
     description:
       "Pay respect to the victims of the 1994 Genocide against the Tutsi and learn Rwanda's story of renewal.",
@@ -692,7 +677,6 @@ export const destinations = [
     fromKigali: 'In & near Kigali',
   },
   {
-    id: 'birds',
     title: 'Birdwatching',
     description:
       "Over 700 species, from Kigali's urban wetlands to rare Albertine Rift endemics.",
@@ -704,7 +688,6 @@ export const destinations = [
     fromKigali: 'From 20 min',
   },
   {
-    id: 'adventure',
     title: 'Adventure',
     description:
       'Get your heart racing with zip-lining, mountain biking and kayaking across the country.',
@@ -716,7 +699,6 @@ export const destinations = [
     fromKigali: 'Varies',
   },
   {
-    id: 'luxury',
     title: 'Luxury Retreats',
     description:
       'Hand-picked luxury lodges, lakeside resorts and boutique hotels to match your journey.',

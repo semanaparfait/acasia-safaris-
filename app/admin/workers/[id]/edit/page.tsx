@@ -11,7 +11,7 @@ import { toInput, useWorker, useWorkerPermissions } from "../../parts";
 
 export default function EditWorkerPage() {
   const router = useRouter();
-  const id = Number(useParams<{ id: string }>().id);
+  const id = useParams<{ id: string }>().id;
   const { worker, error } = useWorker(id);
   const updateWorker = useWorkersStore((s) => s.updateWorker);
   const { iAmMainAdmin, canEdit } = useWorkerPermissions();

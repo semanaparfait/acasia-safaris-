@@ -2,7 +2,7 @@
 
 // The add / edit destination form, shown as a full page:
 //   /admin/destinations/new          -> add a destination
-//   /admin/destinations/gorillas/edit -> edit "gorillas"
+//   /admin/destinations/<id>/edit -> edit one destination
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPinned, FileText, Sparkles, Route, ImageIcon, Eye } from "lucide-react";

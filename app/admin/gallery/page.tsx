@@ -27,7 +27,7 @@ export default function GalleryPage() {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(0); // number of files still uploading
   const [editing, setEditing] = useState<GalleryItem | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const list = items.filter((g) => category === "All" || g.category === category);

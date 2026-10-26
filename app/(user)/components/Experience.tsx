@@ -19,7 +19,7 @@ export default function Experience() {
       title: "Gorilla & Primate Trekking",
       description:
         "Face-to-face encounters with mountain gorillas in Volcanoes National Park and chimpanzees in Nyungwe.",
-      href: "/booking?destination=gorillas",
+      href: "/booking?destination=Gorilla Trekking",
       image:
         "https://i.pinimg.com/736x/a8/51/a1/a851a155910cf89acc36f7598a83ee84.jpg",
     },
@@ -28,7 +28,7 @@ export default function Experience() {
       title: "Savannah & Big Five",
       description:
         "Private game drives and boat safaris among lions, elephants and rhinos in Akagera National Park.",
-      href: "/booking?destination=wildlife",
+      href: "/booking?destination=Wildlife Safari",
       image:
         "https://i.pinimg.com/736x/f5/b0/19/f5b019021de4fdaaa46fc56b4fde7c4f.jpg",
     },
@@ -37,7 +37,7 @@ export default function Experience() {
       title: "Ultra-Luxury Lodges",
       description:
         "Hand-picked eco-lodges, lakeside resorts and boutique hotels across Rwanda.",
-      href: "/booking?destination=luxury",
+      href: "/booking?destination=Luxury Retreats",
       image:
         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
     },

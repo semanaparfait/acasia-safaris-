@@ -18,7 +18,7 @@ export default function MessagesPage() {
 
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
-  const [activeId, setActiveId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
 
   const list = messages.filter(
@@ -29,22 +29,22 @@ export default function MessagesPage() {
   const active = messages.find((m) => m.id === activeId);
 
   // Saves read / starred; shows an error if saving fails
-  const change = (id: number, changes: { read?: boolean; starred?: boolean }) =>
+  const change = (id: string, changes: { read?: boolean; starred?: boolean }) =>
     updateMessage(id, changes).catch((err: Error) => toast.error(err.message));
 
-  const open = (id: number) => {
+  const open = (id: string) => {
     setActiveId(id);
     setReply("");
     const message = messages.find((m) => m.id === id);
     if (message && !message.read) change(id, { read: true });
   };
 
-  const toggleStar = (id: number) => {
+  const toggleStar = (id: string) => {
     const message = messages.find((m) => m.id === id);
     if (message) change(id, { starred: !message.starred });
   };
 
-  const remove = async (id: number) => {
+  const remove = async (id: string) => {
     try {
       await deleteMessage(id);
       setActiveId(null);

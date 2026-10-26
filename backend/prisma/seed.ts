@@ -1,6 +1,7 @@
 // Fills the database with the starting data from seed-data.ts.
 // Run with:  npm run db:seed
 // Safe to run again: existing rows are updated, not duplicated.
+// Ids are UUIDs made by the database, so packages and destinations are matched by title.
 import { PrismaClient } from '@prisma/client';
 import { destinations, gallery, packages, reviews, workers } from './seed-data';
 
@@ -11,20 +12,34 @@ async function main() {
     const days = itinerary.map((d, index) => ({ ...d, day: index + 1 }));
     const data = { ...pkg, perks: pkg.perks ?? [] };
 
-    await prisma.package.upsert({
-      where: { id: pkg.id },
-      create: { ...data, itinerary: { create: days } },
-      update: { ...data, itinerary: { deleteMany: {}, create: days } },
+    const existing = await prisma.package.findFirst({
+      where: { title: pkg.title },
     });
+    if (existing) {
+      await prisma.package.update({
+        where: { id: existing.id },
+        data: { ...data, itinerary: { deleteMany: {}, create: days } },
+      });
+    } else {
+      await prisma.package.create({
+        data: { ...data, itinerary: { create: days } },
+      });
+    }
   }
   console.log(`✔ ${packages.length} packages`);
 
   for (const destination of destinations) {
-    await prisma.destination.upsert({
-      where: { id: destination.id },
-      create: destination,
-      update: destination,
+    const existing = await prisma.destination.findFirst({
+      where: { title: destination.title },
     });
+    if (existing) {
+      await prisma.destination.update({
+        where: { id: existing.id },
+        data: destination,
+      });
+    } else {
+      await prisma.destination.create({ data: destination });
+    }
   }
   console.log(`✔ ${destinations.length} destinations`);
 

@@ -14,7 +14,7 @@ export class GalleryService {
     return this.prisma.galleryItem.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const item = await this.prisma.galleryItem.findUnique({ where: { id } });
     if (!item) throw new NotFoundException(`Gallery item ${id} not found`);
     return item;
@@ -24,7 +24,7 @@ export class GalleryService {
     return this.prisma.galleryItem.create({ data: dto });
   }
 
-  async update(id: number, dto: GalleryItemDto) {
+  async update(id: string, dto: GalleryItemDto) {
     const old = await this.findOne(id);
     const item = await this.prisma.galleryItem.update({
       where: { id },
@@ -35,7 +35,7 @@ export class GalleryService {
     return item;
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const item = await this.findOne(id);
     await this.prisma.galleryItem.delete({ where: { id } });
     await this.storage.deleteByUrl(item.image);

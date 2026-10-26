@@ -11,14 +11,6 @@ function toDays(dto: PackageDto) {
   return dto.itinerary.map((d, index) => ({ ...d, day: index + 1 }));
 }
 
-// "7-Day Gorilla Trek!" -> "7-day-gorilla-trek"
-function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
 @Injectable()
 export class PackagesService {
   constructor(
@@ -52,17 +44,11 @@ export class PackagesService {
     return pkg;
   }
 
-  async create(dto: PackageDto) {
-    let id = slugify(dto.title);
-    // If the id is taken, add a short suffix
-    if (await this.prisma.package.findUnique({ where: { id } })) {
-      id = `${id}-${Date.now().toString(36)}`;
-    }
-
+  create(dto: PackageDto) {
+    // The database gives the new package a UUID
     return this.prisma.package.create({
       data: {
         ...dto,
-        id,
         perks: dto.perks ?? [],
         itinerary: { create: toDays(dto) },
       },

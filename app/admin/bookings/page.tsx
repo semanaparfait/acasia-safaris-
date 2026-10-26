@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Download, Eye, Trash2, X, Mail, CalendarDays, Users, Globe, StickyNote, Check, Ban } from "lucide-react";
 import { Avatar, Button, Card, ConfirmDialog, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs, inputClass } from "../components/ui";
-import { money } from "@/lib/helpers";
+import { money, shortId } from "@/lib/helpers";
 import type { Booking, BookingStatus, PaymentStatus } from "@/lib/types";
 import { useBookingsStore, type BookingChanges } from "@/store/bookingsStore";
 
@@ -26,8 +26,8 @@ export default function BookingsPage() {
 
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const selected = bookings.find((b) => b.id === selectedId) ?? null;
 
@@ -36,11 +36,11 @@ export default function BookingsPage() {
     return bookings.filter(
       (b) =>
         (filter === "All" || b.status === filter) &&
-        [`#${b.id}`, b.customer, b.email, packageTitle(b), b.country].some((f) => f.toLowerCase().includes(q))
+        [shortId(b.id), b.customer, b.email, packageTitle(b), b.country].some((f) => f.toLowerCase().includes(q))
     );
   }, [bookings, filter, query]);
 
-  const update = async (id: number, changes: BookingChanges, message: string) => {
+  const update = async (id: string, changes: BookingChanges, message: string) => {
     try {
       await updateBooking(id, changes);
       toast.success(message);
@@ -49,14 +49,14 @@ export default function BookingsPage() {
     }
   };
 
-  const setStatus = (id: number, status: BookingStatus) =>
-    update(id, { status }, `#${id} marked as ${status.toLowerCase()}`);
+  const setStatus = (id: string, status: BookingStatus) =>
+    update(id, { status }, `${shortId(id)} marked as ${status.toLowerCase()}`);
 
   const remove = async () => {
     if (deleteId === null) return;
     try {
       await deleteBooking(deleteId);
-      toast.success(`#${deleteId} deleted`);
+      toast.success(`${shortId(deleteId)} deleted`);
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -285,7 +285,7 @@ export default function BookingsPage() {
         onClose={() => setDeleteId(null)}
         onConfirm={remove}
         title="Delete booking"
-        message={`Are you sure you want to delete booking #${deleteId}? This cannot be undone.`}
+        message={`Are you sure you want to delete booking ${deleteId ? shortId(deleteId) : ""}? This cannot be undone.`}
       />
     </>
   );
