@@ -29,15 +29,15 @@ export function PageHeader({
   );
 }
 
+// Extra props (e.g. onClick) are passed to the <div>
 export function Card({
   children,
   className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      {...props}
       className={`bg-white rounded-2xl border border-[#0a120b]/[0.06] shadow-[0_1px_2px_rgba(10,18,11,0.04),0_8px_24px_-12px_rgba(10,18,11,0.08)] ${className}`}
     >
       {children}

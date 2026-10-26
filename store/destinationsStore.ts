@@ -10,6 +10,7 @@ type DestinationsState = {
   error: string | null;
 
   load: () => Promise<void>;
+  loadOne: (id: string) => Promise<Destination>; // one destination (details / edit pages)
   createDestination: (input: DestinationInput) => Promise<Destination>;
   updateDestination: (id: string, input: DestinationInput) => Promise<Destination>;
   deleteDestination: (id: string) => Promise<void>;
@@ -30,6 +31,21 @@ export const useDestinationsStore = create<DestinationsState>()(
         } catch (error) {
           set({ error: (error as Error).message, loading: false }, false, "destinations/load/error");
         }
+      },
+
+      // Fetches one destination and puts it in the list (replacing the old copy)
+      loadOne: async (id) => {
+        const destination = await api<Destination>(`/destinations/${id}`);
+        set(
+          (state) => ({
+            destinations: state.destinations.some((d) => d.id === id)
+              ? state.destinations.map((d) => (d.id === id ? destination : d))
+              : [...state.destinations, destination],
+          }),
+          false,
+          "destinations/loadOne",
+        );
+        return destination;
       },
 
       createDestination: async (input) => {
