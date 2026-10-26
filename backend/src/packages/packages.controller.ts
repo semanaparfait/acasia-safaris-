@@ -9,11 +9,13 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { PackageDto } from './dto/package.dto';
 import { PackagesService } from './packages.service';
 
 // Routes under /api/packages
+@ApiTags('Packages')
 @Controller('packages')
 export class PackagesController {
   constructor(private packagesService: PackagesService) {}
@@ -28,6 +30,7 @@ export class PackagesController {
   // Must be declared before ':id', otherwise "all" would be read as an id.
   @Get('all')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   findAll() {
     return this.packagesService.findAll();
   }
@@ -41,6 +44,7 @@ export class PackagesController {
   // POST /api/packages           (admin)
   @Post()
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   create(@Body() dto: PackageDto) {
     return this.packagesService.create(dto);
   }
@@ -48,6 +52,7 @@ export class PackagesController {
   // PUT /api/packages/<id>   (admin, send the whole package)
   @Put(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PackageDto) {
     return this.packagesService.update(id, dto);
   }
@@ -55,6 +60,7 @@ export class PackagesController {
   // DELETE /api/packages/<id>   (admin)
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.remove(id);
   }

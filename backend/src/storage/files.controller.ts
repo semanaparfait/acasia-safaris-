@@ -1,8 +1,10 @@
 import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { StorageService } from './storage.service';
 
 // GET /api/files/gallery/3f2a...c9.jpg   (public)
 // The buckets are private, so the website loads images through this route.
+@ApiTags('Files')
 @Controller('files')
 export class FilesController {
   constructor(private storage: StorageService) {}

@@ -9,11 +9,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
 import { MessagesService } from './messages.service';
 
 // Routes under /api/messages
+@ApiTags('Messages')
 @Controller('messages')
 export class MessagesController {
   constructor(private messagesService: MessagesService) {}
@@ -28,12 +30,14 @@ export class MessagesController {
 
   @Get()
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   findAll() {
     return this.messagesService.findAll();
   }
 
   @Get(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.messagesService.findOne(id);
   }
@@ -41,6 +45,7 @@ export class MessagesController {
   // PATCH /api/messages/3   body: { "read": true }
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateMessageDto,
@@ -50,6 +55,7 @@ export class MessagesController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.messagesService.remove(id);
   }

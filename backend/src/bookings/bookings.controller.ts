@@ -9,11 +9,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto, UpdateBookingDto } from './dto/booking.dto';
 
 // Routes under /api/bookings
+@ApiTags('Bookings')
 @Controller('bookings')
 export class BookingsController {
   constructor(private bookingsService: BookingsService) {}
@@ -28,12 +30,14 @@ export class BookingsController {
 
   @Get()
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   findAll() {
     return this.bookingsService.findAll();
   }
 
   @Get(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.bookingsService.findOne(id);
   }
@@ -41,6 +45,7 @@ export class BookingsController {
   // PATCH /api/bookings/12   body: { "status": "Confirmed", "payment": "Deposit" }
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBookingDto,
@@ -50,6 +55,7 @@ export class BookingsController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.bookingsService.remove(id);
   }

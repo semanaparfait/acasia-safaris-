@@ -10,14 +10,17 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { WorkerDto } from './dto/worker.dto';
 import { WorkersService } from './workers.service';
 
 // Routes under /api/workers. Admin only: the guard is on the whole controller.
 // The logged-in admin (request.worker) is passed to the service for the admin rules.
+@ApiTags('Workers')
 @Controller('workers')
 @UseGuards(AdminGuard)
+@ApiBearerAuth()
 export class WorkersController {
   constructor(private workersService: WorkersService) {}
 

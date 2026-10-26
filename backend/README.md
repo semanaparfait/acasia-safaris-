@@ -10,6 +10,9 @@ npm install            # also runs "prisma generate"
 npm run start:dev      # starts the API and restarts on every save
 ```
 
+**API docs (Swagger):** http://localhost:4000/api/docs. Every route, with what to send and a "Try it out" button.
+For routes with a lock: call `POST /api/auth/login`, copy the `token`, click **Authorize** and paste it.
+
 `.env` holds the Neon connection, the storage keys and `JWT_SECRET` (copy `.env.example` on a new machine).
 
 The website (Next.js, in the folder above) reads `NEXT_PUBLIC_API_URL` from its `.env.local`

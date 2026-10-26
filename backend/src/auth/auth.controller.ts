@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsEmail, IsString } from 'class-validator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { AuthService } from './auth.service';
@@ -12,6 +13,7 @@ class LoginDto {
 }
 
 // Routes under /api/auth
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -27,6 +29,7 @@ export class AuthController {
   // GET /api/auth/me   -> the logged-in worker
   @Get('me')
   @UseGuards(AdminGuard)
+  @ApiBearerAuth()
   me(@Req() request: AdminRequest) {
     return request.worker;
   }
