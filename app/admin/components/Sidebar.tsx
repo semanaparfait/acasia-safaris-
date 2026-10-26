@@ -9,6 +9,7 @@ import {
   Package,
   MapPinned,
   Users,
+  UserCog,
   Mail,
   Star,
   Images,
@@ -33,6 +34,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       items: [
         { name: "Bookings", href: "/admin/bookings", icon: CalendarCheck, count: bookings.filter((b) => b.status === "Pending").length },
         { name: "Customers", href: "/admin/customers", icon: Users },
+        { name: "Workers", href: "/admin/workers", icon: UserCog },
         { name: "Messages", href: "/admin/messages", icon: Mail, count: messages.filter((m) => !m.read).length },
       ],
     },

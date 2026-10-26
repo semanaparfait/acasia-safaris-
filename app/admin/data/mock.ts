@@ -57,6 +57,22 @@ export type Review = {
   status: "Published" | "Pending" | "Hidden";
 };
 
+export const workerRoles = ["Tour Guide", "Driver", "Tour Manager", "Customer Support", "Admin"] as const;
+export type WorkerRole = (typeof workerRoles)[number];
+export type WorkerStatus = "Active" | "On leave" | "Inactive";
+
+export type Worker = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: WorkerRole;
+  languages: string[];
+  status: WorkerStatus;
+  joined: string;
+  notes?: string;
+};
+
 export type GalleryItem = {
   id: string;
   title: string;
@@ -140,6 +156,18 @@ export const bookings: Booking[] = people.map(([name, country], i) => {
     notes: i % 3 === 0 ? "Vegetarian meals requested. Prefers early morning game drives." : undefined,
   };
 });
+
+export const workers: Worker[] = [
+  { id: "W-01", name: "Jean Bosco Habimana", email: "jb.habimana@acaciasafaris.rw", phone: "+250 788 123 401", role: "Tour Guide", languages: ["English", "French", "Kinyarwanda"], status: "Active", joined: "2021-03-15", notes: "Senior gorilla trekking guide, Volcanoes NP." },
+  { id: "W-02", name: "Aline Mukamana", email: "aline.m@acaciasafaris.rw", phone: "+250 788 123 402", role: "Tour Manager", languages: ["English", "Kinyarwanda", "Swahili"], status: "Active", joined: "2020-07-01" },
+  { id: "W-03", name: "Eric Niyonzima", email: "eric.n@acaciasafaris.rw", phone: "+250 788 123 403", role: "Driver", languages: ["English", "Kinyarwanda"], status: "Active", joined: "2022-01-10", notes: "Land Cruiser, 7 seats." },
+  { id: "W-04", name: "Grace Uwimana", email: "grace.u@acaciasafaris.rw", phone: "+250 788 123 404", role: "Customer Support", languages: ["English", "French"], status: "Active", joined: "2023-05-22" },
+  { id: "W-05", name: "Patrick Mugisha", email: "patrick.m@acaciasafaris.rw", phone: "+250 788 123 405", role: "Tour Guide", languages: ["English", "German", "Kinyarwanda"], status: "On leave", joined: "2019-11-04", notes: "Birding specialist, Nyungwe & Akagera." },
+  { id: "W-06", name: "Diane Ingabire", email: "diane.i@acaciasafaris.rw", phone: "+250 788 123 406", role: "Tour Guide", languages: ["English", "Spanish"], status: "Active", joined: "2024-02-12" },
+  { id: "W-07", name: "Samuel Otieno", email: "samuel.o@acaciasafaris.rw", phone: "+254 712 330 407", role: "Driver", languages: ["English", "Swahili"], status: "Active", joined: "2022-08-30", notes: "Covers Kenya & Tanzania routes." },
+  { id: "W-08", name: "Claudine Uwase", email: "claudine.u@acaciasafaris.rw", phone: "+250 788 123 408", role: "Admin", languages: ["English", "French", "Kinyarwanda"], status: "Active", joined: "2020-01-06" },
+  { id: "W-09", name: "Innocent Nshimiyimana", email: "innocent.n@acaciasafaris.rw", phone: "+250 788 123 409", role: "Driver", languages: ["English", "Kinyarwanda"], status: "Inactive", joined: "2021-09-18" },
+];
 
 export const customers: Customer[] = people.map(([name, country], i) => ({
   id: `CU-${300 + i}`,

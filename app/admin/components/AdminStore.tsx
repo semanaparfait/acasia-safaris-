@@ -12,6 +12,7 @@ import {
   gallery as seedGallery,
   messages as seedMessages,
   reviews as seedReviews,
+  workers as seedWorkers,
   type AdminDestination,
   type AdminPackage,
   type Booking,
@@ -19,6 +20,7 @@ import {
   type GalleryItem,
   type Message,
   type Review,
+  type Worker,
 } from "../data/mock";
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T[]>>;
@@ -38,6 +40,8 @@ type Store = {
   setReviews: Setter<Review>;
   gallery: GalleryItem[];
   setGallery: Setter<GalleryItem>;
+  workers: Worker[];
+  setWorkers: Setter<Worker>;
 };
 
 const AdminContext = createContext<Store | null>(null);
@@ -50,6 +54,7 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
   const [messages, setMessages] = useState(seedMessages);
   const [reviews, setReviews] = useState(seedReviews);
   const [gallery, setGallery] = useState(seedGallery);
+  const [workers, setWorkers] = useState(seedWorkers);
 
   return (
     <AdminContext.Provider
@@ -61,6 +66,7 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
         messages, setMessages,
         reviews, setReviews,
         gallery, setGallery,
+        workers, setWorkers,
       }}
     >
       {children}

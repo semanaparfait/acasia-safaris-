@@ -111,6 +111,8 @@ export const statusTone: Record<string, Tone> = {
   Published: "green",
   Hidden: "gray",
   Active: "green",
+  "On leave": "amber",
+  Inactive: "gray",
   Draft: "gray",
 };
 
