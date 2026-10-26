@@ -1,5 +1,5 @@
 // Mock data for the admin panel – replace with API calls once the backend exists.
-import { packageList, type TourPackage } from "@/app/(user)/data/packages";
+import { packageDays, packageList, type TourPackage } from "@/app/(user)/data/packages";
 import { destinations } from "@/app/(user)/data/destinations";
 
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
@@ -65,18 +65,9 @@ export type GalleryItem = {
   uploadedAt: string;
 };
 
-export type AdminPackage = TourPackage & {
-  priceValue: number;
-  active: boolean;
-  bookings: number;
-};
-
-export const adminPackages: AdminPackage[] = packageList.map((p, i) => ({
-  ...p,
-  priceValue: Number(p.price.replace(/[^0-9]/g, "")),
-  active: i !== 4,
-  bookings: [42, 31, 18, 27, 12, 23][i] ?? 10,
-}));
+// Packages live in the shared store (app/(user)/data/packageStore) so the website
+// sees admin edits. Bookings below are seeded from the same package list.
+export type AdminPackage = TourPackage;
 
 export const adminDestinations = destinations.map((d, i) => ({
   id: d.id,
@@ -126,11 +117,11 @@ const email = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(/[^a-z ]/g, "").replace(" ", ".") + "@mail.com";
 
 export const bookings: Booking[] = people.map(([name, country], i) => {
-  const pkg = adminPackages[i % adminPackages.length];
+  const pkg = packageList[i % packageList.length];
   const travelers = (i % 4) + 1;
   const start = new Date(2026, 10 + Math.floor(i / 5), 3 + ((i * 7) % 24));
   const end = new Date(start);
-  end.setDate(start.getDate() + parseInt(pkg.days));
+  end.setDate(start.getDate() + packageDays(pkg));
   const created = new Date(2026, 9, 26 - i * 2);
   return {
     id: `BK-${(1048 - i).toString()}`,
@@ -142,7 +133,7 @@ export const bookings: Booking[] = people.map(([name, country], i) => {
     startDate: start.toISOString(),
     endDate: end.toISOString(),
     travelers,
-    amount: pkg.priceValue * travelers,
+    amount: pkg.price * travelers,
     status: statuses[i],
     payment: payments[statuses[i]],
     createdAt: created.toISOString(),
@@ -237,7 +228,7 @@ export const reviews: Review[] = [
 ];
 
 export const gallery: GalleryItem[] = [
-  ...adminPackages.map((p) => ({ id: `g-${p.id}`, title: p.title, category: p.category, image: p.image, uploadedAt: "2026-10-01" })),
+  ...packageList.map((p) => ({ id: `g-${p.id}`, title: p.title, category: p.category, image: p.image, uploadedAt: "2026-10-01" })),
   ...adminDestinations.slice(0, 6).map((d) => ({ id: `g-${d.id}`, title: d.title, category: d.group, image: d.image, uploadedAt: "2026-09-18" })),
 ];
 

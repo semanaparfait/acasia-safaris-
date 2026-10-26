@@ -3,15 +3,18 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
-import { packageList } from "../data/packages";
+import { daysLabel, tourHref } from "../data/packages";
+import { usePublishedPackages } from "../data/packageStore";
 
 // Packages shown on the home page, in order
 const featuredIds = ["7-day-gorilla", "8-day-rwanda", "7-day-zanzibar"];
-const featured = featuredIds
-  .map((id) => packageList.find((p) => p.id === id))
-  .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
 export default function PopularPackages() {
+  const packages = usePublishedPackages();
+  const featured = featuredIds
+    .map((id) => packages.find((p) => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
   return (
     <section className="hidden py-24 px-6 bg-white text-[#0a120b] font-sans">
       <div className="max-w-7xl mx-auto">
@@ -58,7 +61,7 @@ export default function PopularPackages() {
                   </span>
                 )}
                 <span className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-xs font-medium text-[#12231a]">
-                  <Calendar size={12} className="text-[#1F5A42]" /> {pkg.days}
+                  <Calendar size={12} className="text-[#1F5A42]" /> {daysLabel(pkg)}
                 </span>
               </div>
 
@@ -66,19 +69,18 @@ export default function PopularPackages() {
                 <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/50 mb-2">
                   <MapPin size={12} className="text-[#c5a86d]" /> {pkg.location}
                 </p>
-                <h3 className="text-xl font-serif uppercase tracking-wide leading-tight text-[#12231a] mb-3">{pkg.title}</h3>
+                <h3 className="text-xl font-serif uppercase tracking-wide leading-tight text-[#12231a] mb-3">
+                  <Link href={tourHref({ package: pkg.id })} className="hover:text-[#c5a86d] transition-colors">{pkg.title}</Link>
+                </h3>
                 <p className="text-sm text-[#0a120b]/60 leading-relaxed line-clamp-2 mb-4">{pkg.description}</p>
                 <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/55 mb-6">
                   <BedDouble size={13} className="text-[#1F5A42]" /> {pkg.lodging}
                 </p>
 
                 <div className="mt-auto pt-5 border-t border-[#0a120b]/5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-[#0a120b]/45">From</p>
-                    <p className="text-2xl font-serif text-[#12231a]">
-                      {pkg.price} <span className="text-xs font-sans text-[#0a120b]/45">/ person</span>
-                    </p>
-                  </div>
+                  <Link href={tourHref({ package: pkg.id })} className="text-sm text-[#1F5A42] hover:underline">
+                    View details
+                  </Link>
                   <Link
                     href="/booking"
                     className="group/btn inline-flex items-center gap-2 bg-[#12231a] hover:bg-[#c5a86d] hover:text-[#0e1d16] text-white text-sm px-5 py-2.5 rounded-full transition-all"

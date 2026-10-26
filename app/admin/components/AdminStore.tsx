@@ -1,11 +1,12 @@
 "use client";
 
-// In-memory store seeded from mock data. Changes last until the page is reloaded.
+// In-memory store seeded from mock data. Changes last until the page is reloaded,
+// except packages, which use the shared package store so the website sees them.
 // When the backend is ready, swap these setters for API calls.
 import React, { createContext, useContext, useState } from "react";
+import { setPackages, usePackages } from "@/app/(user)/data/packageStore";
 import {
   adminDestinations,
-  adminPackages,
   bookings as seedBookings,
   customers as seedCustomers,
   gallery as seedGallery,
@@ -43,7 +44,7 @@ const AdminContext = createContext<Store | null>(null);
 
 export function AdminStoreProvider({ children }: { children: React.ReactNode }) {
   const [bookings, setBookings] = useState(seedBookings);
-  const [packages, setPackages] = useState(adminPackages);
+  const packages = usePackages();
   const [destinations, setDestinations] = useState(adminDestinations);
   const [customers, setCustomers] = useState(seedCustomers);
   const [messages, setMessages] = useState(seedMessages);

@@ -70,10 +70,10 @@ export default function DashboardPage() {
     },
   ];
 
-  const topPackages = [...packages]
-    .sort((a, b) => b.bookings - a.bookings)
-    .slice(0, 5)
-    .map((p) => ({ label: p.title, value: p.bookings }));
+  const topPackages = packages
+    .map((p) => ({ label: p.title, value: bookings.filter((b) => b.packageId === p.id).length }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
 
   const recent = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
   const upcoming = bookings

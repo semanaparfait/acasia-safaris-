@@ -609,7 +609,7 @@ export default function BookingPage({
                             </div>
                           </div>
                           <div>
-                            <p className={labelClass}>Budget per person</p>
+                            <p className={labelClass}>Budget </p>
                             <div className="flex flex-wrap gap-2">
                               {budgets.map((b) => (
                                 <Chip

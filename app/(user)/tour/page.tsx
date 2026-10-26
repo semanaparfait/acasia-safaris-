@@ -1,18 +1,32 @@
 "use client";
-import React, { useState } from "react";
+import React, { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GiGorilla, GiElephant, GiMountainRoad } from "react-icons/gi";
 import { FaUsers, FaGem } from "react-icons/fa";
 import { PiPawPrintFill } from "react-icons/pi";
 import Image from "next/image";
-import GorillaTrekking from "@/app/(user)/tour/components/GorillaTrekking";
-import WildlifeSafaris from "@/app/(user)/tour/components/WildLifeSafaris";
-import CulturalTours from "@/app/(user)/tour/components/CulturalTours";
-import LuxuryEscapes from "@/app/(user)/tour/components/LuxuryEscapes";
+import TourDetail from "@/app/(user)/tour/components/TourDetail";
+import { usePublishedPackages } from "@/app/(user)/data/packageStore";
+import { tourHref } from "@/app/(user)/data/packages";
 import GroupVsTailorMade from "@/app/(user)/tour/components/GroupVsTailorMade";
 import AllPackages from "@/app/(user)/tour/components/AllPackages";
 
-export default function page() {
-  const [activePackage, setActivePackage] = useState("All Packages");
+export default function TourPage() {
+  return (
+    <Suspense>
+      <TourPageContent />
+    </Suspense>
+  );
+}
+
+// The selected category / package lives in the URL (see tourHref) so any link can open it.
+function TourPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activePackage = searchParams.get("category") ?? "All Packages";
+  const selectedId = searchParams.get("package");
+  const packages = usePublishedPackages();
+  const selectedPackage = packages.find((p) => p.id === selectedId);
 
   const heroContent: Record<
     string,
@@ -74,7 +88,14 @@ export default function page() {
     },
   };
 
-  const currentHero = heroContent[activePackage] || heroContent["All Packages"];
+  const currentHero =
+    heroContent[selectedPackage?.category ?? activePackage] || heroContent["All Packages"];
+
+  const navigate = (href: string) => {
+    router.push(href, { scroll: false });
+    document.getElementById("package-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+  const showPackage = (id: string) => navigate(tourHref({ category: activePackage, package: id }));
 
   const TourPackages = [
     {
@@ -151,14 +172,14 @@ export default function page() {
       </section>
 
       {/* Category Filter Pills */}
-      <div id="package-section" className="bg-neutral-50/80 border-b border-neutral-200/80 py-5 px-4">
+      <div id="package-section" className="scroll-mt-20 bg-neutral-50/80 border-b border-neutral-200/80 py-5 px-4">
         <div className="flex gap-2.5 items-center justify-center flex-wrap max-w-7xl mx-auto">
           {TourPackages.map((pkg) => {
-            const isActive = activePackage === pkg.name;
+            const isActive = (selectedPackage?.category ?? activePackage) === pkg.name;
             return (
               <button
                 key={pkg.id}
-                onClick={() => setActivePackage(pkg.name)}
+                onClick={() => navigate(tourHref({ category: pkg.name }))}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 cursor-pointer transition-all duration-200 text-xs font-medium ${
                   isActive
                     ? "bg-[#0B1E14] text-white border-[#0B1E14] shadow-sm"
@@ -175,14 +196,25 @@ export default function page() {
         </div>
       </div>
 
-      {activePackage === "All Packages" && (
-        <AllPackages onSelectCategory={setActivePackage} />
+      {selectedPackage ? (
+        <TourDetail
+          key={selectedPackage.id}
+          tour={selectedPackage}
+          onBack={() => navigate(tourHref({ category: activePackage }))}
+        />
+      ) : activePackage === "Group vs Tailor made" ? (
+        <GroupVsTailorMade />
+      ) : (
+        <AllPackages
+          title={activePackage === "All Packages" ? undefined : `${activePackage} Packages`}
+          packages={
+            activePackage === "All Packages"
+              ? packages
+              : packages.filter((p) => p.category === activePackage)
+          }
+          onSelectPackage={showPackage}
+        />
       )}
-      {activePackage === "Gorilla Trekking" && <GorillaTrekking />}
-      {activePackage === "Wildlife Safari" && <WildlifeSafaris />}
-      {activePackage === "Luxury Escapes" && <LuxuryEscapes />}
-      {activePackage === "Cultural Tours" && <CulturalTours />}
-      {activePackage === "Group vs Tailor made" && <GroupVsTailorMade />}
     </section>
   );
 }

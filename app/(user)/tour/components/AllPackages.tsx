@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   MapPin,
   Calendar,
@@ -15,13 +16,15 @@ import {
   Star,
   CheckCircle2,
 } from "lucide-react";
-import { packageList } from "../../data/packages";
+import { daysLabel, type TourPackage } from "../../data/packages";
 
 interface AllPackagesProps {
-  onSelectCategory: (categoryName: string) => void;
+  title?: string;
+  packages: TourPackage[];
+  onSelectPackage: (id: string) => void;
 }
 
-export default function AllPackages({ onSelectCategory }: AllPackagesProps) {
+export default function AllPackages({ title = "Our Safari Packages", packages, onSelectPackage }: AllPackagesProps) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -47,28 +50,36 @@ export default function AllPackages({ onSelectCategory }: AllPackagesProps) {
           {/* Header Title & Subtitle */}
           <div className="space-y-1 mb-6">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#11241A]">
-              Our Safari Packages
+              {title}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600">
-              Choose from our handpicked tours or get a custom itinerary tailored to your dreams.
+              {packages.length} {packages.length === 1 ? "package" : "packages"} · Choose from our handpicked tours or get a custom itinerary tailored to your dreams.
             </p>
           </div>
 
           {/* Horizontal Package Cards List */}
           <div className="space-y-5">
-            {packageList.map((pkg) => (
+            {packages.length === 0 && (
+              <p className="text-sm text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-2xl p-6 text-center">
+                No packages in this category yet.
+              </p>
+            )}
+            {packages.map((pkg) => (
               <div
                 key={pkg.id}
                 className="group bg-white rounded-2xl overflow-hidden border border-neutral-200/90 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch"
               >
                 {/* Left: Image Container */}
                 <div className="relative w-full sm:w-64 lg:w-72 h-52 sm:h-auto flex-shrink-0 overflow-hidden bg-neutral-100">
-                  <Image
-                    src={pkg.image}
-                    alt={pkg.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+                  {pkg.image && (
+                    <Image
+                      src={pkg.image}
+                      alt={pkg.title}
+                      fill
+                      unoptimized
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
                   {/* Badge */}
@@ -102,7 +113,7 @@ export default function AllPackages({ onSelectCategory }: AllPackagesProps) {
                   <div className="flex items-center gap-4 pt-3 border-t border-neutral-100 text-[11px] sm:text-xs text-neutral-500 font-medium flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-[#B28236]" />
-                      <span>{pkg.days}</span>
+                      <span>{daysLabel(pkg)}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <PawPrint className="w-3.5 h-3.5 text-[#B28236]" />
@@ -117,15 +128,9 @@ export default function AllPackages({ onSelectCategory }: AllPackagesProps) {
 
                 {/* Right: Price & CTA */}
                 <div className="w-full sm:w-44 p-5 sm:p-6 flex flex-col justify-center items-start sm:items-end border-t sm:border-t-0 sm:border-l border-neutral-100 bg-neutral-50/50 flex-shrink-0">
-                  <span className="text-[11px] text-neutral-500 block">From</span>
-                  <span className="text-2xl font-serif font-bold text-[#11241A]">
-                    {pkg.price}
-                  </span>
-                  <span className="text-[10px] text-neutral-500 block mb-3">
-                    per person
-                  </span>
+                 
                   <button
-                    onClick={() => onSelectCategory(pkg.category)}
+                    onClick={() => onSelectPackage(pkg.id)}
                     className="w-full sm:w-auto bg-[#B28236] hover:bg-[#966B2A] text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                   >
                     <span>View Details</span>
@@ -304,13 +309,13 @@ export default function AllPackages({ onSelectCategory }: AllPackagesProps) {
               <h4 className="text-xl font-serif font-bold text-white leading-tight">
                 Your Dream Safari Awaits
               </h4>
-              <button
-                onClick={() => onSelectCategory("Wildlife Safari")}
-                className="bg-[#B28236] hover:bg-[#966B2A] text-white text-[11px] font-bold tracking-wider uppercase px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+              <Link
+                href="/destination"
+                className="w-fit bg-[#B28236] hover:bg-[#966B2A] text-white text-[11px] font-bold tracking-wider uppercase px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span>EXPLORE DESTINATIONS</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
           </div>
 
