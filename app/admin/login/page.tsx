@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 import logo from "@/public/logo2.png";
 import { inputClass, labelClass } from "../components/ui";
 
@@ -11,12 +12,23 @@ export default function LoginPage() {
   const router = useRouter();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const login = useAuthStore((s) => s.login);
 
-  // No auth yet – any credentials take you to the dashboard
-  const submit = (e: React.FormEvent) => {
+  // Only workers with "Admin access" can log in (see Admin > Workers)
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => router.push("/admin"), 600);
+    setError("");
+    try {
+      await login(email, password);
+      router.replace("/admin");
+    } catch (err) {
+      setError((err as Error).message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,25 +60,37 @@ export default function LoginPage() {
               <label className={labelClass} htmlFor="email">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#0a120b]/35" />
-                <input id="email" type="email" required defaultValue="admin@acaciasafaris.com" className={`${inputClass} pl-9`} />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@acaciasafaris.rw"
+                  className={`${inputClass} pl-9`}
+                />
               </div>
             </div>
             <div>
               <label className={labelClass} htmlFor="password">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#0a120b]/35" />
-                <input id="password" type={show ? "text" : "password"} required defaultValue="password" className={`${inputClass} pl-9 pr-10`} />
-                <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0a120b]/40" aria-label="Toggle password">
+                <input
+                  id="password"
+                  type={show ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`${inputClass} pl-9 pr-10`}
+                />
+                <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0a120b]/40" aria-label="Show or hide password">
                   {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-[#0a120b]/65">
-                <input type="checkbox" defaultChecked className="accent-[#2E7D5B]" /> Remember me
-              </label>
-              <a href="#" className="text-[#2E7D5B] hover:underline">Forgot password?</a>
-            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               type="submit"
               disabled={loading}
@@ -75,7 +99,6 @@ export default function LoginPage() {
               {loading ? "Signing in…" : <>Sign in <ArrowRight className="size-4" /></>}
             </button>
           </div>
-          <p className="text-xs text-[#0a120b]/40 mt-8 text-center">Demo mode: any email and password will work.</p>
         </form>
       </div>
     </div>

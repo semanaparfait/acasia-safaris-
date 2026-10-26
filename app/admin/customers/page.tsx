@@ -2,15 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Crown, Mail, Phone, Download, ArrowUpDown } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
-import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchInput } from "../components/ui";
-import { money } from "../data/mock";
+import { Mail, Phone, Download, ArrowUpDown } from "lucide-react";
+import { customersFromBookings, money } from "@/lib/helpers";
+import { useBookingsStore } from "@/store/bookingsStore";
+import { Avatar, Button, Card, EmptyState, PageHeader, SearchInput } from "../components/ui";
 
 type SortKey = "name" | "trips" | "spent" | "joined";
 
 export default function CustomersPage() {
-  const { customers } = useAdmin();
+  // Customers are worked out from the bookings (one per email address)
+  const bookings = useBookingsStore((s) => s.bookings);
+  const customers = useMemo(() => customersFromBookings(bookings), [bookings]);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "spent", dir: -1 });
 
@@ -25,6 +27,16 @@ export default function CustomersPage() {
       });
   }, [customers, query, sort]);
 
+  const exportCsv = () => {
+    const header = "name,email,phone,country,trips,spent,first booking";
+    const rows = list.map((c) => [`"${c.name}"`, c.email, c.phone ?? "", `"${c.country}"`, c.trips, c.spent, c.joined.slice(0, 10)].join(","));
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "customers.csv";
+    a.click();
+  };
+
   const sortBy = (key: SortKey) => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : -1 }));
   const totalSpent = customers.reduce((s, c) => s + c.spent, 0);
   const countries = new Set(customers.map((c) => c.country)).size;
@@ -33,8 +45,8 @@ export default function CustomersPage() {
     <>
       <PageHeader
         title="Customers"
-        subtitle="Everyone who has booked or enquired with Acacia Safaris."
-        actions={<Button variant="secondary"><Download className="size-4" /> Export</Button>}
+        subtitle="Everyone who has booked with Acacia Safaris (worked out from bookings)."
+        actions={<Button variant="secondary" onClick={exportCsv}><Download className="size-4" /> Export</Button>}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -58,7 +70,10 @@ export default function CustomersPage() {
           <SearchInput value={query} onChange={setQuery} placeholder="Search customers…" className="w-full sm:w-72" />
         </div>
         {list.length === 0 ? (
-          <EmptyState title="No customers match your search" />
+          <EmptyState
+            title={customers.length === 0 ? "No customers yet" : "No customers match your search"}
+            text={customers.length === 0 ? "Everyone who books on the website appears here." : undefined}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -74,22 +89,18 @@ export default function CustomersPage() {
               </thead>
               <tbody className="divide-y divide-[#0a120b]/[0.05]">
                 {list.map((c) => (
-                  <tr key={c.id} className="hover:bg-[#f7f5f0]/70">
+                  <tr key={c.email} className="hover:bg-[#f7f5f0]/70">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar name={c.name} size={36} />
                         <div>
-                          <p className="font-medium flex items-center gap-2">
-                            {c.name}
-                            {c.vip && <Badge tone="gold" dot={false}><Crown className="size-3" /> VIP</Badge>}
-                          </p>
-                          <p className="text-xs text-[#0a120b]/45">{c.id}</p>
+                          <p className="font-medium">{c.name}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-3 text-[#0a120b]/65">
                       <a href={`mailto:${c.email}`} className="flex items-center gap-1.5 hover:text-[#2E7D5B]"><Mail className="size-3.5" /> {c.email}</a>
-                      <p className="flex items-center gap-1.5 text-xs mt-0.5"><Phone className="size-3.5" /> {c.phone}</p>
+                      {c.phone && <p className="flex items-center gap-1.5 text-xs mt-0.5"><Phone className="size-3.5" /> {c.phone}</p>}
                     </td>
                     <td className="px-5 py-3 text-[#0a120b]/70 whitespace-nowrap">{c.country}</td>
                     <td className="px-5 py-3 text-right tabular-nums">{c.trips}</td>

@@ -7,13 +7,15 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { AdminGuard } from '../common/admin.guard';
+import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { WorkerDto } from './dto/worker.dto';
 import { WorkersService } from './workers.service';
 
 // Routes under /api/workers. Admin only: the guard is on the whole controller.
+// The logged-in admin (request.worker) is passed to the service for the admin rules.
 @Controller('workers')
 @UseGuards(AdminGuard)
 export class WorkersController {
@@ -31,17 +33,21 @@ export class WorkersController {
   }
 
   @Post()
-  create(@Body() dto: WorkerDto) {
-    return this.workersService.create(dto);
+  create(@Body() dto: WorkerDto, @Req() request: AdminRequest) {
+    return this.workersService.create(dto, request.worker);
   }
 
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: WorkerDto) {
-    return this.workersService.update(id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: WorkerDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.workersService.update(id, dto, request.worker);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.workersService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AdminRequest) {
+    return this.workersService.remove(id, request.worker);
   }
 }

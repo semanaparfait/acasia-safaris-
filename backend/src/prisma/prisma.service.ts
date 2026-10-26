@@ -8,6 +8,12 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  constructor() {
+    // Never return password hashes, unless a query asks for them explicitly with
+    //   omit: { passwordHash: false }   (only the login does that)
+    super({ omit: { worker: { passwordHash: true } } });
+  }
+
   async onModuleInit() {
     await this.$connect();
   }

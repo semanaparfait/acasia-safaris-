@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,20 +14,10 @@ import {
   ChevronDown,
   Images,
 } from "lucide-react";
+import { useGalleryStore } from "@/store/galleryStore";
 
 const categories = ["All", "Wildlife", "Landscapes", "Culture", "People"];
 
-const galleryImages = [
-  { id: 1, src: "https://i.pinimg.com/736x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg", category: "Wildlife", title: "Majestic Elephant", location: "Akagera Park" },
-  { id: 2, src: "https://i.pinimg.com/736x/29/c6/d9/29c6d9f0c66cbefe2dfd664176627428.jpg", category: "Wildlife", title: "Golden Monkey", location: "Volcanoes Park" },
-  { id: 3, src: "https://i.pinimg.com/736x/f9/9e/2f/f99e2fdce5cee014a440d0ee3eedce76.jpg", category: "Landscapes", title: "Misty Mountains", location: "Virunga Massif" },
-  { id: 4, src: "https://i.pinimg.com/736x/c7/c9/26/c7c926aaf0f161086dd07ecab6636f23.jpg", category: "People", title: "Local Portraits", location: "Kigali" },
-  { id: 5, src: "https://i.pinimg.com/736x/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg", category: "Landscapes", title: "Lake Kivu Sunset", location: "Rubavu" },
-  { id: 6, src: "https://i.pinimg.com/736x/80/8d/91/808d91821c1f5c2342c222215223cbc6.jpg", category: "Culture", title: "Traditional Dance", location: "Cultural Village" },
-  { id: 7, src: "https://i.pinimg.com/736x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg", category: "Wildlife", title: "Silverback Gorilla", location: "Volcanoes Park" },
-  { id: 8, src: "https://i.pinimg.com/736x/4f/fc/84/4ffc84cb985a075626662bea126f5ec7.jpg", category: "Landscapes", title: "Nyungwe Canopy", location: "Nyungwe Forest" },
-  { id: 9, src: "https://i.pinimg.com/736x/0f/84/de/0f84dec8e96fc7763eb982ef71295fe8.jpg", category: "Culture", title: "Artisan Crafting", location: "Nyanza" },
-];
 
 const highlights = [
   {
@@ -57,10 +47,33 @@ export default function GalleryPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [playVideo, setPlayVideo] = useState(false);
 
-  const filteredImages =
-    activeCategory === "All"
-      ? galleryImages
-      : galleryImages.filter((img) => img.category === activeCategory);
+  // Photos come from the API (see store/galleryStore.ts); admins add them under Admin > Gallery
+  const items = useGalleryStore((s) => s.items);
+  const loadGallery = useGalleryStore((s) => s.load);
+
+  useEffect(() => {
+    loadGallery();
+  }, [loadGallery]);
+
+  const galleryImages = useMemo(
+    () =>
+      items.map((item) => ({
+        id: item.id,
+        src: item.image,
+        category: item.category,
+        title: item.title,
+        location: item.location ?? "",
+      })),
+    [items]
+  );
+
+  const filteredImages = useMemo(
+    () =>
+      activeCategory === "All"
+        ? galleryImages
+        : galleryImages.filter((img) => img.category === activeCategory),
+    [galleryImages, activeCategory]
+  );
 
   const countFor = (category: string) =>
     category === "All"

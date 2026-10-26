@@ -10,7 +10,10 @@ import {
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
-import { PIN, destinations } from "../data/destinations";
+import { destinationGroups, groupIcon } from "@/lib/helpers";
+import { useDestinationsStore } from "@/store/destinationsStore";
+
+const PIN = "https://i.pinimg.com/1200x";
 
 const heroSlides = [
   { name: "Volcanoes", location: "Musanze", image: `${PIN}/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg` },
@@ -19,11 +22,21 @@ const heroSlides = [
   { name: "Lake Kivu", location: "Rubavu & Karongi", image: `${PIN}/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg` },
 ];
 
-const groups = ["All", "Wildlife", "Nature", "Culture", "Adventure", "Luxury"];
+const groups = ["All", ...destinationGroups];
 
 export default function DestinationPage() {
   const [slide, setSlide] = useState(0);
   const [activeGroup, setActiveGroup] = useState("All");
+
+  // Destinations come from the API (see store/destinationsStore.ts)
+  const destinations = useDestinationsStore((s) => s.destinations);
+  const loading = useDestinationsStore((s) => s.loading);
+  const error = useDestinationsStore((s) => s.error);
+  const load = useDestinationsStore((s) => s.load);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filtered =
     activeGroup === "All" ? destinations : destinations.filter((d) => d.group === activeGroup);
@@ -143,6 +156,15 @@ export default function DestinationPage() {
             </div>
           </div>
 
+          {error && (
+            <p className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+              Could not load destinations: {error}
+            </p>
+          )}
+          {loading && destinations.length === 0 && (
+            <p className="py-12 text-center text-sm text-[#0a120b]/50">Loading destinations…</p>
+          )}
+
           <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
               {filtered.map((d) => (
@@ -165,7 +187,7 @@ export default function DestinationPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-widest text-[#12231a]">
-                      <d.icon size={12} className="text-[#1F5A42]" />
+                      {React.createElement(groupIcon(d.group), { size: 12, className: "text-[#1F5A42]" })}
                       {d.group}
                     </span>
                   </div>

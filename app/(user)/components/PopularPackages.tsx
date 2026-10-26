@@ -1,16 +1,23 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
-import { daysLabel, tourHref } from "../data/packages";
-import { usePublishedPackages } from "../data/packageStore";
+import { daysLabel, tourHref } from "@/lib/helpers";
+import { usePackagesStore } from "@/store/packagesStore";
 
 // Packages shown on the home page, in order
 const featuredIds = ["7-day-gorilla", "8-day-rwanda", "7-day-zanzibar"];
 
 export default function PopularPackages() {
-  const packages = usePublishedPackages();
+  const allPackages = usePackagesStore((s) => s.packages);
+  const loadPublished = usePackagesStore((s) => s.loadPublished);
+
+  useEffect(() => {
+    loadPublished();
+  }, [loadPublished]);
+
+  const packages = allPackages.filter((p) => p.active);
   const featured = featuredIds
     .map((id) => packages.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));

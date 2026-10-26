@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { DestinationDto } from './dto/destination.dto';
 
 @Injectable()
 export class DestinationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   findAll() {
     return this.prisma.destination.findMany({ orderBy: { createdAt: 'asc' } });
@@ -31,8 +35,9 @@ export class DestinationsService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const destination = await this.findOne(id);
     await this.prisma.destination.delete({ where: { id } });
+    await this.storage.deleteByUrl(destination.image);
     return { deleted: true };
   }
 }

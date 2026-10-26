@@ -18,6 +18,7 @@ function useWidth<T extends HTMLElement>() {
 }
 
 function niceMax(v: number) {
+  if (v <= 0) return 1; // no data yet: keep the scale valid
   const pow = 10 ** Math.floor(Math.log10(v));
   return Math.ceil(v / pow) * pow;
 }
@@ -115,7 +116,7 @@ export function BarList({
   data: { label: string; value: number; sub?: string }[];
   format?: (n: number) => string;
 }) {
-  const max = Math.max(...data.map((d) => d.value));
+  const max = Math.max(...data.map((d) => d.value)) || 1; // avoid dividing by 0
   return (
     <ul className="space-y-3.5">
       {data.map((d) => (

@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, Menu, Search, ChevronDown, LogOut, User, Settings, CalendarCheck, Star, CreditCard, XCircle, Pencil } from "lucide-react";
-import { activity } from "../data/mock";
+import { Bell, Menu, Search, ChevronDown, LogOut, User, Settings, CalendarCheck, Star, Mail, XCircle } from "lucide-react";
+import { recentActivity } from "@/lib/helpers";
+import { useAuthStore } from "@/store/authStore";
+import { useBookingsStore } from "@/store/bookingsStore";
+import { useMessagesStore } from "@/store/messagesStore";
+import { useReviewsStore } from "@/store/reviewsStore";
 import { Avatar } from "./ui";
 
 const activityIcon = {
   booking: CalendarCheck,
   review: Star,
-  payment: CreditCard,
+  message: Mail,
   cancel: XCircle,
-  update: Pencil,
 };
 
 const titles: Record<string, string> = {
@@ -33,6 +37,20 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
   const [menu, setMenu] = useState<"none" | "notif" | "user">("none");
   const toggle = (m: "notif" | "user") => setMenu((cur) => (cur === m ? "none" : m));
+
+  const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
+  const me = useAuthStore((s) => s.worker);
+  const bookings = useBookingsStore((s) => s.bookings);
+  const messages = useMessagesStore((s) => s.messages);
+  const reviews = useReviewsStore((s) => s.reviews);
+  const activity = recentActivity(bookings, messages, reviews);
+  const unread = messages.filter((m) => !m.read).length;
+
+  const signOut = () => {
+    logout();
+    router.replace("/admin/login");
+  };
 
   return (
     <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 sm:px-6 lg:px-8 bg-[#f7f5f0]/80 backdrop-blur-md border-b border-[#0a120b]/[0.06]">
@@ -57,14 +75,15 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
       <div className="relative">
         <button onClick={() => toggle("notif")} className="relative p-2 rounded-lg text-[#0a120b]/70 hover:bg-[#0a120b]/5 cursor-pointer" aria-label="Notifications">
           <Bell className="size-5" />
-          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#E53935] ring-2 ring-[#f7f5f0]" />
+          {unread > 0 && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#E53935] ring-2 ring-[#f7f5f0]" />}
         </button>
         <Dropdown open={menu === "notif"} onClose={() => setMenu("none")} className="w-80">
           <div className="px-4 py-3 border-b border-[#0a120b]/[0.06] flex items-center justify-between">
             <p className="text-sm font-semibold">Notifications</p>
-            <span className="text-xs text-[#2E7D5B]">{activity.length} new</span>
+            <span className="text-xs text-[#2E7D5B]">{unread} unread messages</span>
           </div>
           <ul className="max-h-80 overflow-y-auto">
+            {activity.length === 0 && <li className="px-4 py-6 text-center text-sm text-[#0a120b]/45">Nothing yet</li>}
             {activity.map((a) => {
               const Icon = activityIcon[a.type];
               return (
@@ -74,7 +93,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
                   </span>
                   <div>
                     <p className="text-sm text-[#0a120b]/80">{a.text}</p>
-                    <p className="text-xs text-[#0a120b]/40 mt-0.5">{a.time}</p>
+                    <p className="text-xs text-[#0a120b]/40 mt-0.5">{formatDistanceToNow(new Date(a.date), { addSuffix: true })}</p>
                   </div>
                 </li>
               );
@@ -85,10 +104,15 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="relative">
         <button onClick={() => toggle("user")} className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-[#0a120b]/5 cursor-pointer">
-          <Avatar name="Admin User" size={32} />
+          {me?.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={me.photo} alt="" className="size-8 rounded-full object-cover" />
+          ) : (
+            <Avatar name={me?.name ?? "Admin"} size={32} />
+          )}
           <span className="hidden sm:block text-left leading-tight">
-            <span className="block text-sm font-medium text-[#0a120b]">Admin User</span>
-            <span className="block text-[11px] text-[#0a120b]/45">Super admin</span>
+            <span className="block text-sm font-medium text-[#0a120b]">{me?.name ?? "Admin"}</span>
+            <span className="block text-[11px] text-[#0a120b]/45">{me?.role ?? "Admin"} · Admin</span>
           </span>
           <ChevronDown className="hidden sm:block size-4 text-[#0a120b]/40" />
         </button>
@@ -101,9 +125,9 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
               <Settings className="size-4 text-[#0a120b]/50" /> Settings
             </Link>
             <div className="my-1 h-px bg-[#0a120b]/[0.06]" />
-            <Link href="/admin/login" className="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg text-[#E53935] hover:bg-red-50">
+            <button onClick={signOut} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg text-[#E53935] hover:bg-red-50 cursor-pointer">
               <LogOut className="size-4" /> Sign out
-            </Link>
+            </button>
           </div>
         </Dropdown>
       </div>

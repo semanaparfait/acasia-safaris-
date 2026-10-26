@@ -18,11 +18,15 @@ import {
   X,
 } from "lucide-react";
 import logo from "@/public/logo2.png";
-import { useAdmin } from "./AdminStore";
+import { useBookingsStore } from "@/store/bookingsStore";
+import { useMessagesStore } from "@/store/messagesStore";
+import { useReviewsStore } from "@/store/reviewsStore";
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
-  const { bookings, messages, reviews } = useAdmin();
+  const bookings = useBookingsStore((s) => s.bookings);
+  const messages = useMessagesStore((s) => s.messages);
+  const reviews = useReviewsStore((s) => s.reviews);
 
   const groups = [
     {

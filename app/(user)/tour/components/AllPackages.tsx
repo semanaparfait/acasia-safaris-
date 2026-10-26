@@ -16,7 +16,9 @@ import {
   Star,
   CheckCircle2,
 } from "lucide-react";
-import { daysLabel, type TourPackage } from "../../data/packages";
+import { daysLabel } from "@/lib/helpers";
+import type { TourPackage } from "@/lib/types";
+import { useMessagesStore } from "@/store/messagesStore";
 
 interface AllPackagesProps {
   title?: string;
@@ -34,11 +36,33 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
   });
 
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const sendMessage = useMessagesStore((s) => s.sendMessage);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // The enquiry is saved as a message the admin sees under Messages
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => setFormSubmitted(false), 5000);
+    setSending(true);
+    setSendError("");
+    try {
+      await sendMessage({
+        name: formData.fullName,
+        email: formData.email,
+        subject: "Safari enquiry",
+        body: [
+          `Preferred date: ${formData.preferredDate || "Flexible"}`,
+          `Guests: ${formData.guests}`,
+          `Trip style: ${formData.tripStyle || "Not chosen"}`,
+        ].join("\n"),
+        source: "Booking request",
+      });
+      setFormSubmitted(true);
+    } catch (error) {
+      setSendError((error as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
 
@@ -252,11 +276,14 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                   </select>
                 </div>
 
+                {sendError && <p className="text-[11px] text-red-300">{sendError}</p>}
+
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-[#C29B47] to-[#A0782A] hover:from-[#A0782A] hover:to-[#835E1C] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  disabled={sending}
+                  className="w-full bg-gradient-to-r from-[#C29B47] to-[#A0782A] hover:from-[#A0782A] hover:to-[#835E1C] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
                 >
-                  <span>SEND ENQUIRY</span>
+                  <span>{sending ? "SENDING…" : "SEND ENQUIRY"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>

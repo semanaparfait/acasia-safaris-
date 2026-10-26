@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { PackageDto } from './dto/package.dto';
 
 // Always return the itinerary with each package, sorted Day 1, Day 2, ...
@@ -20,7 +21,10 @@ function slugify(text: string) {
 
 @Injectable()
 export class PackagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   // Website: only published packages
   findPublished() {
@@ -82,9 +86,14 @@ export class PackagesService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const pkg = await this.findOne(id);
     // Itinerary days are deleted automatically (onDelete: Cascade in the schema)
     await this.prisma.package.delete({ where: { id } });
+
+    // Remove its uploaded images from the "tourpackages" bucket
+    for (const url of [pkg.image, ...pkg.itinerary.map((d) => d.image)]) {
+      await this.storage.deleteByUrl(url);
+    }
     return { deleted: true };
   }
 }

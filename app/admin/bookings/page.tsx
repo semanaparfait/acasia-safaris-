@@ -5,20 +5,29 @@ import { AnimatePresence, motion } from "framer-motion";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Download, Eye, Trash2, X, Mail, CalendarDays, Users, Globe, StickyNote, Check, Ban } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
 import { Avatar, Button, Card, ConfirmDialog, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs, inputClass } from "../components/ui";
-import { money, type Booking, type BookingStatus, type PaymentStatus } from "../data/mock";
+import { money } from "@/lib/helpers";
+import type { Booking, BookingStatus, PaymentStatus } from "@/lib/types";
+import { useBookingsStore, type BookingChanges } from "@/store/bookingsStore";
 
 type Filter = "All" | BookingStatus;
 const statusList: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
 const paymentList: PaymentStatus[] = ["Unpaid", "Deposit", "Paid", "Refunded"];
 
+const packageTitle = (b: Booking) => b.package?.title ?? "(package deleted)";
+
 export default function BookingsPage() {
-  const { bookings, setBookings } = useAdmin();
+  // Bookings are loaded by AdminShell; this page reads and updates them
+  const bookings = useBookingsStore((s) => s.bookings);
+  const loading = useBookingsStore((s) => s.loading);
+  const error = useBookingsStore((s) => s.error);
+  const updateBooking = useBookingsStore((s) => s.updateBooking);
+  const deleteBooking = useBookingsStore((s) => s.deleteBooking);
+
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const selected = bookings.find((b) => b.id === selectedId) ?? null;
 
@@ -27,23 +36,36 @@ export default function BookingsPage() {
     return bookings.filter(
       (b) =>
         (filter === "All" || b.status === filter) &&
-        [b.id, b.customer, b.email, b.packageTitle, b.country].some((f) => f.toLowerCase().includes(q))
+        [`#${b.id}`, b.customer, b.email, packageTitle(b), b.country].some((f) => f.toLowerCase().includes(q))
     );
   }, [bookings, filter, query]);
 
-  const update = (id: string, patch: Partial<Booking>) => {
-    setBookings((list) => list.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  const update = async (id: number, changes: BookingChanges, message: string) => {
+    try {
+      await updateBooking(id, changes);
+      toast.success(message);
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
-  const setStatus = (id: string, status: BookingStatus) => {
-    update(id, { status });
-    toast.success(`${id} marked as ${status.toLowerCase()}`);
+  const setStatus = (id: number, status: BookingStatus) =>
+    update(id, { status }, `#${id} marked as ${status.toLowerCase()}`);
+
+  const remove = async () => {
+    if (deleteId === null) return;
+    try {
+      await deleteBooking(deleteId);
+      toast.success(`#${deleteId} deleted`);
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   const exportCsv = () => {
     const header = "id,customer,email,package,start,travelers,amount,status,payment";
     const rows = filtered.map((b) =>
-      [b.id, b.customer, b.email, `"${b.packageTitle}"`, b.startDate.slice(0, 10), b.travelers, b.amount, b.status, b.payment].join(",")
+      [b.id, b.customer, b.email, `"${packageTitle(b)}"`, b.startDate.slice(0, 10), b.travelers, b.amount, b.status, b.payment].join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -92,8 +114,15 @@ export default function BookingsPage() {
           <SearchInput value={query} onChange={setQuery} placeholder="Search by name, ID, package…" className="lg:w-72" />
         </div>
 
-        {filtered.length === 0 ? (
-          <EmptyState title="No bookings found" text="Try a different filter or search term." />
+        {error ? (
+          <p className="p-5 text-sm text-red-700">Could not load bookings: {error}</p>
+        ) : loading && bookings.length === 0 ? (
+          <EmptyState title="Loading bookings…" />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            title={bookings.length === 0 ? "No bookings yet" : "No bookings found"}
+            text={bookings.length === 0 ? "Bookings made on the website will appear here." : "Try a different filter or search term."}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -114,7 +143,7 @@ export default function BookingsPage() {
                 {filtered.map((b) => (
                   <tr key={b.id} className="hover:bg-[#f7f5f0]/70 cursor-pointer" onClick={() => setSelectedId(b.id)}>
                     <td className="px-5 py-3">
-                      <p className="font-medium">{b.id}</p>
+                      <p className="font-medium">#{b.id}</p>
                       <p className="text-xs text-[#0a120b]/45">{format(new Date(b.createdAt), "d MMM")}</p>
                     </td>
                     <td className="px-5 py-3">
@@ -126,7 +155,7 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{b.packageTitle}</td>
+                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{packageTitle(b)}</td>
                     <td className="px-5 py-3 text-[#0a120b]/70 whitespace-nowrap">
                       {format(new Date(b.startDate), "d MMM")} – {format(new Date(b.endDate), "d MMM yyyy")}
                     </td>
@@ -175,7 +204,7 @@ export default function BookingsPage() {
               <div className="flex items-center justify-between px-6 h-16 border-b border-[#0a120b]/[0.06]">
                 <div>
                   <p className="text-xs text-[#0a120b]/45">Booking</p>
-                  <p className="font-semibold">{selected.id}</p>
+                  <p className="font-semibold">Booking #{selected.id}</p>
                 </div>
                 <button onClick={() => setSelectedId(null)} className="p-1.5 rounded-lg hover:bg-[#0a120b]/5 cursor-pointer" aria-label="Close">
                   <X className="size-4" />
@@ -194,7 +223,7 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="rounded-xl bg-[#f7f5f0] p-4 space-y-3 text-sm">
-                  <p className="font-medium">{selected.packageTitle}</p>
+                  <p className="font-medium">{packageTitle(selected)}</p>
                   <Row icon={CalendarDays} label="Dates" value={`${format(new Date(selected.startDate), "d MMM")} – ${format(new Date(selected.endDate), "d MMM yyyy")}`} />
                   <Row icon={Users} label="Travelers" value={`${selected.travelers} ${selected.travelers > 1 ? "people" : "person"}`} />
                   <Row icon={Globe} label="Country" value={selected.country} />
@@ -222,7 +251,7 @@ export default function BookingsPage() {
                     <span className="block text-xs text-[#0a120b]/50 mb-1.5">Payment</span>
                     <select
                       value={selected.payment}
-                      onChange={(e) => { update(selected.id, { payment: e.target.value as PaymentStatus }); toast.success("Payment updated"); }}
+                      onChange={(e) => update(selected.id, { payment: e.target.value as PaymentStatus }, "Payment updated")}
                       className={inputClass}
                     >
                       {paymentList.map((s) => <option key={s}>{s}</option>)}
@@ -254,12 +283,9 @@ export default function BookingsPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
-        onConfirm={() => {
-          setBookings((list) => list.filter((b) => b.id !== deleteId));
-          toast.success(`${deleteId} deleted`);
-        }}
+        onConfirm={remove}
         title="Delete booking"
-        message={`Are you sure you want to delete ${deleteId}? This cannot be undone.`}
+        message={`Are you sure you want to delete booking #${deleteId}? This cannot be undone.`}
       />
     </>
   );

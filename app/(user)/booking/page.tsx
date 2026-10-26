@@ -23,7 +23,8 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
-import { destinations } from "../data/destinations";
+import { useDestinationsStore } from "@/store/destinationsStore";
+import { useMessagesStore } from "@/store/messagesStore";
 
 const travelStyles = [
   "Luxury Safari",
@@ -166,17 +167,24 @@ export default function BookingPage({
 }: {
   searchParams: Promise<{ destination?: string }>;
 }) {
+  // Destinations come from the API (see store/destinationsStore.ts)
+  const destinations = useDestinationsStore((s) => s.destinations);
+  const loadDestinations = useDestinationsStore((s) => s.load);
+  const sendMessage = useMessagesStore((s) => s.sendMessage);
+
+  useEffect(() => {
+    loadDestinations();
+  }, [loadDestinations]);
+
   // Pre-select a destination when arriving from a "Book Now" link, e.g. /booking?destination=gorillas
-  const preselected = destinations.find(
-    (d) => d.id === use(searchParams).destination,
-  );
+  const preselectedId = use(searchParams).destination;
 
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<string[]>(
-    preselected ? [preselected.id] : [],
+    preselectedId ? [preselectedId] : [],
   );
   const [otherDestination, setOtherDestination] = useState("");
-  const [heroDestination, setHeroDestination] = useState(preselected?.id ?? "");
+  const [heroDestination, setHeroDestination] = useState(preselectedId ?? "");
   const [dates, setDates] = useState<{
     from: Date | undefined;
     to?: Date | undefined;
@@ -195,15 +203,16 @@ export default function BookingPage({
   });
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
-    if (preselected) {
+    if (preselectedId) {
       document
         .getElementById("planner")
         ?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [preselected]);
+  }, [preselectedId]);
 
   const toggle = (id: string) =>
     setSelected((prev) =>
@@ -236,15 +245,45 @@ export default function BookingPage({
     document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < steps.length - 1) {
       goTo(step + 1);
       return;
     }
-    // TODO: send the request to the backend / email service
-    setSubmitted(true);
-    document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+
+    // The trip request is saved as a message the admin sees under Messages
+    const where = [...chosen.map((d) => d.title), otherDestination.trim()]
+      .filter(Boolean)
+      .join(", ");
+    setSending(true);
+    setError("");
+    try {
+      await sendMessage({
+        name: details.name,
+        email: details.email,
+        phone: details.phone || undefined,
+        subject: `Trip request: ${where}`,
+        body: [
+          `Destinations: ${where}`,
+          `Dates: ${dateText}`,
+          `Travelers: ${adults} adult(s), ${children} child(ren)`,
+          `Travel style: ${style || "Not chosen"}`,
+          `Accommodation: ${accommodation || "Not chosen"}`,
+          `Budget: ${budget || "Not chosen"}`,
+          `Country: ${details.country || "Not given"}`,
+          "",
+          details.notes,
+        ].join("\n"),
+        source: "Booking request",
+      });
+      setSubmitted(true);
+      document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
   const dateText = dates.from
@@ -755,11 +794,14 @@ export default function BookingPage({
                     )}
                     <button
                       type="submit"
-                      className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all"
+                      disabled={sending}
+                      className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60"
                     >
-                      {step === steps.length - 1
-                        ? "Send My Request"
-                        : "Continue"}
+                      {step < steps.length - 1
+                        ? "Continue"
+                        : sending
+                          ? "Sending…"
+                          : "Send My Request"}
                       <ArrowRight
                         size={16}
                         className="group-hover:translate-x-1 transition-transform"

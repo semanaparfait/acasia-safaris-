@@ -76,6 +76,15 @@ model Worker {
   status    String   @default("Active") // "Active", "On leave", "Inactive"
   joined    DateTime @default(now())
   notes     String?
+  photo     String? // image URL (uploaded to the "workers" bucket)
+
+  // Second role: workers with isAdmin can log in to the admin panel with email + password
+  isAdmin      Boolean @default(false)
+  passwordHash String? // bcrypt hash, never sent to the browser
+
+  // The main admin (only one): cannot be deleted, always keeps admin access,
+  // and is the only one who can give or remove admin access. Set from .env by the seed.
+  isOwner   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -107,10 +116,35 @@ model Message {
   id         Int      @id @default(autoincrement())
   name       String
   email      String
+  phone      String?
   subject    String
   body       String
   source     String   @default("Contact form") // "Contact form", "Booking request", "WhatsApp"
   read       Boolean  @default(false)
   starred    Boolean  @default(false)
   receivedAt DateTime @default(now())
+}
+
+// ---------- Reviews (Testimonials on the home page) ----------
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  name         String
+  country      String
+  rating       Int // 1 to 5
+  packageTitle String?
+  text         String
+  status       String   @default("Pending") // "Pending", "Published", "Hidden"
+  createdAt    DateTime @default(now())
+}
+
+// ---------- Gallery (photos on the gallery page) ----------
+
+model GalleryItem {
+  id        Int      @id @default(autoincrement())
+  title     String
+  category  String // "Wildlife", "Landscapes", "Culture", "People"
+  location  String?
+  image     String // image URL (uploaded to the "gallery" bucket)
+  createdAt DateTime @default(now())
 }

@@ -15,6 +15,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { useMessagesStore } from "@/store/messagesStore";
 
 const contactCards = [
   {
@@ -62,6 +63,9 @@ export default function Contact() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const sendMessage = useMessagesStore((s) => s.sendMessage);
 
   const update =
     (key: keyof typeof form) =>
@@ -72,10 +76,26 @@ export default function Contact() {
     ) =>
       setForm({ ...form, [key]: e.target.value });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Saves the message; the admin reads it under Messages
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect to backend / email service
-    setSubmitted(true);
+    setSending(true);
+    setSendError("");
+    try {
+      await sendMessage({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        subject: form.subject || "General question",
+        body: form.message,
+        source: "Contact form",
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSendError((error as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
   const resetForm = () => {
@@ -344,6 +364,10 @@ export default function Contact() {
                     />
                   </div>
 
+                  {sendError && (
+                    <p className="text-sm text-red-600">{sendError}</p>
+                  )}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pt-2">
                     <p className="text-xs text-[#0a120b]/45 max-w-xs">
                       We respect your privacy. Your details are only used to
@@ -351,9 +375,10 @@ export default function Contact() {
                     </p>
                     <button
                       type="submit"
-                      className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all duration-300"
+                      disabled={sending}
+                      className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-60"
                     >
-                      Send Message
+                      {sending ? "Sending…" : "Send Message"}
                       <ArrowRight
                         size={16}
                         className="group-hover:translate-x-1 transition-transform"

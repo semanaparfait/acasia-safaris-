@@ -15,6 +15,10 @@ export class CreateMessageDto {
   @IsEmail()
   email: string;
 
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
   @IsString()
   @MaxLength(200)
   subject: string;

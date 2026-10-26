@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, MapPin, Clock, BedDouble, LayoutGrid, List, ArrowUp, ArrowDown, X } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
+import { daysLabel, money, packageCategories as categories } from "@/lib/helpers";
+import type { ItineraryDay, PackageInput, TourPackage } from "@/lib/types";
+import { useBookingsStore } from "@/store/bookingsStore";
+import { usePackagesStore } from "@/store/packagesStore";
 import { Badge, Button, Card, ConfirmDialog, EmptyState, Modal, PageHeader, SearchInput, Tabs, Toggle, inputClass, labelClass } from "../components/ui";
-import { money, type AdminPackage } from "../data/mock";
-import { daysLabel, packageCategories as categories, type ItineraryDay } from "@/app/(user)/data/packages";
+import ImageField from "../components/ImageField";
+
+// A package being edited in the form. id is "" for a new package.
+type AdminPackage = TourPackage;
 
 const blank: AdminPackage = {
   id: "",
@@ -30,8 +35,41 @@ const blank: AdminPackage = {
 
 const cleanList = (list: string[] = []) => list.map((s) => s.trim()).filter(Boolean);
 
+// What we send to the API: no id, days in order, empty list lines removed
+function toInput(pkg: AdminPackage): PackageInput {
+  return {
+    title: pkg.title.trim(),
+    category: pkg.category,
+    badge: pkg.badge?.trim() || undefined,
+    location: pkg.location.trim(),
+    description: pkg.description,
+    tripType: pkg.tripType,
+    lodging: pkg.lodging,
+    image: pkg.image,
+    price: pkg.price,
+    active: pkg.active,
+    route: cleanList(pkg.route),
+    itinerary: pkg.itinerary.map((d) => ({ title: d.title, description: d.description, image: d.image })),
+    inclusions: cleanList(pkg.inclusions),
+    exclusions: cleanList(pkg.exclusions),
+    perks: cleanList(pkg.perks),
+  };
+}
+
 export default function PackagesPage() {
-  const { packages, setPackages, bookings } = useAdmin();
+  const packages = usePackagesStore((s) => s.packages);
+  const loading = usePackagesStore((s) => s.loading);
+  const error = usePackagesStore((s) => s.error);
+  const loadAll = usePackagesStore((s) => s.loadAll);
+  const createPackage = usePackagesStore((s) => s.createPackage);
+  const updatePackage = usePackagesStore((s) => s.updatePackage);
+  const deletePackage = usePackagesStore((s) => s.deletePackage);
+  const bookings = useBookingsStore((s) => s.bookings);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
   const bookingCount = (id: string) => bookings.filter((b) => b.packageId === id).length;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -45,28 +83,38 @@ export default function PackagesPage() {
       (p.title + p.location).toLowerCase().includes(query.toLowerCase())
   );
 
-  const save = (pkg: AdminPackage) => {
-    const final: AdminPackage = {
-      ...pkg,
-      route: cleanList(pkg.route),
-      inclusions: cleanList(pkg.inclusions),
-      exclusions: cleanList(pkg.exclusions),
-      perks: cleanList(pkg.perks),
-    };
-    if (!pkg.id) {
-      final.id = pkg.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now().toString(36);
-      setPackages((list) => [final, ...list]);
-      toast.success("Package created");
-    } else {
-      setPackages((list) => list.map((p) => (p.id === pkg.id ? final : p)));
-      toast.success("Package updated");
+  const save = async (pkg: AdminPackage) => {
+    try {
+      if (!pkg.id) {
+        await createPackage(toInput(pkg));
+        toast.success("Package created");
+      } else {
+        await updatePackage(pkg.id, toInput(pkg));
+        toast.success("Package updated");
+      }
+      setEditing(null);
+    } catch (err) {
+      toast.error((err as Error).message);
     }
-    setEditing(null);
   };
 
-  const toggleActive = (id: string, active: boolean) => {
-    setPackages((list) => list.map((p) => (p.id === id ? { ...p, active } : p)));
-    toast.success(active ? "Package published" : "Package moved to drafts");
+  const toggleActive = async (pkg: AdminPackage, active: boolean) => {
+    try {
+      await updatePackage(pkg.id, toInput({ ...pkg, active }));
+      toast.success(active ? "Package published" : "Package moved to drafts");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const remove = async () => {
+    if (!deleteId) return;
+    try {
+      await deletePackage(deleteId);
+      toast.success("Package deleted");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   return (
@@ -98,7 +146,11 @@ export default function PackagesPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {error && <Card className="p-5 mb-5 text-sm text-red-700">Could not load packages: {error}</Card>}
+
+      {loading && packages.length === 0 ? (
+        <Card><EmptyState title="Loading packages…" /></Card>
+      ) : filtered.length === 0 ? (
         <Card><EmptyState title="No packages found" text="Create your first package to get started." /></Card>
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -126,7 +178,7 @@ export default function PackagesPage() {
                   </div>
                   <div className="mt-auto pt-4 flex items-center justify-between border-t border-[#0a120b]/[0.06] mt-4">
                     <div className="flex items-center gap-2 text-xs text-[#0a120b]/60">
-                      <Toggle checked={p.active} onChange={(v) => toggleActive(p.id, v)} label="Published" />
+                      <Toggle checked={p.active} onChange={(v) => toggleActive(p, v)} label="Published" />
                       {p.active ? "Live" : "Draft"} · {bookingCount(p.id)} bookings
                     </div>
                     <div className="flex gap-1">
@@ -192,10 +244,7 @@ export default function PackagesPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
-        onConfirm={() => {
-          setPackages((list) => list.filter((p) => p.id !== deleteId));
-          toast.success("Package deleted");
-        }}
+        onConfirm={remove}
         title="Delete package"
         message="This package will be removed from the website. Existing bookings are not affected."
       />
@@ -212,14 +261,20 @@ function ListField({ label, hint, value, onChange }: { label: string; hint?: str
   );
 }
 
-function PackageForm({ initial, onClose, onSave }: { initial: AdminPackage; onClose: () => void; onSave: (p: AdminPackage) => void }) {
+function PackageForm({ initial, onClose, onSave }: { initial: AdminPackage; onClose: () => void; onSave: (p: AdminPackage) => Promise<void> }) {
   const [form, setForm] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    await onSave(form);
+    setSaving(false);
+  };
   const set = <K extends keyof AdminPackage>(key: K, value: AdminPackage[K]) => setForm((f) => ({ ...f, [key]: value }));
   const valid =
     form.title.trim() && form.location.trim() && form.price > 0 &&
     form.itinerary.length > 0 && form.itinerary.every((d) => d.title.trim());
 
-  const setDay = (index: number, field: keyof ItineraryDay, value: string) =>
+  const setDay = (index: number, field: "title" | "description" | "image", value: string) =>
     set("itinerary", form.itinerary.map((d, i) => (i === index ? { ...d, [field]: value } : d)));
   const addDay = () => set("itinerary", [...form.itinerary, { title: "", description: "", image: "" }]);
   const removeDay = (index: number) => set("itinerary", form.itinerary.filter((_, i) => i !== index));
@@ -238,7 +293,7 @@ function PackageForm({ initial, onClose, onSave }: { initial: AdminPackage; onCl
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button disabled={!valid} onClick={() => onSave(form)}>{initial.id ? "Save changes" : "Create package"}</Button>
+          <Button disabled={!valid || saving} onClick={submit}>{saving ? "Saving…" : initial.id ? "Save changes" : "Create package"}</Button>
         </>
       }
     >
@@ -274,8 +329,7 @@ function PackageForm({ initial, onClose, onSave }: { initial: AdminPackage; onCl
           <input className={inputClass} value={form.badge ?? ""} onChange={(e) => set("badge", e.target.value || undefined)} placeholder="POPULAR (optional)" />
         </div>
         <div className="sm:col-span-2">
-          <label className={labelClass}>Image URL</label>
-          <input className={inputClass} value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="https://images.unsplash.com/…" />
+          <ImageField label="Main image" bucket="tourpackages" value={form.image} onChange={(url) => set("image", url)} />
         </div>
         <div className="sm:col-span-2">
           <label className={labelClass}>Description</label>
@@ -301,7 +355,7 @@ function PackageForm({ initial, onClose, onSave }: { initial: AdminPackage; onCl
                 </div>
                 <input className={inputClass} value={day.title} onChange={(e) => setDay(i, "title", e.target.value)} placeholder="Day title *" />
                 <textarea rows={2} className={inputClass} value={day.description} onChange={(e) => setDay(i, "description", e.target.value)} placeholder="What happens this day" />
-                <input className={inputClass} value={day.image} onChange={(e) => setDay(i, "image", e.target.value)} placeholder="Image URL (optional)" />
+                <ImageField compact bucket="tourpackages" value={day.image} onChange={(url) => setDay(i, "image", url)} />
               </div>
             ))}
           </div>

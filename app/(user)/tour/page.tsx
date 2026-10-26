@@ -1,13 +1,13 @@
 "use client";
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GiGorilla, GiElephant, GiMountainRoad } from "react-icons/gi";
 import { FaUsers, FaGem } from "react-icons/fa";
 import { PiPawPrintFill } from "react-icons/pi";
 import Image from "next/image";
 import TourDetail from "@/app/(user)/tour/components/TourDetail";
-import { usePublishedPackages } from "@/app/(user)/data/packageStore";
-import { tourHref } from "@/app/(user)/data/packages";
+import { usePackagesStore } from "@/store/packagesStore";
+import { tourHref } from "@/lib/helpers";
 import GroupVsTailorMade from "@/app/(user)/tour/components/GroupVsTailorMade";
 import AllPackages from "@/app/(user)/tour/components/AllPackages";
 
@@ -25,7 +25,18 @@ function TourPageContent() {
   const searchParams = useSearchParams();
   const activePackage = searchParams.get("category") ?? "All Packages";
   const selectedId = searchParams.get("package");
-  const packages = usePublishedPackages();
+
+  // Packages come from the API (see store/packagesStore.ts)
+  const allPackages = usePackagesStore((s) => s.packages);
+  const loading = usePackagesStore((s) => s.loading);
+  const error = usePackagesStore((s) => s.error);
+  const loadPublished = usePackagesStore((s) => s.loadPublished);
+
+  useEffect(() => {
+    loadPublished();
+  }, [loadPublished]);
+
+  const packages = allPackages.filter((p) => p.active);
   const selectedPackage = packages.find((p) => p.id === selectedId);
 
   const heroContent: Record<
@@ -196,7 +207,22 @@ function TourPageContent() {
         </div>
       </div>
 
-      {selectedPackage ? (
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800 flex items-center justify-between gap-4">
+            <span>Could not load the packages: {error}</span>
+            <button onClick={loadPublished} className="font-semibold underline cursor-pointer">
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading && packages.length === 0 ? (
+        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center text-sm text-neutral-500">
+          Loading packages…
+        </p>
+      ) : selectedPackage ? (
         <TourDetail
           key={selectedPackage.id}
           tour={selectedPackage}

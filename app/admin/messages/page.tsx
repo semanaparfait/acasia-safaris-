@@ -4,16 +4,21 @@ import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import toast from "react-hot-toast";
 import { Star, Trash2, Reply, Inbox, MailOpen, Send, ArrowLeft } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
+import { useMessagesStore } from "@/store/messagesStore";
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchInput, Tabs, inputClass } from "../components/ui";
 
 type Filter = "all" | "unread" | "starred";
 
 export default function MessagesPage() {
-  const { messages, setMessages } = useAdmin();
+  // Messages are loaded by AdminShell; this page reads and updates them
+  const messages = useMessagesStore((s) => s.messages);
+  const error = useMessagesStore((s) => s.error);
+  const updateMessage = useMessagesStore((s) => s.updateMessage);
+  const deleteMessage = useMessagesStore((s) => s.deleteMessage);
+
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
-  const [activeId, setActiveId] = useState<string | null>(messages[0]?.id ?? null);
+  const [activeId, setActiveId] = useState<number | null>(null);
   const [reply, setReply] = useState("");
 
   const list = messages.filter(
@@ -23,23 +28,38 @@ export default function MessagesPage() {
   );
   const active = messages.find((m) => m.id === activeId);
 
-  const open = (id: string) => {
+  // Saves read / starred; shows an error if saving fails
+  const change = (id: number, changes: { read?: boolean; starred?: boolean }) =>
+    updateMessage(id, changes).catch((err: Error) => toast.error(err.message));
+
+  const open = (id: number) => {
     setActiveId(id);
     setReply("");
-    setMessages((ms) => ms.map((m) => (m.id === id ? { ...m, read: true } : m)));
+    const message = messages.find((m) => m.id === id);
+    if (message && !message.read) change(id, { read: true });
   };
 
-  const toggleStar = (id: string) => setMessages((ms) => ms.map((m) => (m.id === id ? { ...m, starred: !m.starred } : m)));
-
-  const remove = (id: string) => {
-    setMessages((ms) => ms.filter((m) => m.id !== id));
-    setActiveId(null);
-    toast.success("Message deleted");
+  const toggleStar = (id: number) => {
+    const message = messages.find((m) => m.id === id);
+    if (message) change(id, { starred: !message.starred });
   };
 
+  const remove = async (id: number) => {
+    try {
+      await deleteMessage(id);
+      setActiveId(null);
+      toast.success("Message deleted");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  // There is no email service yet: open the admin's email app with the reply filled in
   const send = () => {
-    toast.success(`Reply sent to ${active?.name}`);
-    setReply("");
+    if (!active) return;
+    const subject = encodeURIComponent(`Re: ${active.subject}`);
+    const body = encodeURIComponent(reply);
+    window.location.href = `mailto:${active.email}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -61,7 +81,9 @@ export default function MessagesPage() {
               ]}
             />
           </div>
-          {list.length === 0 ? (
+          {error ? (
+            <p className="p-5 text-sm text-red-700">Could not load messages: {error}</p>
+          ) : list.length === 0 ? (
             <EmptyState title="Nothing here" text="No messages match this view." />
           ) : (
             <ul className="flex-1 overflow-y-auto divide-y divide-[#0a120b]/[0.05]">
@@ -104,7 +126,7 @@ export default function MessagesPage() {
                     <Star className={`size-4 ${active.starred ? "fill-[#c5a86d] text-[#c5a86d]" : "text-[#0a120b]/50"}`} />
                   </button>
                   <button
-                    onClick={() => setMessages((ms) => ms.map((m) => (m.id === active.id ? { ...m, read: false } : m)))}
+                    onClick={() => change(active.id, { read: false })}
                     className="p-2 rounded-lg hover:bg-[#0a120b]/5 cursor-pointer"
                     aria-label="Mark as unread"
                   >
@@ -122,7 +144,7 @@ export default function MessagesPage() {
                   <Avatar name={active.name} size={40} />
                   <div>
                     <p className="text-sm font-medium">{active.name}</p>
-                    <p className="text-xs text-[#0a120b]/50">{active.email}</p>
+                    <p className="text-xs text-[#0a120b]/50">{active.email}{active.phone ? ` · ${active.phone}` : ""}</p>
                   </div>
                   <span className="ml-auto text-xs text-[#0a120b]/45">{format(new Date(active.receivedAt), "d MMM yyyy, HH:mm")}</span>
                 </div>
@@ -135,7 +157,7 @@ export default function MessagesPage() {
                 </div>
                 <textarea rows={3} value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Write your reply…" className={inputClass} />
                 <div className="flex justify-end mt-2">
-                  <Button disabled={!reply.trim()} onClick={send}><Send className="size-4" /> Send reply</Button>
+                  <Button disabled={!reply.trim()} onClick={send}><Send className="size-4" /> Reply by email</Button>
                 </div>
               </div>
             </>

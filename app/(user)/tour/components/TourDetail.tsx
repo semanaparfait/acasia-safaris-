@@ -15,7 +15,9 @@ import {
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
-import { daysLabel, type TourPackage } from "../../data/packages";
+import { daysLabel } from "@/lib/helpers";
+import type { TourPackage } from "@/lib/types";
+import { useMessagesStore } from "@/store/messagesStore";
 
 const guestOptions = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
 const tripStyles = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
@@ -37,11 +39,34 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
     style: tripStyles[0],
   });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const sendMessage = useMessagesStore((s) => s.sendMessage);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // The inquiry is saved as a message the admin sees under Messages
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+    setSending(true);
+    setSendError("");
+    try {
+      await sendMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: `Inquiry: ${tour.title}`,
+        body: [
+          `Package: ${tour.title} (${dayLabel})`,
+          `Travel dates: ${formData.dates || "Flexible"}`,
+          `Guests: ${formData.guests}`,
+          `Trip style: ${formData.style}`,
+        ].join("\n"),
+        source: "Booking request",
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSendError((error as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -256,11 +281,14 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   </div>
                 </div>
 
+                {sendError && <p className="text-[11px] text-red-600">{sendError}</p>}
+
                 <button
                   type="submit"
-                  className="w-full mt-2 bg-[#C29342] hover:bg-[#b08336] text-white font-semibold text-xs tracking-wider uppercase py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
+                  disabled={sending}
+                  className="w-full mt-2 bg-[#C29342] hover:bg-[#b08336] text-white font-semibold text-xs tracking-wider uppercase py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-60"
                 >
-                  Request an Itinerary
+                  {sending ? "Sending…" : "Request an Itinerary"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>

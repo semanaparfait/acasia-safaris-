@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { format, formatDistanceToNow, subMonths } from "date-fns";
 import {
   DollarSign,
   CalendarCheck,
@@ -14,61 +14,96 @@ import {
   ArrowDownRight,
   ArrowRight,
   Plus,
-  Download,
   Clock,
   Plane,
 } from "lucide-react";
-import { useAdmin } from "./components/AdminStore";
+import { money, recentActivity } from "@/lib/helpers";
+import type { Booking } from "@/lib/types";
+import { useBookingsStore } from "@/store/bookingsStore";
+import { useMessagesStore } from "@/store/messagesStore";
+import { usePackagesStore } from "@/store/packagesStore";
+import { useReviewsStore } from "@/store/reviewsStore";
 import { AreaChart, BarList, Sparkline } from "./components/Charts";
 import { Avatar, Button, Card, CardHeader, PageHeader, StatusBadge, Tabs } from "./components/ui";
-import { activity, monthlyStats, money } from "./data/mock";
 
 const compact = (n: number) => (n >= 1000 ? `$${Math.round(n / 1000)}k` : `$${n}`);
 
+// Revenue and bookings per month for the last `count` months (oldest first).
+// A booking counts in the month it was made; cancelled bookings are left out.
+function monthlyStats(bookings: Booking[], count: number) {
+  const now = new Date();
+  return Array.from({ length: count }, (_, i) => {
+    const month = subMonths(now, count - 1 - i);
+    const key = format(month, "yyyy-MM");
+    const inMonth = bookings.filter((b) => b.status !== "Cancelled" && b.createdAt.slice(0, 7) === key);
+    return {
+      month: format(month, "MMM"),
+      revenue: inMonth.reduce((sum, b) => sum + b.amount, 0),
+      bookings: inMonth.length,
+    };
+  });
+}
+
+// % change from last month to this month (0 when there is nothing to compare)
+const percentChange = (now: number, before: number) => (before === 0 ? 0 : ((now - before) / before) * 100);
+
 export default function DashboardPage() {
-  const { bookings, packages, reviews, messages } = useAdmin();
+  const bookings = useBookingsStore((s) => s.bookings);
+  const messages = useMessagesStore((s) => s.messages);
+  const reviews = useReviewsStore((s) => s.reviews);
+  const packages = usePackagesStore((s) => s.packages);
+  const loadPackages = usePackagesStore((s) => s.loadAll);
+
+  useEffect(() => {
+    loadPackages();
+  }, [loadPackages]);
+
   const [range, setRange] = useState<"12m" | "6m" | "3m">("12m");
 
   const months = { "12m": 12, "6m": 6, "3m": 3 }[range];
-  const series = monthlyStats.slice(-months);
+  const yearStats = monthlyStats(bookings, 12);
+  const series = yearStats.slice(-months);
 
-  const thisMonth = monthlyStats[monthlyStats.length - 1];
-  const lastMonth = monthlyStats[monthlyStats.length - 2];
-  const avgRating = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-  const activeTravelers = bookings
-    .filter((b) => b.status === "Confirmed")
+  const thisMonth = yearStats[yearStats.length - 1];
+  const lastMonth = yearStats[yearStats.length - 2];
+  const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const today = new Date().toISOString();
+  const upcomingTravelers = bookings
+    .filter((b) => b.status === "Confirmed" && b.startDate >= today)
     .reduce((s, b) => s + b.travelers, 0);
 
   const stats = [
     {
       label: "Revenue this month",
       value: money(thisMonth.revenue),
-      change: ((thisMonth.revenue - lastMonth.revenue) / lastMonth.revenue) * 100,
+      change: percentChange(thisMonth.revenue, lastMonth.revenue),
       icon: DollarSign,
-      trend: monthlyStats.map((m) => m.revenue),
+      trend: yearStats.map((m) => m.revenue),
     },
     {
       label: "Bookings this month",
       value: thisMonth.bookings.toString(),
-      change: ((thisMonth.bookings - lastMonth.bookings) / lastMonth.bookings) * 100,
+      change: percentChange(thisMonth.bookings, lastMonth.bookings),
       icon: CalendarCheck,
-      trend: monthlyStats.map((m) => m.bookings),
+      trend: yearStats.map((m) => m.bookings),
     },
     {
       label: "Upcoming travelers",
-      value: activeTravelers.toString(),
-      change: 12.4,
+      value: upcomingTravelers.toString(),
+      change: null,
       icon: Users,
-      trend: [8, 10, 9, 12, 14, 13, 16, 18, 17, 20, 19, activeTravelers],
+      trend: null,
     },
     {
       label: "Average rating",
-      value: avgRating.toFixed(1) + " / 5",
-      change: 2.1,
+      value: reviews.length ? `${avgRating.toFixed(1)} / 5` : "—",
+      change: null,
       icon: Star,
-      trend: [4.4, 4.5, 4.5, 4.6, 4.5, 4.6, 4.7, 4.6, 4.7, 4.7, 4.6, avgRating],
+      trend: null,
     },
   ];
+
+  const activity = recentActivity(bookings, messages, reviews, 6);
 
   const topPackages = packages
     .map((p) => ({ label: p.title, value: bookings.filter((b) => b.packageId === p.id).length }))
@@ -77,7 +112,7 @@ export default function DashboardPage() {
 
   const recent = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
   const upcoming = bookings
-    .filter((b) => b.status === "Confirmed")
+    .filter((b) => b.status === "Confirmed" && b.startDate >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate))
     .slice(0, 4);
 
@@ -91,7 +126,6 @@ export default function DashboardPage() {
         subtitle="Here's what's happening with Acacia Safaris today."
         actions={
           <>
-            <Button variant="secondary"><Download className="size-4" /> Export</Button>
             <Link href="/admin/packages">
               <Button><Plus className="size-4" /> New package</Button>
             </Link>
@@ -105,13 +139,11 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-2xl bg-[#12231a] text-white mb-6"
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&auto=format&fit=crop&q=80"
           alt=""
-          fill
-          className="object-cover opacity-30"
-          sizes="100vw"
-          priority
+          className="absolute inset-0 size-full object-cover opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a120b] via-[#0a120b]/85 to-transparent" />
         <div className="relative p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -133,7 +165,7 @@ export default function DashboardPage() {
       {/* KPI tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {stats.map((s, i) => {
-          const up = s.change >= 0;
+          const up = (s.change ?? 0) >= 0;
           const Icon = s.icon;
           return (
             <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}>
@@ -142,16 +174,18 @@ export default function DashboardPage() {
                   <span className="size-10 rounded-xl bg-[#2E7D5B]/10 text-[#2E7D5B] flex items-center justify-center">
                     <Icon className="size-5" />
                   </span>
-                  <Sparkline values={s.trend} />
+                  {s.trend && <Sparkline values={s.trend} />}
                 </div>
                 <p className="text-xs text-[#0a120b]/50 mt-4">{s.label}</p>
                 <div className="flex items-end justify-between gap-2 mt-1">
                   <p className="text-2xl font-semibold tracking-tight tabular-nums">{s.value}</p>
-                  <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${up ? "text-emerald-700" : "text-red-600"}`}>
-                    {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
-                    {Math.abs(s.change).toFixed(1)}%
-                    <span className="text-[#0a120b]/40 font-normal ml-1">vs last month</span>
-                  </span>
+                  {s.change !== null && (
+                    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${up ? "text-emerald-700" : "text-red-600"}`}>
+                      {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
+                      {Math.abs(s.change).toFixed(1)}%
+                      <span className="text-[#0a120b]/40 font-normal ml-1">vs last month</span>
+                    </span>
+                  )}
                 </div>
               </Card>
             </motion.div>
@@ -206,6 +240,9 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0a120b]/[0.05]">
+                {recent.length === 0 && (
+                  <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-[#0a120b]/45">No bookings yet</td></tr>
+                )}
                 {recent.map((b) => (
                   <tr key={b.id} className="hover:bg-[#f7f5f0]/70">
                     <td className="px-5 py-3">
@@ -213,11 +250,11 @@ export default function DashboardPage() {
                         <Avatar name={b.customer} size={32} />
                         <div>
                           <p className="font-medium whitespace-nowrap">{b.customer}</p>
-                          <p className="text-xs text-[#0a120b]/45">{b.id}</p>
+                          <p className="text-xs text-[#0a120b]/45">#{b.id}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{b.packageTitle}</td>
+                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{b.package?.title ?? "—"}</td>
                     <td className="px-5 py-3 text-[#0a120b]/70 whitespace-nowrap">{format(new Date(b.startDate), "d MMM yyyy")}</td>
                     <td className="px-5 py-3 text-right font-medium tabular-nums">{money(b.amount)}</td>
                     <td className="px-5 py-3"><StatusBadge status={b.status} /></td>
@@ -232,6 +269,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader title="Upcoming departures" subtitle="Confirmed trips" />
             <ul className="px-5 pb-5 space-y-3">
+              {upcoming.length === 0 && <li className="text-sm text-[#0a120b]/45">No confirmed trips coming up</li>}
               {upcoming.map((b) => (
                 <li key={b.id} className="flex items-center gap-3">
                   <div className="w-12 shrink-0 rounded-lg bg-[#12231a] text-center py-1.5">
@@ -241,7 +279,7 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{b.customer}</p>
                     <p className="text-xs text-[#0a120b]/50 truncate flex items-center gap-1">
-                      <Plane className="size-3" /> {b.packageTitle} · {b.travelers} pax
+                      <Plane className="size-3" /> {b.package?.title ?? "—"} · {b.travelers} pax
                     </p>
                   </div>
                 </li>
@@ -252,13 +290,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader title="Activity" />
             <ul className="px-5 pb-5 space-y-4">
+              {activity.length === 0 && <li className="text-sm text-[#0a120b]/45">Nothing yet</li>}
               {activity.map((a, i) => (
                 <li key={a.id} className="relative flex gap-3">
                   {i < activity.length - 1 && <span className="absolute left-[5px] top-4 bottom-[-14px] w-px bg-[#0a120b]/10" />}
                   <span className="mt-1.5 size-[11px] rounded-full border-2 border-[#2E7D5B] bg-white shrink-0" />
                   <div>
                     <p className="text-sm text-[#0a120b]/80">{a.text}</p>
-                    <p className="text-xs text-[#0a120b]/40 flex items-center gap-1 mt-0.5"><Clock className="size-3" /> {a.time}</p>
+                    <p className="text-xs text-[#0a120b]/40 flex items-center gap-1 mt-0.5"><Clock className="size-3" /> {formatDistanceToNow(new Date(a.date), { addSuffix: true })}</p>
                   </div>
                 </li>
               ))}

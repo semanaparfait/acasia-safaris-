@@ -2,7 +2,7 @@
 // Run with:  npm run db:seed
 // Safe to run again: existing rows are updated, not duplicated.
 import { PrismaClient } from '@prisma/client';
-import { destinations, packages, workers } from './seed-data';
+import { destinations, gallery, packages, reviews, workers } from './seed-data';
 
 const prisma = new PrismaClient();
 
@@ -37,6 +37,20 @@ async function main() {
     });
   }
   console.log(`✔ ${workers.length} workers`);
+
+  // Reviews and gallery have no natural unique key, so only add them to an empty table
+  if ((await prisma.review.count()) === 0) {
+    await prisma.review.createMany({ data: reviews });
+    console.log(`✔ ${reviews.length} reviews`);
+  }
+
+  if ((await prisma.galleryItem.count()) === 0) {
+    // Reversed so the first photo in the list is the newest (shown first)
+    for (const item of [...gallery].reverse()) {
+      await prisma.galleryItem.create({ data: item });
+    }
+    console.log(`✔ ${gallery.length} gallery photos`);
+  }
 }
 
 main()

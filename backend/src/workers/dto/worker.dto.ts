@@ -1,10 +1,12 @@
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsIn,
   IsOptional,
   IsString,
+  MinLength,
 } from 'class-validator';
 
 export const WORKER_ROLES = [
@@ -45,4 +47,20 @@ export class WorkerDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  // URL returned by POST /api/uploads/workers
+  @IsOptional()
+  @IsString()
+  photo?: string;
+
+  // Second role: true = can log in to the admin panel
+  @IsOptional()
+  @IsBoolean()
+  isAdmin?: boolean;
+
+  // Only sent when setting or changing the password. Leave it out to keep the old one.
+  @IsOptional()
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  password?: string;
 }

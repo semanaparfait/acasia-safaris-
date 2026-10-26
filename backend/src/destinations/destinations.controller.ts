@@ -12,7 +12,7 @@ import { AdminGuard } from '../common/admin.guard';
 import { DestinationsService } from './destinations.service';
 import { DestinationDto } from './dto/destination.dto';
 
-// Routes under /api/destinations. Reading is public, changing needs the admin key.
+// Routes under /api/destinations. Reading is public, changing needs an admin login.
 @Controller('destinations')
 export class DestinationsController {
   constructor(private destinationsService: DestinationsService) {}

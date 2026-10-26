@@ -4,9 +4,9 @@ import { useState } from "react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Star, Check, EyeOff, Trash2, Quote } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
 import { Avatar, Button, Card, EmptyState, PageHeader, StatusBadge, Tabs } from "../components/ui";
-import type { Review } from "../data/mock";
+import type { Review } from "@/lib/types";
+import { useReviewsStore } from "@/store/reviewsStore";
 
 type Filter = "All" | Review["status"];
 
@@ -21,15 +21,32 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 }
 
 export default function ReviewsPage() {
-  const { reviews, setReviews } = useAdmin();
+  // Reviews are loaded by AdminShell; this page reads and moderates them
+  const reviews = useReviewsStore((s) => s.reviews);
+  const error = useReviewsStore((s) => s.error);
+  const changeStatus = useReviewsStore((s) => s.setStatus);
+  const deleteReview = useReviewsStore((s) => s.deleteReview);
   const [filter, setFilter] = useState<Filter>("All");
 
   const list = reviews.filter((r) => filter === "All" || r.status === filter);
   const avg = reviews.reduce((s, r) => s + r.rating, 0) / (reviews.length || 1);
 
-  const setStatus = (id: string, status: Review["status"]) => {
-    setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
-    toast.success(status === "Published" ? "Review published to website" : `Review ${status.toLowerCase()}`);
+  const setStatus = async (id: number, status: Review["status"]) => {
+    try {
+      await changeStatus(id, status);
+      toast.success(status === "Published" ? "Review published to website" : `Review ${status.toLowerCase()}`);
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const remove = async (id: number) => {
+    try {
+      await deleteReview(id);
+      toast.success("Review deleted");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   return (
@@ -82,7 +99,9 @@ export default function ReviewsPage() {
         />
       </div>
 
-      {list.length === 0 ? (
+      {error ? (
+        <Card className="p-5 text-sm text-red-700">Could not load reviews: {error}</Card>
+      ) : list.length === 0 ? (
         <Card><EmptyState title="No reviews in this view" /></Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -95,7 +114,7 @@ export default function ReviewsPage() {
                     <p className="font-medium">{r.name}</p>
                     <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-xs text-[#0a120b]/50">{r.country} · {format(new Date(r.date), "d MMM yyyy")}</p>
+                  <p className="text-xs text-[#0a120b]/50">{r.country} · {format(new Date(r.createdAt), "d MMM yyyy")}</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-2">
@@ -116,7 +135,7 @@ export default function ReviewsPage() {
                 <Button
                   variant="ghost"
                   className="py-2 ml-auto hover:text-red-600"
-                  onClick={() => { setReviews((rs) => rs.filter((x) => x.id !== r.id)); toast.success("Review deleted"); }}
+                  onClick={() => remove(r.id)}
                 >
                   <Trash2 className="size-4" />
                 </Button>

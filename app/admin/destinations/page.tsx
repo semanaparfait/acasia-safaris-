@@ -1,48 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, MapPin, Sun, Car, Sparkles } from "lucide-react";
-import { useAdmin } from "../components/AdminStore";
-import { Button, Card, ConfirmDialog, Modal, PageHeader, SearchInput, Tabs, Toggle, inputClass, labelClass } from "../components/ui";
-import type { AdminDestination } from "../data/mock";
+import { destinationGroups as groups } from "@/lib/helpers";
+import type { Destination, DestinationInput } from "@/lib/types";
+import { useDestinationsStore } from "@/store/destinationsStore";
+import { Button, Card, ConfirmDialog, EmptyState, Modal, PageHeader, SearchInput, Tabs, Toggle, inputClass, labelClass } from "../components/ui";
+import ImageField from "../components/ImageField";
 
-const groups = ["Wildlife", "Nature", "Culture", "Adventure", "Luxury"];
-
-const blank: AdminDestination = {
+const blank: Destination = {
   id: "",
   title: "",
+  description: "",
   group: groups[0],
   location: "",
   image: "",
+  highlights: [],
   bestTime: "",
   fromKigali: "",
-  highlights: [],
   featured: false,
-  visitors: 0,
 };
 
+// What we send to the API (everything except the id)
+const toInput = (d: Destination): DestinationInput => ({
+  title: d.title,
+  description: d.description,
+  group: d.group,
+  location: d.location,
+  image: d.image,
+  highlights: d.highlights,
+  bestTime: d.bestTime,
+  fromKigali: d.fromKigali,
+  featured: d.featured,
+});
+
 export default function DestinationsPage() {
-  const { destinations, setDestinations } = useAdmin();
+  const destinations = useDestinationsStore((s) => s.destinations);
+  const loading = useDestinationsStore((s) => s.loading);
+  const error = useDestinationsStore((s) => s.error);
+  const load = useDestinationsStore((s) => s.load);
+  const createDestination = useDestinationsStore((s) => s.createDestination);
+  const updateDestination = useDestinationsStore((s) => s.updateDestination);
+  const deleteDestination = useDestinationsStore((s) => s.deleteDestination);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
   const [group, setGroup] = useState("All");
   const [query, setQuery] = useState("");
-  const [editing, setEditing] = useState<AdminDestination | null>(null);
+  const [editing, setEditing] = useState<Destination | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filtered = destinations.filter(
     (d) => (group === "All" || d.group === group) && (d.title + d.location).toLowerCase().includes(query.toLowerCase())
   );
 
-  const save = (d: AdminDestination) => {
-    if (!d.id) {
-      setDestinations((list) => [{ ...d, id: d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + Date.now().toString(36) }, ...list]);
-      toast.success("Destination added");
-    } else {
-      setDestinations((list) => list.map((x) => (x.id === d.id ? d : x)));
-      toast.success("Destination updated");
+  const save = async (d: Destination) => {
+    try {
+      if (!d.id) {
+        await createDestination(toInput(d));
+        toast.success("Destination added");
+      } else {
+        await updateDestination(d.id, toInput(d));
+        toast.success("Destination updated");
+      }
+      setEditing(null);
+    } catch (err) {
+      toast.error((err as Error).message);
     }
-    setEditing(null);
+  };
+
+  const toggleFeatured = async (d: Destination, featured: boolean) => {
+    try {
+      await updateDestination(d.id, toInput({ ...d, featured }));
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const remove = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteDestination(deleteId);
+      toast.success("Destination deleted");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   return (
@@ -57,6 +103,10 @@ export default function DestinationsPage() {
         <Tabs value={group} onChange={setGroup} tabs={[{ value: "All", label: "All" }, ...groups.map((g) => ({ value: g, label: g }))]} />
         <SearchInput value={query} onChange={setQuery} placeholder="Search destinations…" className="lg:w-64" />
       </div>
+
+      {error && <Card className="p-5 mb-5 text-sm text-red-700">Could not load destinations: {error}</Card>}
+      {loading && destinations.length === 0 && <Card><EmptyState title="Loading destinations…" /></Card>}
+      {!loading && filtered.length === 0 && <Card><EmptyState title="No destinations found" /></Card>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
         {filtered.map((d) => (
@@ -89,15 +139,10 @@ export default function DestinationsPage() {
                   <span key={h} className="px-2 py-0.5 rounded-full bg-[#f7f5f0] text-[#0a120b]/65">{h}</span>
                 ))}
               </div>
-              <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#0a120b]/[0.06]">
-                <span><span className="font-semibold text-[#0a120b] tabular-nums">{d.visitors.toLocaleString()}</span> page views</span>
+              <div className="flex items-center justify-end pt-3 mt-1 border-t border-[#0a120b]/[0.06]">
                 <label className="flex items-center gap-2">
                   Featured
-                  <Toggle
-                    checked={d.featured}
-                    onChange={(v) => setDestinations((list) => list.map((x) => (x.id === d.id ? { ...x, featured: v } : x)))}
-                    label="Featured"
-                  />
+                  <Toggle checked={d.featured} onChange={(v) => toggleFeatured(d, v)} label="Featured" />
                 </label>
               </div>
             </div>
@@ -110,7 +155,7 @@ export default function DestinationsPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
-        onConfirm={() => { setDestinations((list) => list.filter((d) => d.id !== deleteId)); toast.success("Destination deleted"); }}
+        onConfirm={remove}
         title="Delete destination"
         message="This destination will be removed from the website."
       />
@@ -118,10 +163,17 @@ export default function DestinationsPage() {
   );
 }
 
-function DestinationForm({ initial, onClose, onSave }: { initial: AdminDestination; onClose: () => void; onSave: (d: AdminDestination) => void }) {
+function DestinationForm({ initial, onClose, onSave }: { initial: Destination; onClose: () => void; onSave: (d: Destination) => Promise<void> }) {
   const [form, setForm] = useState(initial);
   const [highlights, setHighlights] = useState(initial.highlights.join(", "));
-  const set = <K extends keyof AdminDestination>(k: K, v: AdminDestination[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const [saving, setSaving] = useState(false);
+  const set = <K extends keyof Destination>(k: K, v: Destination[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const submit = async () => {
+    setSaving(true);
+    await onSave({ ...form, highlights: highlights.split(",").map((h) => h.trim()).filter(Boolean) });
+    setSaving(false);
+  };
 
   return (
     <Modal
@@ -132,12 +184,7 @@ function DestinationForm({ initial, onClose, onSave }: { initial: AdminDestinati
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button
-            disabled={!form.title.trim()}
-            onClick={() => onSave({ ...form, highlights: highlights.split(",").map((h) => h.trim()).filter(Boolean) })}
-          >
-            Save
-          </Button>
+          <Button disabled={!form.title.trim() || saving} onClick={submit}>{saving ? "Saving…" : "Save"}</Button>
         </>
       }
     >
@@ -151,6 +198,10 @@ function DestinationForm({ initial, onClose, onSave }: { initial: AdminDestinati
           <select className={inputClass} value={form.group} onChange={(e) => set("group", e.target.value)}>
             {groups.map((g) => <option key={g}>{g}</option>)}
           </select>
+        </div>
+        <div className="sm:col-span-2">
+          <label className={labelClass}>Description</label>
+          <textarea rows={2} className={inputClass} value={form.description} onChange={(e) => set("description", e.target.value)} />
         </div>
         <div className="sm:col-span-2">
           <label className={labelClass}>Location</label>
@@ -169,8 +220,7 @@ function DestinationForm({ initial, onClose, onSave }: { initial: AdminDestinati
           <input className={inputClass} value={highlights} onChange={(e) => setHighlights(e.target.value)} />
         </div>
         <div className="sm:col-span-2">
-          <label className={labelClass}>Image URL</label>
-          <input className={inputClass} value={form.image} onChange={(e) => set("image", e.target.value)} />
+          <ImageField label="Image" bucket="destinations" value={form.image} onChange={(url) => set("image", url)} />
         </div>
       </div>
     </Modal>
