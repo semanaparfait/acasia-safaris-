@@ -23,31 +23,36 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
+import { defaultTripOptions, tripOptions, type TripOptions } from "@/lib/helpers";
 import type { Destination } from "@/lib/types";
+import { useBookingsStore } from "@/store/bookingsStore";
 import { useDestinationsStore } from "@/store/destinationsStore";
-import { useMessagesStore } from "@/store/messagesStore";
 
-const travelStyles = [
-  "Luxury Safari",
-  "Adventure",
-  "Cultural",
-  "Photography",
-  "Honeymoon",
-  "Family Trip",
-];
-const accommodations = [
-  "Luxury Lodges",
-  "Boutique Hotels",
-  "Mid-range Hotels",
-  "Eco Lodges",
-  "Camping",
-];
-const budgets = [
-  "$1,000 – 2,000",
-  "$2,000 – 5,000",
-  "$5,000 – 10,000",
-  "$10,000+",
-];
+const OTHER = "Other";
+
+// What the visitor picks for one destination. The "other" fields hold the text
+// typed after choosing "Other".
+type TripChoice = {
+  style: string;
+  otherStyle: string;
+  accommodation: string;
+  otherAccommodation: string;
+  budget: string;
+};
+const emptyChoice: TripChoice = {
+  style: "",
+  otherStyle: "",
+  accommodation: "",
+  otherAccommodation: "",
+  budget: "",
+};
+
+// The chosen option, or the typed text when it is "Other"
+const finalValue = (picked: string, typed: string) =>
+  picked === OTHER ? typed.trim() : picked;
+
+// A destination of the trip with its own choices
+type Stop = { key: string; title: string; options: TripOptions };
 
 const steps = [
   { title: "Destinations", short: "Where" },
@@ -125,6 +130,51 @@ function Chip({
   );
 }
 
+// A row of chips. With "other", an "Other" chip is added that opens a text box.
+function ChoiceGroup({
+  label,
+  options,
+  value,
+  onChange,
+  other,
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  other?: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder: string;
+  };
+}) {
+  const choices = other ? [...new Set([...options, OTHER])] : options;
+  return (
+    <div>
+      <p className={labelClass}>{label} *</p>
+      <div className="flex flex-wrap gap-2">
+        {choices.map((c) => (
+          <Chip
+            key={c}
+            label={c}
+            active={value === c}
+            onClick={() => onChange(value === c ? "" : c)}
+          />
+        ))}
+      </div>
+      {other && value === OTHER && (
+        <input
+          aria-label={`${label}: other`}
+          value={other.value}
+          onChange={(e) => other.onChange(e.target.value)}
+          placeholder={other.placeholder}
+          className={`${inputClass} mt-3`}
+        />
+      )}
+    </div>
+  );
+}
+
 function Counter({
   label,
   value,
@@ -171,7 +221,7 @@ export default function BookingPage({
   // Destinations come from the API (see store/destinationsStore.ts)
   const destinations = useDestinationsStore((s) => s.destinations);
   const loadDestinations = useDestinationsStore((s) => s.load);
-  const sendMessage = useMessagesStore((s) => s.sendMessage);
+  const createBooking = useBookingsStore((s) => s.createBooking);
 
   useEffect(() => {
     loadDestinations();
@@ -193,14 +243,13 @@ export default function BookingPage({
   }>({ from: undefined });
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
-  const [style, setStyle] = useState("");
-  const [accommodation, setAccommodation] = useState("");
-  const [budget, setBudget] = useState("");
+  const [choices, setChoices] = useState<Record<string, TripChoice>>({});
   const [details, setDetails] = useState({
     name: "",
     email: "",
     phone: "",
-    country: "",
+    fromRwanda: "", // "Yes" or "No"
+    country: "", // only asked when not from Rwanda
     notes: "",
   });
   const [error, setError] = useState("");
@@ -233,13 +282,78 @@ export default function BookingPage({
     destinations.find((d) => matches(d, heroDestination))?.id ?? "";
   const hasDestination = chosen.length > 0 || otherDestination.trim() !== "";
 
-  const goTo = (next: number) => {
-    if (next > 0 && !hasDestination) {
-      setError("Please choose at least one destination.");
-      return;
+  // Every destination has its own choices; a typed place uses the default ones
+  const stops: Stop[] = chosen.map((d) => ({
+    key: d.id,
+    title: d.title,
+    options: tripOptions(d),
+  }));
+  if (otherDestination.trim()) {
+    stops.push({
+      key: "other",
+      title: otherDestination.trim(),
+      options: defaultTripOptions,
+    });
+  }
+
+  const choiceFor = (key: string) => choices[key] ?? emptyChoice;
+  const setChoice = (key: string, changes: Partial<TripChoice>) =>
+    setChoices((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] ?? emptyChoice), ...changes },
+    }));
+
+  // What is still missing on a step ("" = the step is complete)
+  const stepProblem = (i: number) => {
+    if (i === 0) {
+      return hasDestination ? "" : "Please choose at least one destination.";
+    }
+    if (i === 1) {
+      if (!dates.from || !dates.to) {
+        return "Please choose your arrival and departure dates.";
+      }
+      for (const { key, title } of stops) {
+        const c = choiceFor(key);
+        if (!finalValue(c.style, c.otherStyle)) {
+          return `Please choose a travel style for ${title}.`;
+        }
+        if (!finalValue(c.accommodation, c.otherAccommodation)) {
+          return `Please choose accommodation for ${title}.`;
+        }
+        if (!c.budget) return `Please choose a budget for ${title}.`;
+      }
+      return "";
+    }
+    if (!details.name.trim()) return "Please enter your full name.";
+    if (!/^\S+@\S+\.\S+$/.test(details.email.trim())) {
+      return "Please enter a valid email address.";
+    }
+    if (!/^\+?[\d\s()-]{7,}$/.test(details.phone.trim())) {
+      return "Please enter a valid phone or WhatsApp number.";
+    }
+    if (!details.fromRwanda) return "Please tell us if you are from Rwanda.";
+    if (details.fromRwanda === "No" && !details.country.trim()) {
+      return "Please type the country you are from.";
+    }
+    return "";
+  };
+
+  // Checks the first "count" steps and stops on the first one that is not finished
+  const stepsComplete = (count: number) => {
+    for (let i = 0; i < count; i++) {
+      const problem = stepProblem(i);
+      if (problem) {
+        setError(problem);
+        setStep(i);
+        return false;
+      }
     }
     setError("");
-    setStep(next);
+    return true;
+  };
+
+  const goTo = (next: number) => {
+    if (stepsComplete(next)) setStep(next);
     document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -263,30 +377,32 @@ export default function BookingPage({
       return;
     }
 
-    // The trip request is saved as a message the admin sees under Messages
-    const where = [...chosen.map((d) => d.title), otherDestination.trim()]
-      .filter(Boolean)
-      .join(", ");
+    if (!stepsComplete(steps.length) || !dates.from || !dates.to) return;
+
+    // The trip is saved as a booking the admin sees under Bookings
     setSending(true);
     setError("");
     try {
-      await sendMessage({
-        name: details.name,
-        email: details.email,
-        phone: details.phone || undefined,
-        subject: `Trip request: ${where}`,
-        body: [
-          `Destinations: ${where}`,
-          `Dates: ${dateText}`,
-          `Travelers: ${adults} adult(s), ${children} child(ren)`,
-          `Travel style: ${style || "Not chosen"}`,
-          `Accommodation: ${accommodation || "Not chosen"}`,
-          `Budget: ${budget || "Not chosen"}`,
-          `Country: ${details.country || "Not given"}`,
-          "",
-          details.notes,
-        ].join("\n"),
-        source: "Booking request",
+      await createBooking({
+        customer: details.name.trim(),
+        email: details.email.trim(),
+        phone: details.phone.trim(),
+        country:
+          details.fromRwanda === "Yes" ? "Rwanda" : details.country.trim(),
+        destinations: stops.map(({ key, title }) => {
+          const c = choiceFor(key);
+          return {
+            title,
+            travelStyle: finalValue(c.style, c.otherStyle),
+            accommodation: finalValue(c.accommodation, c.otherAccommodation),
+            budget: c.budget,
+          };
+        }),
+        startDate: format(dates.from, "yyyy-MM-dd"),
+        endDate: format(dates.to, "yyyy-MM-dd"),
+        travelers: adults + children,
+        children,
+        notes: details.notes.trim() || undefined,
       });
       setSubmitted(true);
       document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
@@ -598,12 +714,12 @@ export default function BookingPage({
                               Tell us about your trip
                             </h2>
                             <p className="text-sm text-[#0a120b]/55">
-                              Not sure yet? Leave anything blank and we&apos;ll
-                              help you decide.
+                              Choose your dates, then a travel style,
+                              accommodation and budget for each destination.
                             </p>
                           </div>
                           <div>
-                            <p className={labelClass}>Travel dates</p>
+                            <p className={labelClass}>Travel dates *</p>
                             <div className="rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 [&>div>button]:border-0 [&>div>button]:py-2.5 [&>div>button]:font-sans [&>div>button]:text-sm">
                               <DateRangePicker
                                 date={dates}
@@ -628,51 +744,56 @@ export default function BookingPage({
                               onChange={setChildren}
                             />
                           </div>
-                          <div>
-                            <p className={labelClass}>Travel style</p>
-                            <div className="flex flex-wrap gap-2">
-                              {travelStyles.map((s) => (
-                                <Chip
-                                  key={s}
-                                  label={s}
-                                  active={style === s}
-                                  onClick={() => setStyle(style === s ? "" : s)}
+                          {stops.map(({ key, title, options }) => {
+                            const c = choiceFor(key);
+                            return (
+                              <div
+                                key={key}
+                                className="rounded-xl border border-[#0a120b]/10 p-5 space-y-5"
+                              >
+                                <h3 className="font-serif uppercase tracking-wide">
+                                  {title}
+                                </h3>
+                                <ChoiceGroup
+                                  label="Travel style"
+                                  options={options.travelStyles}
+                                  value={c.style}
+                                  onChange={(style) =>
+                                    setChoice(key, { style })
+                                  }
+                                  other={{
+                                    value: c.otherStyle,
+                                    onChange: (otherStyle) =>
+                                      setChoice(key, { otherStyle }),
+                                    placeholder: "Tell us your travel style",
+                                  }}
                                 />
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <p className={labelClass}>Accommodation</p>
-                            <div className="flex flex-wrap gap-2">
-                              {accommodations.map((a) => (
-                                <Chip
-                                  key={a}
-                                  label={a}
-                                  active={accommodation === a}
-                                  onClick={() =>
-                                    setAccommodation(
-                                      accommodation === a ? "" : a,
-                                    )
+                                <ChoiceGroup
+                                  label="Accommodation"
+                                  options={options.accommodations}
+                                  value={c.accommodation}
+                                  onChange={(accommodation) =>
+                                    setChoice(key, { accommodation })
+                                  }
+                                  other={{
+                                    value: c.otherAccommodation,
+                                    onChange: (otherAccommodation) =>
+                                      setChoice(key, { otherAccommodation }),
+                                    placeholder:
+                                      "Tell us where you would like to stay",
+                                  }}
+                                />
+                                <ChoiceGroup
+                                  label="Budget"
+                                  options={options.budgets}
+                                  value={c.budget}
+                                  onChange={(budget) =>
+                                    setChoice(key, { budget })
                                   }
                                 />
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <p className={labelClass}>Budget </p>
-                            <div className="flex flex-wrap gap-2">
-                              {budgets.map((b) => (
-                                <Chip
-                                  key={b}
-                                  label={b}
-                                  active={budget === b}
-                                  onClick={() =>
-                                    setBudget(budget === b ? "" : b)
-                                  }
-                                />
-                              ))}
-                            </div>
-                          </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
 
@@ -727,11 +848,12 @@ export default function BookingPage({
                             </div>
                             <div>
                               <label htmlFor="phone" className={labelClass}>
-                                Phone / WhatsApp
+                                Phone / WhatsApp *
                               </label>
                               <input
                                 id="phone"
                                 type="tel"
+                                required
                                 value={details.phone}
                                 onChange={(e) =>
                                   setDetails({
@@ -744,22 +866,45 @@ export default function BookingPage({
                               />
                             </div>
                             <div>
-                              <label htmlFor="country" className={labelClass}>
-                                Country
-                              </label>
-                              <input
-                                id="country"
-                                value={details.country}
-                                onChange={(e) =>
-                                  setDetails({
-                                    ...details,
-                                    country: e.target.value,
-                                  })
-                                }
-                                placeholder="e.g. United States"
-                                className={inputClass}
-                              />
+                              <p className={labelClass}>
+                                Are you from Rwanda? *
+                              </p>
+                              <div className="flex gap-2">
+                                {["Yes", "No"].map((answer) => (
+                                  <Chip
+                                    key={answer}
+                                    label={answer}
+                                    active={details.fromRwanda === answer}
+                                    onClick={() =>
+                                      setDetails({
+                                        ...details,
+                                        fromRwanda: answer,
+                                      })
+                                    }
+                                  />
+                                ))}
+                              </div>
                             </div>
+                            {details.fromRwanda === "No" && (
+                              <div>
+                                <label htmlFor="country" className={labelClass}>
+                                  Which country are you from? *
+                                </label>
+                                <input
+                                  id="country"
+                                  required
+                                  value={details.country}
+                                  onChange={(e) =>
+                                    setDetails({
+                                      ...details,
+                                      country: e.target.value,
+                                    })
+                                  }
+                                  placeholder="e.g. United States"
+                                  className={inputClass}
+                                />
+                              </div>
+                            )}
                           </div>
                           <div>
                             <label htmlFor="notes" className={labelClass}>
@@ -890,24 +1035,26 @@ export default function BookingPage({
                       `, ${children} child${children > 1 ? "ren" : ""}`}
                   </dd>
                 </div>
-                {style && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-zinc-400">Style</dt>
-                    <dd>{style}</dd>
-                  </div>
-                )}
-                {accommodation && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-zinc-400">Stay</dt>
-                    <dd>{accommodation}</dd>
-                  </div>
-                )}
-                {budget && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-zinc-400">Budget</dt>
-                    <dd>{budget}</dd>
-                  </div>
-                )}
+                {stops.map(({ key, title }) => {
+                  const c = choiceFor(key);
+                  const summary = [
+                    finalValue(c.style, c.otherStyle),
+                    finalValue(c.accommodation, c.otherAccommodation),
+                    c.budget,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ");
+                  return (
+                    summary && (
+                      <div key={key} className="border-t border-white/10 pt-3">
+                        <dt className="text-zinc-400 text-xs mb-0.5">
+                          {title}
+                        </dt>
+                        <dd>{summary}</dd>
+                      </div>
+                    )
+                  );
+                })}
               </dl>
             </div>
 

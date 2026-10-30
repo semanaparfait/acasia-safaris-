@@ -3,22 +3,27 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { Booking, BookingStatus, PaymentStatus } from "@/lib/types";
+import type { Booking, BookingDestination, BookingStatus, PaymentStatus } from "@/lib/types";
 
+// A booking is for a package (packageId) or for destinations (destinations + endDate)
 export type BookingInput = {
   customer: string;
   email: string;
   phone?: string;
   country: string;
-  packageId: string;
+  packageId?: string;
+  destinations?: BookingDestination[];
   startDate: string; // "2026-12-01"
+  endDate?: string;
   travelers: number;
+  children?: number;
   notes?: string;
 };
 
 export type BookingChanges = {
   status?: BookingStatus;
   payment?: PaymentStatus;
+  amount?: number;
   notes?: string;
 };
 

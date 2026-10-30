@@ -5,12 +5,12 @@
 //   /admin/destinations/<id>/edit -> edit one destination
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, MapPinned, FileText, Sparkles, Route, ImageIcon, Eye } from "lucide-react";
-import { destinationGroups } from "@/lib/helpers";
+import { ArrowLeft, MapPinned, FileText, Sparkles, Route, ImageIcon, Eye, SlidersHorizontal } from "lucide-react";
+import { destinationGroups, tripOptions } from "@/lib/helpers";
 import type { Destination } from "@/lib/types";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
-import { BestTimePicker, HighlightsInput, WebsiteCardPreview } from "./parts";
+import { BestTimePicker, HighlightsInput, WebsiteCardPreview, blankDestination } from "./parts";
 
 const DESCRIPTION_MAX = 400;
 
@@ -24,11 +24,12 @@ export default function DestinationForm({
   onSave: (d: Destination) => Promise<void>;
 }) {
   const isNew = !initial.id;
-  const [form, setForm] = useState(initial);
+  const [form, setForm] = useState({ ...blankDestination, ...initial });
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof Destination>(key: K, value: Destination[K]) => setForm((f) => ({ ...f, [key]: value }));
 
   const valid = form.title.trim() && form.location.trim();
+  const options = tripOptions(form); // shown as the example in each empty list
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +105,26 @@ export default function DestinationForm({
               <div>
                 <label className={labelClass}>Drive from Kigali</label>
                 <input className={inputClass} value={form.fromKigali} onChange={(e) => set("fromKigali", e.target.value)} placeholder="e.g. 2.5 hrs" />
+              </div>
+            </div>
+          </Section>
+
+          <Section icon={SlidersHorizontal} title="Booking form choices">
+            <p className="text-xs text-[#0a120b]/55 mb-4">
+              What visitors can pick for this destination. A list left empty uses the choices shown in its box, and the website adds &ldquo;Other&rdquo; to travel style and accommodation.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className={labelClass}>Travel styles</label>
+                <HighlightsInput value={form.travelStyles} onChange={(v) => set("travelStyles", v)} placeholder={options.travelStyles.join(", ")} />
+              </div>
+              <div>
+                <label className={labelClass}>Accommodation</label>
+                <HighlightsInput value={form.accommodations} onChange={(v) => set("accommodations", v)} placeholder={options.accommodations.join(", ")} />
+              </div>
+              <div>
+                <label className={labelClass}>Budgets</label>
+                <HighlightsInput value={form.budgets} onChange={(v) => set("budgets", v)} placeholder={options.budgets.join("; ")} />
               </div>
             </div>
           </Section>

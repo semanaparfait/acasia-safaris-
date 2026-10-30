@@ -4,13 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateBookingDto, UpdateBookingDto } from './dto/booking.dto';
+import {
+  BookingDestinationDto,
+  CreateBookingDto,
+  UpdateBookingDto,
+} from './dto/booking.dto';
 
-// Show the package title and duration with each booking
-const withPackage = {
+// Show the package title and duration, and the destinations, with each booking
+const withDetails = {
   package: {
     select: { id: true, title: true, _count: { select: { itinerary: true } } },
   },
+  destinations: true,
 };
 
 @Injectable()
@@ -19,7 +24,7 @@ export class BookingsService {
 
   findAll() {
     return this.prisma.booking.findMany({
-      include: withPackage,
+      include: withDetails,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -27,18 +32,56 @@ export class BookingsService {
   async findOne(id: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },
-      include: withPackage,
+      include: withDetails,
     });
     if (!booking) throw new NotFoundException(`Booking ${id} not found`);
     return booking;
   }
 
-  async create(dto: CreateBookingDto) {
-    // The package must exist and be published
-    const pkg = await this.prisma.package.findUnique({
-      where: { id: dto.packageId },
-      include: { _count: { select: { itinerary: true } } },
+  create(dto: CreateBookingDto) {
+    return dto.destinations
+      ? this.createForDestinations(dto, dto.destinations)
+      : this.createForPackage(dto);
+  }
+
+  // Destinations have no fixed price: the amount stays 0 until the admin sets it
+  private createForDestinations(
+    dto: CreateBookingDto,
+    destinations: BookingDestinationDto[],
+  ) {
+    if (!dto.endDate) throw new BadRequestException('endDate is required');
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+    if (endDate < startDate) {
+      throw new BadRequestException('endDate cannot be before startDate');
+    }
+
+    return this.prisma.booking.create({
+      data: {
+        customer: dto.customer,
+        email: dto.email,
+        phone: dto.phone,
+        country: dto.country,
+        startDate,
+        endDate,
+        travelers: dto.travelers,
+        children: dto.children,
+        notes: dto.notes,
+        amount: 0,
+        destinations: { create: destinations },
+      },
+      include: withDetails,
     });
+  }
+
+  private async createForPackage(dto: CreateBookingDto) {
+    // The package must exist and be published
+    const pkg = dto.packageId
+      ? await this.prisma.package.findUnique({
+          where: { id: dto.packageId },
+          include: { _count: { select: { itinerary: true } } },
+        })
+      : null;
     if (!pkg || !pkg.active) {
       throw new BadRequestException(
         `Package "${dto.packageId}" is not available`,
@@ -52,12 +95,19 @@ export class BookingsService {
 
     return this.prisma.booking.create({
       data: {
-        ...dto,
+        customer: dto.customer,
+        email: dto.email,
+        phone: dto.phone,
+        country: dto.country,
+        packageId: pkg.id,
+        travelers: dto.travelers,
+        children: dto.children,
+        notes: dto.notes,
         startDate,
         endDate,
         amount: pkg.price * dto.travelers,
       },
-      include: withPackage,
+      include: withDetails,
     });
   }
 
@@ -66,7 +116,7 @@ export class BookingsService {
     return this.prisma.booking.update({
       where: { id },
       data: dto,
-      include: withPackage,
+      include: withDetails,
     });
   }
 

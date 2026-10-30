@@ -36,9 +36,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const loadReviews = useReviewsStore((s) => s.loadAll);
   useEffect(() => {
     if (!mounted || !token || isLoginPage) return;
-    loadBookings();
-    loadMessages();
-    loadReviews();
+    const refresh = () => {
+      loadBookings();
+      loadMessages();
+      loadReviews();
+    };
+    refresh();
+    // Coming back to the tab shows anything that arrived from the website meanwhile
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, [mounted, token, isLoginPage, loadBookings, loadMessages, loadReviews]);
 
   const toaster = (

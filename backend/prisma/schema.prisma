@@ -61,8 +61,14 @@ model Destination {
   bestTime    String
   fromKigali  String
   featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  // Choices on the booking form. Empty = the website uses the defaults for the group.
+  travelStyles   String[] @default([])
+  accommodations String[] @default([])
+  budgets        String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ---------- Workers (staff) ----------
@@ -105,22 +111,36 @@ model Role {
 // ---------- Bookings ----------
 
 model Booking {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customer  String
-  email     String
-  phone     String?
-  country   String
-  packageId String?  @db.Uuid
-  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  startDate DateTime
-  endDate   DateTime
-  travelers Int
-  amount    Int // total in USD
-  status    String   @default("Pending") // "Pending", "Confirmed", "Completed", "Cancelled"
-  payment   String   @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer     String
+  email        String
+  phone        String?
+  country      String
+  packageId    String?              @db.Uuid // empty when the trip is built from destinations
+  package      Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  destinations BookingDestination[]
+  startDate    DateTime
+  endDate      DateTime
+  travelers    Int // adults + children
+  children     Int                  @default(0)
+  amount       Int // total in USD, 0 until the admin sets the price of a destination trip
+  status       String               @default("Pending") // "Pending", "Confirmed", "Completed", "Cancelled"
+  payment      String               @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
+  notes        String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+// One destination of a booking, with what the visitor chose for it.
+// The title is stored as text: it can be a place the visitor typed, and it stays if the destination is deleted.
+model BookingDestination {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title         String
+  travelStyle   String
+  accommodation String
+  budget        String
+  bookingId     String  @db.Uuid
+  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
 
 // ---------- Messages (contact form) ----------

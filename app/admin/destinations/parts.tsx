@@ -20,6 +20,9 @@ export const blankDestination: Destination = {
   bestTime: "",
   fromKigali: "",
   featured: false,
+  travelStyles: [],
+  accommodations: [],
+  budgets: [],
 };
 
 // What we send to the API (everything except the id)
@@ -33,6 +36,9 @@ export const toInput = (d: Destination): DestinationInput => ({
   bestTime: d.bestTime.trim(),
   fromKigali: d.fromKigali.trim(),
   featured: d.featured,
+  travelStyles: d.travelStyles,
+  accommodations: d.accommodations,
+  budgets: d.budgets,
 });
 
 // Loads one destination by id (for the details and edit pages).
@@ -68,8 +74,16 @@ export function FeaturedBadge() {
   );
 }
 
-// Highlights as tags: type one and press Enter (or comma) to add it, click × to remove it
-export function HighlightsInput({ value, onChange }: { value: string[]; onChange: (highlights: string[]) => void }) {
+// A list as tags: type one and press Enter (or comma) to add it, click × to remove it
+export function HighlightsInput({
+  value,
+  onChange,
+  placeholder = "Type a highlight and press Enter, e.g. Mountain gorillas",
+}: {
+  value: string[];
+  onChange: (highlights: string[]) => void;
+  placeholder?: string;
+}) {
   const [text, setText] = useState("");
 
   const add = () => {
@@ -105,7 +119,7 @@ export function HighlightsInput({ value, onChange }: { value: string[]; onChange
           }
         }}
         onBlur={add}
-        placeholder="Type a highlight and press Enter, e.g. Mountain gorillas"
+        placeholder={placeholder}
       />
     </div>
   );

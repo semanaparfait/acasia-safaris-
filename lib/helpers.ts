@@ -1,7 +1,7 @@
 // Small helpers shared by the website and the admin panel.
 import type React from "react";
 import { Gem, Landmark, MapPin, Mountain, PawPrint, Trees, Waves, Zap } from "lucide-react";
-import type { Booking, Message, Review, TourPackage } from "./types";
+import type { Booking, Destination, Message, Review, TourPackage } from "./types";
 
 // ---------- Ids ----------
 
@@ -52,6 +52,64 @@ const groupIcons: Record<string, React.ElementType> = {
   Mountains: Mountain,
 };
 export const groupIcon = (group: string) => groupIcons[group] ?? MapPin;
+
+// ---------- Booking form choices ----------
+
+export type TripOptions = Pick<Destination, "travelStyles" | "accommodations" | "budgets">;
+
+// For a place the visitor typed, or a group without its own defaults
+export const defaultTripOptions: TripOptions = {
+  travelStyles: ["Adventure", "Cultural", "Photography", "Honeymoon", "Family Trip"],
+  accommodations: ["Luxury Lodges", "Boutique Hotels", "Mid-range Hotels", "Eco Lodges", "Camping"],
+  budgets: ["$1,000 – 2,000", "$2,000 – 5,000", "$5,000 – 10,000", "$10,000+"],
+};
+
+const groupTripOptions: Record<string, TripOptions> = {
+  Wildlife: {
+    travelStyles: ["Luxury Safari", "Photography", "Family Trip", "Honeymoon"],
+    accommodations: ["Luxury Lodges", "Tented Camps", "Mid-range Lodges", "Eco Lodges"],
+    budgets: ["$2,000 – 5,000", "$5,000 – 10,000", "$10,000+"],
+  },
+  Nature: {
+    travelStyles: ["Hiking", "Photography", "Family Trip", "Relaxation"],
+    accommodations: ["Eco Lodges", "Boutique Hotels", "Mid-range Hotels", "Camping"],
+    budgets: ["$1,000 – 2,000", "$2,000 – 5,000", "$5,000 – 10,000"],
+  },
+  Culture: {
+    travelStyles: ["Cultural", "Educational", "Family Trip", "Photography"],
+    accommodations: ["Boutique Hotels", "Mid-range Hotels", "Guesthouses"],
+    budgets: ["$500 – 1,000", "$1,000 – 2,000", "$2,000 – 5,000"],
+  },
+  Adventure: {
+    travelStyles: ["Hiking", "Cycling", "Kayaking", "Group Trip"],
+    accommodations: ["Camping", "Eco Lodges", "Mid-range Hotels"],
+    budgets: ["$1,000 – 2,000", "$2,000 – 5,000", "$5,000 – 10,000"],
+  },
+  Luxury: {
+    travelStyles: ["Honeymoon", "Private Retreat", "Wellness", "Luxury Safari"],
+    accommodations: ["Luxury Lodges", "Private Villas", "Five-star Hotels"],
+    budgets: ["$5,000 – 10,000", "$10,000 – 20,000", "$20,000+"],
+  },
+};
+
+// The destination's own choices; any list the admin left empty uses the defaults for its group
+export const tripOptions = (d: Destination): TripOptions => {
+  const defaults = groupTripOptions[d.group] ?? defaultTripOptions;
+  return {
+    travelStyles: d.travelStyles?.length ? d.travelStyles : defaults.travelStyles,
+    accommodations: d.accommodations?.length ? d.accommodations : defaults.accommodations,
+    budgets: d.budgets?.length ? d.budgets : defaults.budgets,
+  };
+};
+
+// ---------- Bookings ----------
+
+// The package, or the destinations of the trip
+export const bookingTitle = (b: Booking) =>
+  b.package?.title ?? (b.destinations?.map((d) => d.title).join(", ") || "(package deleted)");
+
+// Destination trips have no price until the admin sets one
+export const bookingAmount = (b: Booking) => (b.amount > 0 ? money(b.amount) : "To quote");
 
 // ---------- Customers ----------
 
@@ -115,7 +173,7 @@ export function recentActivity(bookings: Booking[], messages: Message[], reviews
       text:
         b.status === "Cancelled"
           ? `Booking ${shortId(b.id)} by ${b.customer} was cancelled`
-          : `New booking from ${b.customer}${b.package ? ` · ${b.package.title}` : ""}`,
+          : `New booking from ${b.customer} · ${bookingTitle(b)}`,
       date: b.createdAt,
     })),
     ...messages.map((m) => ({

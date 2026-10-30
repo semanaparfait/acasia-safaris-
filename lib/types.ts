@@ -43,6 +43,10 @@ export type Destination = {
   bestTime: string;
   fromKigali: string;
   featured: boolean;
+  // Choices on the booking form. Empty = the defaults for the group (see tripOptions in helpers.ts).
+  travelStyles: string[];
+  accommodations: string[];
+  budgets: string[];
 };
 
 export type DestinationInput = Omit<Destination, "id">;
@@ -80,6 +84,15 @@ export type WorkerInput = Omit<Worker, "id" | "hasPassword" | "isOwner"> & { pas
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 export type PaymentStatus = "Unpaid" | "Deposit" | "Paid" | "Refunded";
 
+// One destination of a booking, with what the visitor chose for it
+export type BookingDestination = {
+  id?: string;
+  title: string;
+  travelStyle: string;
+  accommodation: string;
+  budget: string;
+};
+
 export type Booking = {
   id: string;
   customer: string;
@@ -88,10 +101,12 @@ export type Booking = {
   country: string;
   packageId: string | null;
   package: { id: string; title: string } | null;
+  destinations: BookingDestination[]; // empty for a package booking
   startDate: string;
   endDate: string;
-  travelers: number;
-  amount: number;
+  travelers: number; // adults + children
+  children: number;
+  amount: number; // 0 until the admin sets the price of a destination trip
   status: BookingStatus;
   payment: PaymentStatus;
   notes?: string | null;

@@ -17,7 +17,7 @@ import {
   Clock,
   Plane,
 } from "lucide-react";
-import { money, recentActivity } from "@/lib/helpers";
+import { bookingAmount, bookingTitle, money, recentActivity, shortId } from "@/lib/helpers";
 import type { Booking } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -250,13 +250,13 @@ export default function DashboardPage() {
                         <Avatar name={b.customer} size={32} />
                         <div>
                           <p className="font-medium whitespace-nowrap">{b.customer}</p>
-                          <p className="text-xs text-[#0a120b]/45">#{b.id}</p>
+                          <p className="text-xs text-[#0a120b]/45">{shortId(b.id)}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{b.package?.title ?? "—"}</td>
+                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{bookingTitle(b)}</td>
                     <td className="px-5 py-3 text-[#0a120b]/70 whitespace-nowrap">{format(new Date(b.startDate), "d MMM yyyy")}</td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums">{money(b.amount)}</td>
+                    <td className="px-5 py-3 text-right font-medium tabular-nums">{bookingAmount(b)}</td>
                     <td className="px-5 py-3"><StatusBadge status={b.status} /></td>
                   </tr>
                 ))}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{b.customer}</p>
                     <p className="text-xs text-[#0a120b]/50 truncate flex items-center gap-1">
-                      <Plane className="size-3" /> {b.package?.title ?? "—"} · {b.travelers} pax
+                      <Plane className="size-3" /> {bookingTitle(b)} · {b.travelers} pax
                     </p>
                   </div>
                 </li>

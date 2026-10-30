@@ -29,4 +29,17 @@ export class DestinationDto {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+
+  // Choices on the booking form. Empty = the website uses the defaults for the group.
+  @IsArray()
+  @IsString({ each: true })
+  travelStyles: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  accommodations: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  budgets: string[];
 }

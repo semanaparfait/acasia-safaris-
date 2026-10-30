@@ -6,15 +6,13 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Download, Eye, Trash2, X, Mail, CalendarDays, Users, Globe, StickyNote, Check, Ban } from "lucide-react";
 import { Avatar, Button, Card, ConfirmDialog, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs, inputClass } from "../components/ui";
-import { money, shortId } from "@/lib/helpers";
-import type { Booking, BookingStatus, PaymentStatus } from "@/lib/types";
+import { bookingAmount, bookingTitle, money, shortId } from "@/lib/helpers";
+import type { BookingStatus, PaymentStatus } from "@/lib/types";
 import { useBookingsStore, type BookingChanges } from "@/store/bookingsStore";
 
 type Filter = "All" | BookingStatus;
 const statusList: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
 const paymentList: PaymentStatus[] = ["Unpaid", "Deposit", "Paid", "Refunded"];
-
-const packageTitle = (b: Booking) => b.package?.title ?? "(package deleted)";
 
 export default function BookingsPage() {
   // Bookings are loaded by AdminShell; this page reads and updates them
@@ -36,7 +34,7 @@ export default function BookingsPage() {
     return bookings.filter(
       (b) =>
         (filter === "All" || b.status === filter) &&
-        [shortId(b.id), b.customer, b.email, packageTitle(b), b.country].some((f) => f.toLowerCase().includes(q))
+        [shortId(b.id), b.customer, b.email, bookingTitle(b), b.country].some((f) => f.toLowerCase().includes(q))
     );
   }, [bookings, filter, query]);
 
@@ -63,9 +61,9 @@ export default function BookingsPage() {
   };
 
   const exportCsv = () => {
-    const header = "id,customer,email,package,start,travelers,amount,status,payment";
+    const header = "id,customer,email,trip,start,travelers,amount,status,payment";
     const rows = filtered.map((b) =>
-      [b.id, b.customer, b.email, `"${packageTitle(b)}"`, b.startDate.slice(0, 10), b.travelers, b.amount, b.status, b.payment].join(",")
+      [b.id, b.customer, b.email, `"${bookingTitle(b)}"`, b.startDate.slice(0, 10), b.travelers, b.amount, b.status, b.payment].join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -111,7 +109,7 @@ export default function BookingsPage() {
               ...statusList.map((s) => ({ value: s, label: s, count: bookings.filter((b) => b.status === s).length })),
             ]}
           />
-          <SearchInput value={query} onChange={setQuery} placeholder="Search by name, ID, package…" className="lg:w-72" />
+          <SearchInput value={query} onChange={setQuery} placeholder="Search by name, ID, trip…" className="lg:w-72" />
         </div>
 
         {error ? (
@@ -130,7 +128,7 @@ export default function BookingsPage() {
                 <tr className="text-left text-[11px] uppercase tracking-wider text-[#0a120b]/45 bg-[#f7f5f0]/60 border-b border-[#0a120b]/[0.06]">
                   <th className="px-5 py-3 font-medium">Booking</th>
                   <th className="px-5 py-3 font-medium">Customer</th>
-                  <th className="px-5 py-3 font-medium">Package</th>
+                  <th className="px-5 py-3 font-medium">Trip</th>
                   <th className="px-5 py-3 font-medium">Travel dates</th>
                   <th className="px-5 py-3 font-medium text-center">Pax</th>
                   <th className="px-5 py-3 font-medium text-right">Amount</th>
@@ -143,7 +141,7 @@ export default function BookingsPage() {
                 {filtered.map((b) => (
                   <tr key={b.id} className="hover:bg-[#f7f5f0]/70 cursor-pointer" onClick={() => setSelectedId(b.id)}>
                     <td className="px-5 py-3">
-                      <p className="font-medium">#{b.id}</p>
+                      <p className="font-medium">{shortId(b.id)}</p>
                       <p className="text-xs text-[#0a120b]/45">{format(new Date(b.createdAt), "d MMM")}</p>
                     </td>
                     <td className="px-5 py-3">
@@ -155,12 +153,12 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{packageTitle(b)}</td>
+                    <td className="px-5 py-3 text-[#0a120b]/70 max-w-[220px] truncate">{bookingTitle(b)}</td>
                     <td className="px-5 py-3 text-[#0a120b]/70 whitespace-nowrap">
                       {format(new Date(b.startDate), "d MMM")} – {format(new Date(b.endDate), "d MMM yyyy")}
                     </td>
                     <td className="px-5 py-3 text-center tabular-nums">{b.travelers}</td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums">{money(b.amount)}</td>
+                    <td className="px-5 py-3 text-right font-medium tabular-nums">{bookingAmount(b)}</td>
                     <td className="px-5 py-3"><StatusBadge status={b.payment} /></td>
                     <td className="px-5 py-3"><StatusBadge status={b.status} /></td>
                     <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
@@ -204,7 +202,7 @@ export default function BookingsPage() {
               <div className="flex items-center justify-between px-6 h-16 border-b border-[#0a120b]/[0.06]">
                 <div>
                   <p className="text-xs text-[#0a120b]/45">Booking</p>
-                  <p className="font-semibold">Booking #{selected.id}</p>
+                  <p className="font-semibold">Booking {shortId(selected.id)}</p>
                 </div>
                 <button onClick={() => setSelectedId(null)} className="p-1.5 rounded-lg hover:bg-[#0a120b]/5 cursor-pointer" aria-label="Close">
                   <X className="size-4" />
@@ -223,15 +221,47 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="rounded-xl bg-[#f7f5f0] p-4 space-y-3 text-sm">
-                  <p className="font-medium">{packageTitle(selected)}</p>
+                  <p className="font-medium">{bookingTitle(selected)}</p>
                   <Row icon={CalendarDays} label="Dates" value={`${format(new Date(selected.startDate), "d MMM")} – ${format(new Date(selected.endDate), "d MMM yyyy")}`} />
-                  <Row icon={Users} label="Travelers" value={`${selected.travelers} ${selected.travelers > 1 ? "people" : "person"}`} />
+                  <Row
+                    icon={Users}
+                    label="Travelers"
+                    value={`${selected.travelers} ${selected.travelers > 1 ? "people" : "person"}${selected.children > 0 ? ` (${selected.children} child${selected.children > 1 ? "ren" : ""})` : ""}`}
+                  />
                   <Row icon={Globe} label="Country" value={selected.country} />
                   <div className="pt-3 border-t border-[#0a120b]/10 flex justify-between">
                     <span className="text-[#0a120b]/55">Total</span>
-                    <span className="text-lg font-semibold tabular-nums">{money(selected.amount)}</span>
+                    <span className="text-lg font-semibold tabular-nums">{bookingAmount(selected)}</span>
                   </div>
                 </div>
+
+                {selected.destinations?.length > 0 && (
+                  <div className="space-y-2 text-sm">
+                    <p className="text-xs uppercase tracking-wider text-[#0a120b]/45">Destinations</p>
+                    {selected.destinations.map((d) => (
+                      <div key={d.id} className="rounded-xl border border-[#0a120b]/10 p-3">
+                        <p className="font-medium">{d.title}</p>
+                        <p className="text-xs text-[#0a120b]/60 mt-1">{d.travelStyle} · {d.accommodation} · {d.budget}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <label className="block text-sm">
+                  <span className="block text-xs text-[#0a120b]/50 mb-1.5">Total price (USD)</span>
+                  <input
+                    key={`${selected.id}-${selected.amount}`}
+                    type="number"
+                    min={0}
+                    defaultValue={selected.amount || ""}
+                    placeholder="Set the price once agreed"
+                    onBlur={(e) => {
+                      const amount = Number(e.target.value);
+                      if (amount !== selected.amount) update(selected.id, { amount }, "Price updated");
+                    }}
+                    className={inputClass}
+                  />
+                </label>
 
                 {selected.notes && (
                   <div className="text-sm">
