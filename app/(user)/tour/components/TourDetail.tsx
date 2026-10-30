@@ -147,34 +147,6 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               {tour.description}
             </p>
 
-            {/* Quotation: only when the admin has uploaded a PDF for this package */}
-            {tour.quotation && (
-              <div className="relative overflow-hidden rounded-2xl bg-[#122B1E] text-white p-5 mb-6 shadow-lg">
-                <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
-                <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-                  <span className="w-12 h-12 shrink-0 rounded-xl bg-[#C29342] text-[#122B1E] flex items-center justify-center">
-                    <FileText className="w-6 h-6" />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-serif text-base font-bold leading-snug">
-                      Full quotation for this package
-                    </h2>
-                    <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                      Prices for adults and children, everything included and excluded, and why it is good value.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setQuotationOpen(true)}
-                    className="group shrink-0 inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
-                  >
-                    Request Quotation
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Daily Timeline */}
             <div className="space-y-4">
               {tour.itinerary.map((item, i) => (
@@ -227,6 +199,32 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
 
         {/* RIGHT COLUMN: Inquiry Form & Route/Inclusions */}
         <div className="lg:col-span-3 flex flex-col gap-6">
+          {/* Quotation: only when the admin has uploaded a PDF for this package */}
+          {tour.quotation && (
+            <div className="relative overflow-hidden rounded-2xl bg-[#122B1E] text-white p-5 shadow-lg">
+              <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
+              <div className="relative">
+                <span className="w-12 h-12 rounded-xl bg-[#C29342] text-[#122B1E] flex items-center justify-center mb-4">
+                  <FileText className="w-6 h-6" />
+                </span>
+                <h2 className="font-serif text-lg font-bold leading-snug">
+                  Full quotation for this package
+                </h2>
+                <p className="text-xs text-neutral-300 mt-2 mb-4 leading-relaxed">
+                  Prices for adults and children, everything included and excluded, and why it is good value.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setQuotationOpen(true)}
+                  className="group w-full inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-4 py-3 rounded-lg shadow-md transition cursor-pointer"
+                >
+                  Request Quotation
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Inquiry Form Card */}
           {showInquiry && (
           <div ref={inquiryCard} className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-5 shadow-sm">
@@ -275,7 +273,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 hidden">
                   <div>
                     <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
                       Travel Dates *
