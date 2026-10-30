@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
-import { PackageDto } from './dto/package.dto';
+import { PackageDto, QuotationEmailDto } from './dto/package.dto';
 import { PackagesService } from './packages.service';
 
 // Routes under /api/packages
@@ -39,6 +40,16 @@ export class PackagesController {
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.findOne(id);
+  }
+
+  // POST /api/packages/<id>/quotation/email   (website: anyone can ask for it)
+  @Post(':id/quotation/email')
+  @HttpCode(200)
+  emailQuotation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: QuotationEmailDto,
+  ) {
+    return this.packagesService.emailQuotation(id, dto);
   }
 
   // POST /api/packages           (admin)

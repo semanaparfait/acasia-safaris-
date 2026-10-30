@@ -1,8 +1,10 @@
 "use client";
 
 // Small pieces shared by the package pages (list, details, add / edit).
-import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { ArrowDown, ArrowUp, ExternalLink, FileText, Loader2, Plus, Upload, X } from "lucide-react";
+import { uploadImage } from "@/lib/api";
 import { packageCategories } from "@/lib/helpers";
 import type { PackageInput, TourPackage } from "@/lib/types";
 import { usePackagesStore } from "@/store/packagesStore";
@@ -41,6 +43,7 @@ export function toInput(pkg: TourPackage): PackageInput {
     lodging: pkg.lodging,
     image: pkg.image,
     price: pkg.price,
+    quotation: pkg.quotation || null,
     active: pkg.active,
     route: cleanList(pkg.route),
     itinerary: pkg.itinerary.map((d) => ({ title: d.title, description: d.description, image: d.image })),
@@ -63,6 +66,71 @@ export function usePackage(id: string) {
   }, [id, loadOne]);
 
   return { pkg, error };
+}
+
+const MAX_PDF_SIZE = 10 * 1024 * 1024; // same limit as the API
+
+// Upload, view, replace or remove the quotation PDF. `value` is the PDF's URL.
+export function QuotationField({
+  value,
+  onChange,
+  uploadedMessage = "Quotation uploaded. Save the package to publish it.",
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  uploadedMessage?: string;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") return void toast.error("Please choose a PDF file");
+    if (file.size > MAX_PDF_SIZE) return void toast.error("The PDF must be 10 MB or smaller");
+    setUploading(true);
+    try {
+      onChange(await uploadImage("tourpackages", file));
+      toast.success(uploadedMessage);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInput.current) fileInput.current.value = ""; // allow picking the same file again
+    }
+  };
+
+  return (
+    <div>
+      <input ref={fileInput} type="file" accept="application/pdf" hidden onChange={(e) => handleFile(e.target.files?.[0])} />
+      {value ? (
+        <div className="flex items-center gap-3 rounded-xl border border-[#0a120b]/10 bg-[#f7f5f0] p-3">
+          <span className="size-10 shrink-0 rounded-lg bg-[#12231a] text-[#c5a86d] flex items-center justify-center"><FileText className="size-5" /></span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Quotation PDF</p>
+            <a href={value} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#2E7D5B] hover:underline">
+              View file <ExternalLink className="size-3" />
+            </a>
+          </div>
+          <button type="button" onClick={() => onChange("")} className="p-2 rounded-lg text-[#0a120b]/45 hover:text-red-600 hover:bg-red-50 cursor-pointer" aria-label="Remove quotation">
+            <X className="size-4" />
+          </button>
+        </div>
+      ) : (
+        <p className="text-xs text-[#0a120b]/50 mb-3">
+          Include prices for adults and children with their age ranges, everything included and excluded, and why the price is fair.
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => fileInput.current?.click()}
+        disabled={uploading}
+        className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#0a120b]/25 px-3 py-2.5 text-sm hover:border-[#2E7D5B] hover:bg-[#f7f5f0] disabled:opacity-50 cursor-pointer"
+      >
+        {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+        {uploading ? "Uploading…" : value ? "Replace PDF" : "Upload PDF"}
+      </button>
+    </div>
+  );
 }
 
 export function LiveBadge({ active }: { active: boolean }) {

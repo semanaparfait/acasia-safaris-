@@ -12,7 +12,7 @@ import { money, packageCategories } from "@/lib/helpers";
 import type { TourPackage } from "@/lib/types";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
-import { ListInput } from "./parts";
+import { ListInput, QuotationField } from "./parts";
 
 export default function PackageForm({
   initial,
@@ -103,6 +103,10 @@ export default function PackageForm({
                 <input className={inputClass} value={form.badge ?? ""} onChange={(e) => set("badge", e.target.value || undefined)} placeholder="Optional label on the photo, e.g. POPULAR" />
               </div>
             </div>
+          </Section>
+
+          <Section icon={FileText} title="Quotation PDF">
+            <QuotationField value={form.quotation ?? ""} onChange={(url) => set("quotation", url)} />
           </Section>
 
           <Section icon={FileText} title="Overview">
@@ -196,6 +200,7 @@ export default function PackageForm({
               <SummaryRow label="Price per person" value={form.price > 0 ? money(form.price) : "—"} />
               <SummaryRow label="Route stops" value={`${form.route.filter((r) => r.trim()).length}`} />
               <SummaryRow label="Included items" value={`${form.inclusions.filter((r) => r.trim()).length}`} />
+              <SummaryRow label="Quotation" value={form.quotation ? "Uploaded" : "None"} />
               <SummaryRow label="Status" value={form.active ? "Live" : "Draft"} />
             </dl>
             {!valid && (

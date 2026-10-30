@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 import {
   BookingDestinationDto,
   CreateBookingDto,
@@ -20,7 +21,10 @@ const withDetails = {
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private whatsapp: WhatsappService,
+  ) {}
 
   findAll() {
     return this.prisma.booking.findMany({
@@ -38,10 +42,14 @@ export class BookingsService {
     return booking;
   }
 
-  create(dto: CreateBookingDto) {
-    return dto.destinations
+  async create(dto: CreateBookingDto) {
+    const booking = await (dto.destinations
       ? this.createForDestinations(dto, dto.destinations)
-      : this.createForPackage(dto);
+      : this.createForPackage(dto));
+
+    // Not awaited: the visitor does not wait for the WhatsApp messages
+    void this.whatsapp.notifyNewBooking(booking);
+    return booking;
   }
 
   // Destinations have no fixed price: the amount stays 0 until the admin sets it

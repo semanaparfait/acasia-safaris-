@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Building2, Bell, Shield, Users, Save } from "lucide-react";
+import { Building2, Bell, Shield, User, Users, Save } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import ImageField from "../components/ImageField";
 import { Avatar, Badge, Button, Card, CardHeader, PageHeader, Toggle, inputClass, labelClass } from "../components/ui";
 
 const sections = [
+  { id: "account", label: "My account", icon: User },
   { id: "company", label: "Company", icon: Building2 },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "team", label: "Team", icon: Users },
@@ -19,7 +22,7 @@ const team = [
 ];
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<(typeof sections)[number]["id"]>("company");
+  const [tab, setTab] = useState<(typeof sections)[number]["id"]>("account");
   const [company, setCompany] = useState({
     name: "Acacia Safaris Ltd",
     email: "info@acaciasafaris.com",
@@ -52,6 +55,8 @@ export default function SettingsPage() {
             );
           })}
         </nav>
+
+        {tab === "account" && <AccountForm />}
 
         {tab === "company" && (
           <Card>
@@ -130,16 +135,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader title="Security" />
             <div className="px-5 pb-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Current password</label>
-                  <input type="password" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>New password</label>
-                  <input type="password" className={inputClass} />
-                </div>
-              </div>
+              <PasswordForm />
               <div className="flex items-center justify-between rounded-xl bg-[#f7f5f0] px-4 py-3">
                 <div>
                   <p className="text-sm font-medium">Two-factor authentication</p>
@@ -147,13 +143,121 @@ export default function SettingsPage() {
                 </div>
                 <Toggle checked={twoFactor} onChange={setTwoFactor} label="Two-factor authentication" />
               </div>
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success("Password updated")}>Update password</Button>
-              </div>
             </div>
           </Card>
         )}
       </div>
     </>
+  );
+}
+
+// The logged-in admin edits their own name, email, phone and photo
+function AccountForm() {
+  const me = useAuthStore((s) => s.worker);
+  const updateAccount = useAuthStore((s) => s.updateAccount);
+  const [form, setForm] = useState({
+    name: me?.name ?? "",
+    email: me?.email ?? "",
+    phone: me?.phone ?? "",
+    photo: me?.photo ?? "",
+  });
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const emailChanged = form.email.trim().toLowerCase() !== me?.email;
+  const valid = form.name.trim() && form.email.trim() && form.phone.trim() && (!emailChanged || currentPassword);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateAccount({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        photo: form.photo,
+        currentPassword: emailChanged ? currentPassword : undefined,
+      });
+      setCurrentPassword("");
+      toast.success("Account updated");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader title="My account" subtitle="Your own details. Your role and access are managed under Workers." />
+      <form onSubmit={save}>
+        <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Full name</label>
+            <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass}>Phone (used for WhatsApp alerts)</label>
+            <input className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass}>Email (your login)</label>
+            <input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          </div>
+          {emailChanged && (
+            <div>
+              <label className={labelClass}>Current password (to change your email)</label>
+              <input type="password" autoComplete="current-password" className={inputClass} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+            </div>
+          )}
+          <div className="sm:col-span-2">
+            <ImageField label="Photo" bucket="workers" value={form.photo} onChange={(photo) => setForm({ ...form, photo })} />
+          </div>
+        </div>
+        <div className="px-5 py-4 border-t border-[#0a120b]/[0.06] flex justify-end">
+          <Button type="submit" disabled={!valid || saving}><Save className="size-4" /> {saving ? "Saving…" : "Save changes"}</Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+function PasswordForm() {
+  const changePassword = useAuthStore((s) => s.changePassword);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await changePassword(current, next);
+      setCurrent("");
+      setNext("");
+      toast.success("Password updated. Other devices were logged out.");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Current password</label>
+          <input type="password" autoComplete="current-password" className={inputClass} value={current} onChange={(e) => setCurrent(e.target.value)} />
+        </div>
+        <div>
+          <label className={labelClass}>New password (at least 8 characters)</label>
+          <input type="password" autoComplete="new-password" minLength={8} className={inputClass} value={next} onChange={(e) => setNext(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <Button type="submit" disabled={!current || !next || saving}>{saving ? "Updating…" : "Update password"}</Button>
+      </div>
+    </form>
   );
 }

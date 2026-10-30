@@ -3,9 +3,12 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsEmail,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -54,6 +57,11 @@ export class PackageDto {
   @Min(0)
   price: number;
 
+  // URL returned by POST /api/uploads/tourpackages (a PDF), or null for none
+  @IsOptional()
+  @IsString()
+  quotation?: string | null;
+
   @IsBoolean()
   active: boolean;
 
@@ -80,4 +88,15 @@ export class PackageDto {
   @ValidateNested({ each: true })
   @Type(() => ItineraryDayDto)
   itinerary: ItineraryDayDto[];
+}
+
+// What a visitor sends to get the quotation by email
+export class QuotationEmailDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsEmail()
+  email: string;
 }

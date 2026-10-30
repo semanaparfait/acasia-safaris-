@@ -50,7 +50,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const toggle = (m: "notif" | "user") => setMenu((cur) => (cur === m ? "none" : m));
 
   const router = useRouter();
-  const logout = useAuthStore((s) => s.logout);
+  const logout = useAuthStore((s) => s.signOut);
   const me = useAuthStore((s) => s.worker);
   const bookings = useBookingsStore((s) => s.bookings);
   const messages = useMessagesStore((s) => s.messages);
@@ -58,8 +58,8 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const activity = recentActivity(bookings, messages, reviews);
   const unread = messages.filter((m) => !m.read).length;
 
-  const signOut = () => {
-    logout();
+  const signOut = async () => {
+    await logout();
     router.replace("/admin/login");
   };
 

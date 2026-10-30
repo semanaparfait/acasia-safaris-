@@ -9,7 +9,9 @@ import { Request } from 'express';
 import { AuthService } from '../auth/auth.service';
 
 // A request that passed the guard knows which worker is logged in
-export type AdminRequest = Request & { worker: Omit<Worker, 'passwordHash'> };
+export type AdminRequest = Request & {
+  worker: Omit<Worker, 'passwordHash' | 'tokenVersion'>;
+};
 
 // Protects admin-only routes. The admin panel sends the token it got from
 // POST /api/auth/login in the header:

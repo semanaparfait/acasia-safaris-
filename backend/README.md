@@ -59,6 +59,58 @@ AWS_SECRET_ACCESS_KEY="nsk_live_..."
 Without them everything else works; uploads answer "Storage is not configured".
 When a record is deleted, its uploaded images are deleted from the bucket too.
 
+## Quotation emails
+
+Admins upload a quotation PDF on each package (max 10 MB). Visitors can download it, or get it by WhatsApp or email.
+Email requests are saved under Messages, and limited to 3 per address and 100 in total per hour.
+
+To send with Gmail, turn on 2-Step Verification on the account, create an
+[App password](https://myaccount.google.com/apppasswords), and put it in `.env` and in the hosting provider's environment variables:
+
+```
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="465"
+SMTP_USER="your-address@gmail.com"
+SMTP_PASS="the 16 letter app password"
+MAIL_FROM="Acacia Safaris <your-address@gmail.com>"
+```
+
+Without them the request is still saved under Messages, and the visitor is told to download the quotation instead.
+`PUBLIC_API_URL` must be the real address of the API, because the PDF is attached from that URL.
+
+## WhatsApp alerts
+
+Each new booking sends a WhatsApp message to every active admin with a Rwandan number,
+using the phone number on their worker record (`+250`, or starting with 0).
+Admins with a foreign number are skipped.
+A failed message is only logged: the booking is still saved.
+
+1. In [Meta for Developers](https://developers.facebook.com/apps), create a Business app and add the WhatsApp product.
+2. Add a phone number that is not already on the WhatsApp app, and note its Phone number ID.
+3. In WhatsApp Manager, create a template named `new_booking` (category Utility, language English) and wait for approval:
+
+   ```
+   New booking on Acacia Safaris.
+   Customer: {{1}} from {{2}}
+   Phone: {{3}}
+   Trip: {{4}}
+   Dates: {{5}}
+   Travelers: {{6}}
+   Please review it in the admin panel.
+   ```
+
+4. Create a permanent access token (Business Settings → System users) with `whatsapp_business_messaging`.
+5. Put them in `.env`, and in the hosting provider's environment variables:
+
+```
+WHATSAPP_TOKEN="..."
+WHATSAPP_PHONE_NUMBER_ID="..."
+WHATSAPP_TEMPLATE="new_booking"
+WHATSAPP_TEMPLATE_LANGUAGE="en"
+```
+
+Without the token and the ID nothing is sent. Failed messages appear in the backend logs as `WhatsApp message failed`.
+
 ## Database commands
 
 | Command | What it does |
@@ -95,10 +147,14 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | --- | --- | --- |
 | POST | `/api/auth/login` | `{ email, password }` → `{ token, worker }` (active admins only) |
 | GET | `/api/auth/me` | 🔒 the logged-in worker |
+| PATCH | `/api/auth/me` | 🔒 edit your own account: `{ name?, email?, phone?, photo?, currentPassword? }`. `currentPassword` is needed to change the email |
+| PATCH | `/api/auth/me/password` | 🔒 `{ currentPassword, newPassword }` → `{ token, worker }`. Other devices are logged out |
+| POST | `/api/auth/logout` | 🔒 ends the login on every device (the token stops working) |
 | GET | `/api/packages` | website: published packages |
 | GET | `/api/packages/all` | 🔒 drafts included |
 | GET | `/api/packages/:id` | website (ids are UUIDs) |
-| POST / PUT / DELETE | `/api/packages[/:id]` | 🔒 |
+| POST / PUT / DELETE | `/api/packages[/:id]` | 🔒 `quotation` is the URL of a PDF from `POST /api/uploads/tourpackages` |
+| POST | `/api/packages/:id/quotation/email` | website: `{ name, email }` sends the quotation by email |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |
 | GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |

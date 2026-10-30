@@ -13,7 +13,7 @@ import { daysLabel, money, tourHref } from "@/lib/helpers";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { usePackagesStore } from "@/store/packagesStore";
 import { Button, Card, ConfirmDialog, EmptyState, Toggle } from "../../components/ui";
-import { LiveBadge, toInput, usePackage } from "../parts";
+import { LiveBadge, QuotationField, toInput, usePackage } from "../parts";
 
 export default function PackageDetailsPage() {
   const router = useRouter();
@@ -37,6 +37,16 @@ export default function PackageDetailsPage() {
     try {
       await updatePackage(p.id, toInput({ ...p, active }));
       toast.success(active ? "Package published" : "Package moved to drafts");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  // Saved at once: there is no Save button on this page
+  const saveQuotation = async (quotation: string) => {
+    try {
+      await updatePackage(p.id, toInput({ ...p, quotation }));
+      if (!quotation) toast.success("Quotation removed");
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -165,7 +175,11 @@ export default function PackageDetailsPage() {
           )}
         </div>
 
-        <div className="space-y-5 lg:sticky lg:top-24">
+        <div className="space-y-5">
+          <InfoCard icon={FileText} title="Quotation PDF">
+            <QuotationField value={p.quotation ?? ""} onChange={saveQuotation} uploadedMessage="Quotation uploaded and live on the website" />
+          </InfoCard>
+
           <InfoCard icon={Globe} title="On the website">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">

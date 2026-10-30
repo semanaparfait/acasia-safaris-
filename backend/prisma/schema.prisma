@@ -25,6 +25,7 @@ model Package {
   lodging     String
   image       String
   price       Int // USD per person
+  quotation   String? // URL of the quotation PDF (uploaded to the "tourpackages" bucket)
   active      Boolean        @default(true) // false = draft, hidden from the website
   route       String[] // stops in travel order
   inclusions  String[]
@@ -88,6 +89,7 @@ model Worker {
   // Second role: workers with isAdmin can log in to the admin panel with email + password
   isAdmin      Boolean @default(false)
   passwordHash String? // bcrypt hash, never sent to the browser
+  tokenVersion Int     @default(0) // raised on logout and password change: older login tokens stop working
 
   // The main admin (only one): cannot be deleted, always keeps admin access,
   // and is the only one who can give or remove admin access. Set from .env by the seed.

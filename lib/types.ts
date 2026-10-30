@@ -21,6 +21,7 @@ export type TourPackage = {
   lodging: string;
   image: string;
   price: number; // USD per person (admin only, not shown on the website)
+  quotation?: string | null; // URL of the quotation PDF
   active: boolean; // false = draft, hidden from the website
   route: string[];
   itinerary: ItineraryDay[];
@@ -120,7 +121,7 @@ export type Message = {
   phone?: string | null;
   subject: string;
   body: string;
-  source: "Contact form" | "Booking request" | "WhatsApp";
+  source: "Contact form" | "Booking request" | "WhatsApp" | "Quotation request";
   read: boolean;
   starred: boolean;
   receivedAt: string;

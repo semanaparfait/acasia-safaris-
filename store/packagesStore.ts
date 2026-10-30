@@ -25,6 +25,7 @@ type PackagesState = {
   createPackage: (input: PackageInput) => Promise<TourPackage>;
   updatePackage: (id: string, input: PackageInput) => Promise<TourPackage>;
   deletePackage: (id: string) => Promise<void>;
+  emailQuotation: (id: string, input: { name: string; email: string }) => Promise<void>; // website
 };
 
 export const usePackagesStore = create<PackagesState>()(
@@ -89,6 +90,10 @@ export const usePackagesStore = create<PackagesState>()(
       deletePackage: async (id) => {
         await api(`/packages/${id}`, { method: "DELETE", admin: true });
         set((state) => ({ packages: state.packages.filter((p) => p.id !== id) }), false, "packages/delete");
+      },
+
+      emailQuotation: async (id, input) => {
+        await api(`/packages/${id}/quotation/email`, { method: "POST", body: input });
       },
     }),
     { name: "packages" }, // name shown in Redux DevTools

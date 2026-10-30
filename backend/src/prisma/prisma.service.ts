@@ -11,7 +11,7 @@ export class PrismaService
   constructor() {
     // Never return password hashes, unless a query asks for them explicitly with
     //   omit: { passwordHash: false }   (only the login does that)
-    super({ omit: { worker: { passwordHash: true } } });
+    super({ omit: { worker: { passwordHash: true, tokenVersion: true } } });
   }
 
   async onModuleInit() {

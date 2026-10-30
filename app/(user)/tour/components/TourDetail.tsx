@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   MapPin,
   Calendar,
@@ -14,10 +14,12 @@ import {
   Crown,
   Sparkles,
   CheckCircle2,
+  FileText,
 } from "lucide-react";
 import { daysLabel } from "@/lib/helpers";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
+import QuotationModal from "./QuotationModal";
 
 const guestOptions = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
 const tripStyles = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
@@ -41,7 +43,23 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [quotationOpen, setQuotationOpen] = useState(false);
+  const [quotationRequested, setQuotationRequested] = useState(false);
+  const closeQuotation = useCallback(() => setQuotationOpen(false), []);
+  const markRequested = useCallback(() => setQuotationRequested(true), []);
   const sendMessage = useMessagesStore((s) => s.sendMessage);
+
+  // The form appears once the visitor has the quotation.
+  // A package without a quotation shows it from the start.
+  const showInquiry = !tour.quotation || quotationRequested;
+  const inquiryCard = useRef<HTMLDivElement>(null);
+
+  // Bring the form into view when the pop-up closes
+  useEffect(() => {
+    if (quotationRequested && !quotationOpen) {
+      inquiryCard.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [quotationRequested, quotationOpen]);
 
   // The inquiry is saved as a message the admin sees under Messages
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,6 +147,34 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               {tour.description}
             </p>
 
+            {/* Quotation: only when the admin has uploaded a PDF for this package */}
+            {tour.quotation && (
+              <div className="relative overflow-hidden rounded-2xl bg-[#122B1E] text-white p-5 mb-6 shadow-lg">
+                <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
+                <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+                  <span className="w-12 h-12 shrink-0 rounded-xl bg-[#C29342] text-[#122B1E] flex items-center justify-center">
+                    <FileText className="w-6 h-6" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-serif text-base font-bold leading-snug">
+                      Full quotation for this package
+                    </h2>
+                    <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+                      Prices for adults and children, everything included and excluded, and why it is good value.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQuotationOpen(true)}
+                    className="group shrink-0 inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
+                  >
+                    Request Quotation
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Daily Timeline */}
             <div className="space-y-4">
               {tour.itinerary.map((item, i) => (
@@ -182,7 +228,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
         {/* RIGHT COLUMN: Inquiry Form & Route/Inclusions */}
         <div className="lg:col-span-3 flex flex-col gap-6">
           {/* Inquiry Form Card */}
-          <div className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-5 shadow-sm">
+          {showInquiry && (
+          <div ref={inquiryCard} className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <Mail className="w-4 h-4 text-[#b28236]" />
               <h2 className="text-xs font-bold tracking-wider uppercase text-neutral-800">
@@ -294,6 +341,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </form>
             )}
           </div>
+          )}
 
           {/* Perks Card (optional) */}
           {tour.perks && tour.perks.length > 0 && (
@@ -359,6 +407,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
 
         </div>
       </div>
+
+      <QuotationModal tour={tour} open={quotationOpen} onClose={closeQuotation} onRequested={markRequested} />
     </div>
   );
 }

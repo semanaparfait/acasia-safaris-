@@ -13,7 +13,7 @@ import { StorageService } from '../storage/storage.service';
 import { WorkerDto } from './dto/worker.dto';
 
 // The admin who is making the request (from AdminGuard)
-type Actor = Omit<Worker, 'passwordHash'>;
+type Actor = Omit<Worker, 'passwordHash' | 'tokenVersion'>;
 
 // Rules for admins:
 //  - The main admin (isOwner) cannot be deleted and always keeps admin access.

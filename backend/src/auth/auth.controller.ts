@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsEmail, IsString } from 'class-validator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { AuthService } from './auth.service';
+import { ChangePasswordDto, UpdateAccountDto } from './dto/account.dto';
 
 class LoginDto {
   @IsEmail()
@@ -32,5 +42,32 @@ export class AuthController {
   @ApiBearerAuth()
   me(@Req() request: AdminRequest) {
     return request.worker;
+  }
+
+  // PATCH /api/auth/me   body: { "name": "...", "phone": "..." }
+  // Changing the email also needs "currentPassword"
+  @Patch('me')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  updateAccount(@Req() request: AdminRequest, @Body() dto: UpdateAccountDto) {
+    return this.authService.updateAccount(request.worker.id, dto);
+  }
+
+  // PATCH /api/auth/me/password   body: { "currentPassword": "...", "newPassword": "..." }
+  // Returns { token, worker }: other devices are logged out
+  @Patch('me/password')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  changePassword(@Req() request: AdminRequest, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(request.worker.id, dto);
+  }
+
+  // POST /api/auth/logout   -> ends the login on every device
+  @Post('logout')
+  @HttpCode(200)
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  logout(@Req() request: AdminRequest) {
+    return this.authService.logout(request.worker.id);
   }
 }
