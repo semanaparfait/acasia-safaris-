@@ -52,6 +52,15 @@ export class PackagesController {
     return this.packagesService.emailQuotation(id, dto);
   }
 
+  // POST /api/packages/<id>/quotation   (admin: remake the PDF from the package)
+  @Post(':id/quotation')
+  @HttpCode(200)
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  generateQuotation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.packagesService.generateQuotation(id);
+  }
+
   // POST /api/packages           (admin)
   @Post()
   @UseGuards(AdminGuard)

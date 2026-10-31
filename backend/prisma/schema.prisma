@@ -25,7 +25,14 @@ model Package {
   lodging     String
   image       String
   price       Int // USD per person
-  quotation   String? // URL of the quotation PDF (uploaded to the "tourpackages" bucket)
+  quotation   String? // URL of the quotation PDF (in the "tourpackages" bucket)
+
+  // false = the PDF is made from this package and is remade each time it is saved.
+  // true = the admin uploaded their own PDF, which is left alone.
+  quotationManual Boolean  @default(false)
+  rates           Json? // prices in the PDF: [{ label, ages, price }]. Empty = the default rates
+  fairPrice       String[] @default([]) // reasons for "Why this price is fair", e.g. "Title: explanation"
+
   active      Boolean        @default(true) // false = draft, hidden from the website
   route       String[] // stops in travel order
   inclusions  String[]

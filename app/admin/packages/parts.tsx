@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { ArrowDown, ArrowUp, ExternalLink, FileText, Loader2, Plus, Upload, X } from "lucide-react";
 import { uploadImage } from "@/lib/api";
-import { packageCategories } from "@/lib/helpers";
-import type { PackageInput, TourPackage } from "@/lib/types";
+import { defaultRates, money, packageCategories } from "@/lib/helpers";
+import type { PackageInput, Rate, TourPackage } from "@/lib/types";
 import { usePackagesStore } from "@/store/packagesStore";
 import { Badge, inputClass } from "../components/ui";
 
@@ -27,6 +27,7 @@ export const blankPackage: TourPackage = {
   inclusions: [],
   exclusions: [],
   perks: [],
+  fairPrice: [],
 };
 
 const cleanList = (list: string[] = []) => list.map((s) => s.trim()).filter(Boolean);
@@ -50,6 +51,8 @@ export function toInput(pkg: TourPackage): PackageInput {
     inclusions: cleanList(pkg.inclusions),
     exclusions: cleanList(pkg.exclusions),
     perks: cleanList(pkg.perks),
+    fairPrice: cleanList(pkg.fairPrice),
+    rates: pkg.rates ?? null,
   };
 }
 
@@ -70,18 +73,63 @@ export function usePackage(id: string) {
 
 const MAX_PDF_SIZE = 10 * 1024 * 1024; // same limit as the API
 
-// Upload, view, replace or remove the quotation PDF. `value` is the PDF's URL.
+// The prices table of the quotation PDF. The adult price comes from the package.
+export function RatesInput({ price, value, onChange }: { price: number; value?: Rate[] | null; onChange: (rates: Rate[]) => void }) {
+  const rows = value?.length ? value : defaultRates(price);
+  const setRow = (index: number, changes: Partial<Rate>) => onChange(rows.map((r, i) => (i === index ? { ...r, ...changes } : r)));
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-[1fr_1.4fr_100px] gap-2 text-[11px] font-medium uppercase tracking-wider text-[#0a120b]/45">
+        <span>Traveler</span><span>Age</span><span>Price (USD)</span>
+      </div>
+      {rows.map((row, i) => (
+        <div key={i} className="grid grid-cols-[1fr_1.4fr_100px] gap-2">
+          <input aria-label="Traveler" className={inputClass} value={row.label} onChange={(e) => setRow(i, { label: e.target.value })} />
+          <input aria-label="Age" className={inputClass} value={row.ages} onChange={(e) => setRow(i, { ages: e.target.value })} />
+          {i === 0 ? (
+            <input aria-label="Adult price" disabled className={`${inputClass} opacity-60`} value={price ? money(price) : "—"} title="Set under Price per person" />
+          ) : (
+            <input
+              aria-label={`${row.label} price`}
+              type="number"
+              min={0}
+              className={inputClass}
+              value={row.price}
+              onChange={(e) => setRow(i, { price: Math.max(0, Math.round(Number(e.target.value))) })}
+            />
+          )}
+        </div>
+      ))}
+      <p className="text-xs text-[#0a120b]/50">0 shows as Free. The adult price is the Price per person of this package.</p>
+    </div>
+  );
+}
+
+// View, replace or remove the quotation PDF, or make it from the package. `value` is the PDF's URL.
 export function QuotationField({
   value,
   onChange,
+  manual = false,
+  onGenerate,
   uploadedMessage = "Quotation uploaded. Save the package to publish it.",
 }: {
   value: string;
   onChange: (url: string) => void;
+  manual?: boolean; // the admin uploaded this PDF
+  onGenerate?: () => Promise<void>; // shows the "Create PDF" button
   uploadedMessage?: string;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const generate = async () => {
+    if (!onGenerate) return;
+    setGenerating(true);
+    await onGenerate();
+    setGenerating(false);
+  };
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
@@ -106,7 +154,7 @@ export function QuotationField({
         <div className="flex items-center gap-3 rounded-xl border border-[#0a120b]/10 bg-[#f7f5f0] p-3">
           <span className="size-10 shrink-0 rounded-lg bg-[#12231a] text-[#c5a86d] flex items-center justify-center"><FileText className="size-5" /></span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Quotation PDF</p>
+            <p className="text-sm font-medium">{manual ? "Your uploaded PDF" : "Made from this package"}</p>
             <a href={value} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#2E7D5B] hover:underline">
               View file <ExternalLink className="size-3" />
             </a>
@@ -116,18 +164,30 @@ export function QuotationField({
           </button>
         </div>
       ) : (
-        <p className="text-xs text-[#0a120b]/50 mb-3">
-          Include prices for adults and children with their age ranges, everything included and excluded, and why the price is fair.
+        <p className="text-xs text-[#0a120b]/50">
+          No PDF yet. {onGenerate ? "Create one from this package, or upload your own." : "One is created from this package when you save it."}
         </p>
+      )}
+      {value && !manual && <p className="mt-2 text-xs text-[#0a120b]/50">Updates by itself each time you save this package.</p>}
+      {onGenerate && (
+        <button
+          type="button"
+          onClick={generate}
+          disabled={generating || uploading}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#12231a] text-white px-3 py-2.5 text-sm font-medium hover:bg-[#1F5A42] disabled:opacity-50 cursor-pointer"
+        >
+          {generating ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+          {generating ? "Creating PDF…" : value ? "Remake PDF from package" : "Create PDF"}
+        </button>
       )}
       <button
         type="button"
         onClick={() => fileInput.current?.click()}
-        disabled={uploading}
-        className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#0a120b]/25 px-3 py-2.5 text-sm hover:border-[#2E7D5B] hover:bg-[#f7f5f0] disabled:opacity-50 cursor-pointer"
+        disabled={uploading || generating}
+        className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#0a120b]/25 px-3 py-2.5 text-sm hover:border-[#2E7D5B] hover:bg-[#f7f5f0] disabled:opacity-50 cursor-pointer"
       >
         {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-        {uploading ? "Uploading…" : value ? "Replace PDF" : "Upload PDF"}
+        {uploading ? "Uploading…" : "Upload my own PDF"}
       </button>
     </div>
   );

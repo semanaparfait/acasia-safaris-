@@ -12,7 +12,7 @@ import { money, packageCategories } from "@/lib/helpers";
 import type { TourPackage } from "@/lib/types";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
-import { ListInput, QuotationField } from "./parts";
+import { ListInput, QuotationField, RatesInput } from "./parts";
 
 export default function PackageForm({
   initial,
@@ -106,7 +106,17 @@ export default function PackageForm({
           </Section>
 
           <Section icon={FileText} title="Quotation PDF">
-            <QuotationField value={form.quotation ?? ""} onChange={(url) => set("quotation", url)} />
+            <div className="space-y-5">
+              <div>
+                <label className={labelClass}>Prices for adults and children</label>
+                <RatesInput price={form.price} value={form.rates} onChange={(rates) => set("rates", rates)} />
+              </div>
+              <div>
+                <label className={labelClass}>Why this price is fair</label>
+                <ListInput value={form.fairPrice} onChange={(v) => set("fairPrice", v)} placeholder="e.g. Private vehicle: it is yours alone, so you travel at your own pace" />
+              </div>
+              <QuotationField manual={form.quotationManual} value={form.quotation ?? ""} onChange={(url) => { set("quotation", url); set("quotationManual", Boolean(url)); }} />
+            </div>
           </Section>
 
           <Section icon={FileText} title="Overview">

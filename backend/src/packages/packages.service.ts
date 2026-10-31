@@ -1,13 +1,16 @@
+import { Prisma } from '@prisma/client';
 import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { PackageDto, QuotationEmailDto } from './dto/package.dto';
+import { QuotationService } from './quotation.service';
 
 // Anyone can ask for a quotation email, so the form cannot be used to flood
 // one inbox, or to use up the sending limit of the mail account
@@ -23,14 +26,26 @@ function toDays(dto: PackageDto) {
   return dto.itinerary.map((d, index) => ({ ...d, day: index + 1 }));
 }
 
+// The package fields as the database wants them
+function toData(dto: PackageDto) {
+  const fields = { ...dto, itinerary: undefined };
+  return {
+    ...fields,
+    perks: dto.perks ?? [],
+    rates: dto.rates?.map((r) => ({ ...r })) ?? Prisma.DbNull,
+  };
+}
+
 @Injectable()
 export class PackagesService {
+  private readonly logger = new Logger(PackagesService.name);
   private recentEmails: { to: string; at: number }[] = [];
 
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
     private mail: MailService,
+    private quotations: QuotationService,
   ) {}
 
   // Website: only published packages
@@ -59,37 +74,77 @@ export class PackagesService {
     return pkg;
   }
 
-  create(dto: PackageDto) {
+  async create(dto: PackageDto) {
     // The database gives the new package a UUID
-    return this.prisma.package.create({
+    const pkg = await this.prisma.package.create({
       data: {
-        ...dto,
-        perks: dto.perks ?? [],
+        ...toData(dto),
+        quotationManual: Boolean(dto.quotation),
         itinerary: { create: toDays(dto) },
       },
       include: withItinerary,
     });
+    return dto.quotation ? pkg : this.refreshQuotation(pkg);
   }
 
   async update(id: string, dto: PackageDto) {
     const current = await this.findOne(id); // 404 if it does not exist
 
+    // The admin uploaded their own PDF, or removed the one there was
+    const pdfChanged =
+      dto.quotation !== undefined && dto.quotation !== current.quotation;
+
     const updated = await this.prisma.package.update({
       where: { id },
       data: {
-        ...dto,
-        perks: dto.perks ?? [],
+        ...toData(dto),
+        quotationManual: pdfChanged
+          ? Boolean(dto.quotation)
+          : current.quotationManual,
         // Simplest way to save an edited itinerary: remove the old days, add the new ones
         itinerary: { deleteMany: {}, create: toDays(dto) },
       },
       include: withItinerary,
     });
 
-    // A replaced or removed quotation PDF is not needed anymore
-    if (dto.quotation !== undefined && dto.quotation !== current.quotation) {
+    if (pdfChanged) {
       await this.storage.deleteByUrl(current.quotation);
+      return updated;
     }
+
+    // Keep a PDF made from the package the same as the package
+    return updated.quotation && !updated.quotationManual
+      ? this.refreshQuotation(updated)
+      : updated;
+  }
+
+  // Makes the quotation PDF from the package. Replaces an uploaded PDF too.
+  async generateQuotation(id: string) {
+    const pkg = await this.findOne(id);
+    const pdf = await this.quotations.build(pkg);
+    const { url } = await this.storage.save(
+      'tourpackages',
+      pdf,
+      '.pdf',
+      'application/pdf',
+    );
+    const updated = await this.prisma.package.update({
+      where: { id },
+      data: { quotation: url, quotationManual: false },
+      include: withItinerary,
+    });
+    await this.storage.deleteByUrl(pkg.quotation);
     return updated;
+  }
+
+  // A package is still saved if its PDF cannot be made
+  private async refreshQuotation<T extends { id: string }>(pkg: T) {
+    try {
+      return await this.generateQuotation(pkg.id);
+    } catch (error) {
+      this.logger.error(`Quotation PDF failed for ${pkg.id}: ${error}`);
+      return pkg;
+    }
   }
 
   async remove(id: string) {

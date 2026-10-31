@@ -21,6 +21,7 @@ export default function PackageDetailsPage() {
   const { pkg: p, error } = usePackage(id);
   const updatePackage = usePackagesStore((s) => s.updatePackage);
   const deletePackage = usePackagesStore((s) => s.deletePackage);
+  const generateQuotation = usePackagesStore((s) => s.generateQuotation);
   const bookings = useBookingsStore((s) => s.bookings);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -47,6 +48,15 @@ export default function PackageDetailsPage() {
     try {
       await updatePackage(p.id, toInput({ ...p, quotation }));
       if (!quotation) toast.success("Quotation removed");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const createQuotation = async () => {
+    try {
+      await generateQuotation(p.id);
+      toast.success("Quotation PDF created");
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -177,7 +187,13 @@ export default function PackageDetailsPage() {
 
         <div className="space-y-5">
           <InfoCard icon={FileText} title="Quotation PDF">
-            <QuotationField value={p.quotation ?? ""} onChange={saveQuotation} uploadedMessage="Quotation uploaded and live on the website" />
+            <QuotationField
+              value={p.quotation ?? ""}
+              manual={p.quotationManual}
+              onChange={saveQuotation}
+              onGenerate={createQuotation}
+              uploadedMessage="Quotation uploaded and live on the website"
+            />
           </InfoCard>
 
           <InfoCard icon={Globe} title="On the website">

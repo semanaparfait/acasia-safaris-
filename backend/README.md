@@ -61,7 +61,9 @@ When a record is deleted, its uploaded images are deleted from the bucket too.
 
 ## Quotation emails
 
-Admins upload a quotation PDF on each package (max 10 MB). Visitors can download it, or get it by WhatsApp or email.
+Each package has a quotation PDF, made on the server from the package (`src/packages/quotation.service.ts`).
+It is made when a package is created and remade each time it is saved. Admins can upload their own PDF instead (max 10 MB),
+which is then left alone. Visitors can download it, or get it by WhatsApp or email.
 Email requests are saved under Messages, and limited to 3 per address and 100 in total per hour.
 
 To send with Gmail, turn on 2-Step Verification on the account, create an
@@ -154,6 +156,7 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | GET | `/api/packages/all` | 🔒 drafts included |
 | GET | `/api/packages/:id` | website (ids are UUIDs) |
 | POST / PUT / DELETE | `/api/packages[/:id]` | 🔒 `quotation` is the URL of a PDF from `POST /api/uploads/tourpackages` |
+| POST | `/api/packages/:id/quotation` | 🔒 makes the quotation PDF from the package, replacing the current one |
 | POST | `/api/packages/:id/quotation/email` | website: `{ name, email }` sends the quotation by email |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |

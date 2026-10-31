@@ -276,10 +276,10 @@ async function buildHtml(pkg, logo) {
         <div class="list out"><h3>Not included</h3><ul>${pkg.exclusions.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>
       </div>
       ${pkg.perks?.length ? `<section style="margin-top:6mm"><div class="list extra"><h3>Special extras included</h3><ul>${pkg.perks.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div></section>` : ""}
-      <section style="margin-top:8mm">
+      ${fair.length ? `<section style="margin-top:8mm">
         <h3>Why this price is fair</h3>
         ${fair.map(([title, text], i) => `<div class="fair"><div class="n">${i + 1}</div><div><h4>${esc(title)}</h4><p class="muted">${esc(text)}</p></div></div>`).join("")}
-      </section>
+      </section>` : ""}
     </div>${footer(pkg, 3 + pageCount, total)}</div>
 
     <div class="page"><div class="content">

@@ -1,7 +1,7 @@
 // Small helpers shared by the website and the admin panel.
 import type React from "react";
 import { Gem, Landmark, MapPin, Mountain, PawPrint, Trees, Waves, Zap } from "lucide-react";
-import type { Booking, Destination, Message, Review, TourPackage } from "./types";
+import type { Booking, Destination, Message, Rate, Review, TourPackage } from "./types";
 
 // ---------- Ids ----------
 
@@ -17,6 +17,14 @@ export const money = (n: number) =>
 // ---------- Packages ----------
 
 export const packageCategories = ["Gorilla Trekking", "Wildlife Safari", "Luxury Escapes", "Cultural Tours"];
+
+// Prices in the quotation PDF until the admin sets them (same as backend/src/packages/quotation.service.ts)
+export const defaultRates = (price: number): Rate[] => [
+  { label: "Adult", ages: "16 years and over", price },
+  { label: "Teenager", ages: "12 to 15 years", price: Math.round((price * 0.75) / 10) * 10 },
+  { label: "Child", ages: "4 to 11 years", price: Math.round((price * 0.5) / 10) * 10 },
+  { label: "Infant", ages: "0 to 3 years", price: 0 },
+];
 
 // The duration of a package is the number of itinerary days
 export const packageDays = (p: TourPackage) => p.itinerary.length;

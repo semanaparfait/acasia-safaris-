@@ -10,6 +10,9 @@ export type ItineraryDay = {
   image: string;
 };
 
+// One row of the prices table in the quotation PDF
+export type Rate = { label: string; ages: string; price: number };
+
 export type TourPackage = {
   id: string;
   title: string;
@@ -22,6 +25,9 @@ export type TourPackage = {
   image: string;
   price: number; // USD per person (admin only, not shown on the website)
   quotation?: string | null; // URL of the quotation PDF
+  quotationManual?: boolean; // true = the admin uploaded it, false = made from the package
+  rates?: Rate[] | null; // prices in the PDF; empty = defaultRates in helpers.ts
+  fairPrice: string[]; // reasons for "Why this price is fair"
   active: boolean; // false = draft, hidden from the website
   route: string[];
   itinerary: ItineraryDay[];

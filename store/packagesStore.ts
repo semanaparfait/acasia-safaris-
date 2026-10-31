@@ -25,6 +25,7 @@ type PackagesState = {
   createPackage: (input: PackageInput) => Promise<TourPackage>;
   updatePackage: (id: string, input: PackageInput) => Promise<TourPackage>;
   deletePackage: (id: string) => Promise<void>;
+  generateQuotation: (id: string) => Promise<TourPackage>; // makes the PDF from the package
   emailQuotation: (id: string, input: { name: string; email: string }) => Promise<void>; // website
 };
 
@@ -90,6 +91,16 @@ export const usePackagesStore = create<PackagesState>()(
       deletePackage: async (id) => {
         await api(`/packages/${id}`, { method: "DELETE", admin: true });
         set((state) => ({ packages: state.packages.filter((p) => p.id !== id) }), false, "packages/delete");
+      },
+
+      generateQuotation: async (id) => {
+        const updated = await api<TourPackage>(`/packages/${id}/quotation`, { method: "POST", admin: true });
+        set(
+          (state) => ({ packages: state.packages.map((p) => (p.id === id ? updated : p)) }),
+          false,
+          "packages/generateQuotation",
+        );
+        return updated;
       },
 
       emailQuotation: async (id, input) => {

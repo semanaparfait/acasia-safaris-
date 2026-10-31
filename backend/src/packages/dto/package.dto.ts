@@ -27,6 +27,21 @@ export class ItineraryDayDto {
   image: string;
 }
 
+// One row of the prices table, e.g. Child, 4 to 11 years, $350
+export class RateDto {
+  @IsString()
+  @IsNotEmpty()
+  label: string;
+
+  @IsString()
+  @IsNotEmpty()
+  ages: string;
+
+  @IsInt()
+  @Min(0)
+  price: number;
+}
+
 export class PackageDto {
   @IsString()
   title: string;
@@ -61,6 +76,19 @@ export class PackageDto {
   @IsOptional()
   @IsString()
   quotation?: string | null;
+
+  // Prices in the quotation PDF. The first row is the adult price.
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RateDto)
+  rates?: RateDto[] | null;
+
+  // Reasons for "Why this price is fair", e.g. "Private vehicle: yours alone"
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  fairPrice?: string[];
 
   @IsBoolean()
   active: boolean;

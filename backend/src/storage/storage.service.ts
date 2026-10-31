@@ -43,19 +43,34 @@ export class StorageService {
   }
 
   // Saves a file and returns the public URL to store in the database
-  async upload(bucket: string, file: Express.Multer.File) {
+  upload(bucket: string, file: Express.Multer.File) {
+    return this.save(
+      bucket,
+      file.buffer,
+      extname(file.originalname).toLowerCase(),
+      file.mimetype,
+    );
+  }
+
+  // Saves a file made by the server, e.g. a quotation PDF
+  async save(
+    bucket: string,
+    body: Buffer,
+    extension: string,
+    contentType: string,
+  ) {
     const client = this.getClient();
     this.checkBucket(bucket);
 
     // Unique name so files never overwrite each other, e.g. "3f2a...c9.jpg"
-    const key = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
+    const key = `${randomUUID()}${extension}`;
 
     await client.send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
+        Body: body,
+        ContentType: contentType,
       }),
     );
 
