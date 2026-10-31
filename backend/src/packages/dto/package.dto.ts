@@ -90,6 +90,12 @@ export class PackageDto {
   @IsString({ each: true })
   fairPrice?: string[];
 
+  // Reasons for "Why people choose this trip", written the same way
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  whyChoose?: string[];
+
   @IsBoolean()
   active: boolean;
 

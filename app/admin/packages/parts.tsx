@@ -28,6 +28,7 @@ export const blankPackage: TourPackage = {
   exclusions: [],
   perks: [],
   fairPrice: [],
+  whyChoose: [],
 };
 
 const cleanList = (list: string[] = []) => list.map((s) => s.trim()).filter(Boolean);
@@ -44,7 +45,8 @@ export function toInput(pkg: TourPackage): PackageInput {
     lodging: pkg.lodging,
     image: pkg.image,
     price: pkg.price,
-    quotation: pkg.quotation || null,
+    // Left out unless the admin changed it, so an old copy cannot replace a newer PDF
+    quotation: pkg.quotation === undefined ? undefined : pkg.quotation || null,
     active: pkg.active,
     route: cleanList(pkg.route),
     itinerary: pkg.itinerary.map((d) => ({ title: d.title, description: d.description, image: d.image })),
@@ -52,7 +54,9 @@ export function toInput(pkg: TourPackage): PackageInput {
     exclusions: cleanList(pkg.exclusions),
     perks: cleanList(pkg.perks),
     fairPrice: cleanList(pkg.fairPrice),
-    rates: pkg.rates ?? null,
+    whyChoose: cleanList(pkg.whyChoose),
+    // Age groups that were added but not filled in are left out
+    rates: pkg.rates?.filter((r) => r.label.trim() && r.ages.trim()) ?? null,
   };
 }
 
@@ -77,14 +81,16 @@ const MAX_PDF_SIZE = 10 * 1024 * 1024; // same limit as the API
 export function RatesInput({ price, value, onChange }: { price: number; value?: Rate[] | null; onChange: (rates: Rate[]) => void }) {
   const rows = value?.length ? value : defaultRates(price);
   const setRow = (index: number, changes: Partial<Rate>) => onChange(rows.map((r, i) => (i === index ? { ...r, ...changes } : r)));
+  const addRow = () => onChange([...rows, { label: "", ages: "", price: 0 }]);
+  const removeRow = (index: number) => onChange(rows.filter((_, i) => i !== index));
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_1.4fr_100px] gap-2 text-[11px] font-medium uppercase tracking-wider text-[#0a120b]/45">
-        <span>Traveler</span><span>Age</span><span>Price (USD)</span>
+      <div className="grid grid-cols-[1fr_1.4fr_100px_32px] gap-2 text-[11px] font-medium uppercase tracking-wider text-[#0a120b]/45">
+        <span>Traveler</span><span>Age</span><span>Price (USD)</span><span />
       </div>
       {rows.map((row, i) => (
-        <div key={i} className="grid grid-cols-[1fr_1.4fr_100px] gap-2">
+        <div key={i} className="grid grid-cols-[1fr_1.4fr_100px_32px] gap-2 items-center">
           <input aria-label="Traveler" className={inputClass} value={row.label} onChange={(e) => setRow(i, { label: e.target.value })} />
           <input aria-label="Age" className={inputClass} value={row.ages} onChange={(e) => setRow(i, { ages: e.target.value })} />
           {i === 0 ? (
@@ -99,8 +105,18 @@ export function RatesInput({ price, value, onChange }: { price: number; value?: 
               onChange={(e) => setRow(i, { price: Math.max(0, Math.round(Number(e.target.value))) })}
             />
           )}
+          {i === 0 ? (
+            <span />
+          ) : (
+            <button type="button" onClick={() => removeRow(i)} className="p-2 rounded-lg text-[#0a120b]/45 hover:text-red-600 hover:bg-red-50 cursor-pointer" aria-label={`Remove ${row.label || "age group"}`}>
+              <X className="size-4" />
+            </button>
+          )}
         </div>
       ))}
+      <button type="button" onClick={addRow} className="inline-flex items-center gap-1.5 text-sm text-[#2E7D5B] hover:underline cursor-pointer">
+        <Plus className="size-4" /> Add age group
+      </button>
       <p className="text-xs text-[#0a120b]/50">0 shows as Free. The adult price is the Price per person of this package.</p>
     </div>
   );

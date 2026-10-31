@@ -47,7 +47,9 @@ export default function PackageForm({
     e.preventDefault();
     if (!valid) return;
     setSaving(true);
-    await onSave(form); // the page shows a toast and navigates away on success
+    const pdfChanged = (form.quotation ?? "") !== (initial.quotation ?? "");
+    // the page shows a toast and navigates away on success
+    await onSave({ ...form, quotation: pdfChanged ? form.quotation : undefined });
     setSaving(false);
   };
 
@@ -110,6 +112,10 @@ export default function PackageForm({
               <div>
                 <label className={labelClass}>Prices for adults and children</label>
                 <RatesInput price={form.price} value={form.rates} onChange={(rates) => set("rates", rates)} />
+              </div>
+              <div>
+                <label className={labelClass}>Why people choose this package</label>
+                <ListInput value={form.whyChoose} onChange={(v) => set("whyChoose", v)} placeholder="e.g. Close to nature: see the Big Five in one short trip" />
               </div>
               <div>
                 <label className={labelClass}>Why this price is fair</label>

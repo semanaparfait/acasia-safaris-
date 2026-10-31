@@ -44,7 +44,7 @@ export default function PackagesPage() {
 
   const toggleActive = async (pkg: TourPackage, active: boolean) => {
     try {
-      await updatePackage(pkg.id, toInput({ ...pkg, active }));
+      await updatePackage(pkg.id, toInput({ ...pkg, active, quotation: undefined }));
       toast.success(active ? "Package published" : "Package moved to drafts");
     } catch (err) {
       toast.error((err as Error).message);

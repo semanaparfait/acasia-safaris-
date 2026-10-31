@@ -74,6 +74,7 @@ export type QuotationPackage = {
   exclusions: string[];
   perks: string[];
   fairPrice: string[];
+  whyChoose: string[];
   rates: unknown;
   itinerary: {
     day: number;
@@ -299,13 +300,13 @@ export class QuotationService {
     }
 
     if (pkg.route.length > 0) {
-      y += 14;
+      y = this.room(doc, y + 14, 60);
       doc.font(SERIF).fontSize(15).fillColor(INK).text('Your route', MARGIN, y);
       y = this.route(doc, pkg.route, y + 24);
     }
 
     if (rates.length > 2) {
-      y += 24;
+      y = this.room(doc, y + 24, 110);
       doc
         .font(SERIF)
         .fontSize(15)
@@ -446,16 +447,18 @@ export class QuotationService {
       y += perksHeight + gap;
     }
 
-    const reasons = pkg.fairPrice.map(clean).filter(Boolean);
-    if (reasons.length === 0) return;
+    y = this.reasons(doc, 'Why people choose this trip', pkg.whyChoose, y);
+    this.reasons(doc, 'Why this price is fair', pkg.fairPrice, y);
+  }
 
-    y = this.room(doc, y, 60);
+  // A numbered list of reasons. Left out when there are none.
+  private reasons(doc: Doc, heading: string, items: string[], startY: number) {
+    const reasons = items.map(clean).filter(Boolean);
+    if (reasons.length === 0) return startY;
+
+    let y = this.room(doc, startY, 60);
     y += 4;
-    doc
-      .font(SERIF)
-      .fontSize(15)
-      .fillColor(INK)
-      .text('Why this price is fair', MARGIN, y);
+    doc.font(SERIF).fontSize(15).fillColor(INK).text(heading, MARGIN, y);
     y += 26;
 
     reasons.forEach((reason, i) => {
@@ -493,6 +496,7 @@ export class QuotationService {
       if (i < reasons.length - 1) doc.rect(MARGIN, y, CONTENT, 0.5).fill(LINE);
       y += 8;
     });
+    return y + 8;
   }
 
   private termsPage(doc: Doc, pkg: QuotationPackage) {

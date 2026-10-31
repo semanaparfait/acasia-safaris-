@@ -36,7 +36,7 @@ export default function PackageDetailsPage() {
 
   const togglePublished = async (active: boolean) => {
     try {
-      await updatePackage(p.id, toInput({ ...p, active }));
+      await updatePackage(p.id, toInput({ ...p, active, quotation: undefined }));
       toast.success(active ? "Package published" : "Package moved to drafts");
     } catch (err) {
       toast.error((err as Error).message);

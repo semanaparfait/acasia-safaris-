@@ -28,6 +28,7 @@ export type TourPackage = {
   quotationManual?: boolean; // true = the admin uploaded it, false = made from the package
   rates?: Rate[] | null; // prices in the PDF; empty = defaultRates in helpers.ts
   fairPrice: string[]; // reasons for "Why this price is fair"
+  whyChoose: string[]; // reasons for "Why people choose this trip"
   active: boolean; // false = draft, hidden from the website
   route: string[];
   itinerary: ItineraryDay[];

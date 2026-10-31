@@ -32,6 +32,7 @@ model Package {
   quotationManual Boolean  @default(false)
   rates           Json? // prices in the PDF: [{ label, ages, price }]. Empty = the default rates
   fairPrice       String[] @default([]) // reasons for "Why this price is fair", e.g. "Title: explanation"
+  whyChoose       String[] @default([]) // reasons for "Why people choose this trip", written the same way
 
   active      Boolean        @default(true) // false = draft, hidden from the website
   route       String[] // stops in travel order
