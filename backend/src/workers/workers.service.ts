@@ -15,6 +15,9 @@ import { WorkerDto } from './dto/worker.dto';
 // The admin who is making the request (from AdminGuard)
 type Actor = Omit<Worker, 'passwordHash' | 'tokenVersion'>;
 
+// The form sends "2026-10-31", but the database needs a full date
+const toDate = (date?: string) => (date ? new Date(date) : undefined);
+
 // Rules for admins:
 //  - The main admin (isOwner) cannot be deleted and always keeps admin access.
 //  - Only the main admin can give or remove admin access and set admins' passwords.
@@ -67,6 +70,7 @@ export class WorkersService {
       data: {
         ...data,
         email,
+        joined: toDate(dto.joined),
         passwordHash: password ? await hash(password, 10) : null,
       },
     });
@@ -106,6 +110,7 @@ export class WorkersService {
       data: {
         ...data,
         email,
+        joined: toDate(dto.joined),
         // Only change the password when a new one is sent
         ...(password ? { passwordHash: await hash(password, 10) } : {}),
       },

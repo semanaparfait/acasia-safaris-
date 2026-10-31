@@ -60,16 +60,19 @@ export class WhatsappService {
           .filter((number) => number.startsWith(DEFAULT_COUNTRY_CODE)),
       );
 
+      const recipients = [...numbers];
       const results = await Promise.allSettled(
-        [...numbers].map((to) =>
+        recipients.map((to) =>
           this.sendTemplate(token, phoneNumberId, to, this.values(booking)),
         ),
       );
-      for (const result of results) {
+      results.forEach((result, i) => {
         if (result.status === 'rejected') {
-          this.logger.error(`WhatsApp message failed: ${result.reason}`);
+          this.logger.error(
+            `WhatsApp message to ${recipients[i]} failed: ${result.reason}`,
+          );
         }
-      }
+      });
     } catch (error) {
       this.logger.error(`WhatsApp messages failed: ${error}`);
     }
