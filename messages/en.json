@@ -986,5 +986,36 @@
     "englishPrevails": "",
     "privacyMeta": "Privacy Policy | Acacia Safaris",
     "termsMeta": "Terms of Service | Acacia Safaris"
+  },
+  "Meta": {
+    "title": "Acacia Safaris | Gorilla Trekking & Luxury Safaris in Rwanda",
+    "description": "Acacia Safaris Ltd is a Rwandan tour operator based in Kigali. Gorilla trekking, wildlife safaris, luxury lodges and cultural tours across Rwanda and East Africa, planned by local experts."
+  },
+  "NotFound": {
+    "meta": "Page not found · Acacia Safaris",
+    "error": "Error 404",
+    "title": "You've wandered off the trail",
+    "text": "The page you are looking for has moved, or it never existed. Even the best guides take a wrong turn sometimes. Let's get you back on the safari.",
+    "home": "Back to home",
+    "tours": "Explore tours",
+    "popular": "Popular pages",
+    "links": {
+      "tours": {
+        "label": "Tour packages",
+        "text": "Safaris, gorilla treks and luxury escapes"
+      },
+      "destinations": {
+        "label": "Destinations",
+        "text": "Parks, lakes and mountains to explore"
+      },
+      "gallery": {
+        "label": "Gallery",
+        "text": "Moments from the trail"
+      },
+      "contact": {
+        "label": "Contact us",
+        "text": "We reply within 24 hours"
+      }
+    }
   }
 }

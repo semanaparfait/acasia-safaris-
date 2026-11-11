@@ -986,5 +986,36 @@
     "englishPrevails": "Tafsiri hii imetolewa kwa urahisi wako. Kukiwa na tofauti, toleo la Kiingereza ndilo linalotumika.",
     "privacyMeta": "Sera ya Faragha | Acacia Safaris",
     "termsMeta": "Masharti ya Huduma | Acacia Safaris"
+  },
+  "Meta": {
+    "title": "Acacia Safaris | Safari za Sokwe na za Kifahari Rwanda",
+    "description": "Acacia Safaris Ltd ni kampuni ya utalii ya Rwanda iliyoko Kigali. Safari za kutembelea sokwe, wanyamapori, malazi ya kifahari na ziara za utamaduni kote Rwanda na Afrika Mashariki, zikiandaliwa na wataalamu wa ndani."
+  },
+  "NotFound": {
+    "meta": "Ukurasa haukupatikana · Acacia Safaris",
+    "error": "Hitilafu 404",
+    "title": "Umepotea njia",
+    "text": "Ukurasa unaoutafuta umehamishwa, au haukuwahi kuwepo. Hata waongozaji bora hupotea njia mara nyingine. Turudi kwenye safari.",
+    "home": "Rudi nyumbani",
+    "tours": "Gundua safari",
+    "popular": "Kurasa maarufu",
+    "links": {
+      "tours": {
+        "label": "Safari zetu",
+        "text": "Safari, sokwe na mapumziko ya kifahari"
+      },
+      "destinations": {
+        "label": "Vivutio",
+        "text": "Hifadhi, maziwa na milima ya kugundua"
+      },
+      "gallery": {
+        "label": "Picha",
+        "text": "Matukio ya njiani"
+      },
+      "contact": {
+        "label": "Wasiliana nasi",
+        "text": "Tunajibu ndani ya saa 24"
+      }
+    }
   }
 }

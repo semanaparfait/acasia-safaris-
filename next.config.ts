@@ -37,6 +37,16 @@ const nextConfig: NextConfig = {
     return [{ source: "/api/:path*", destination: `${BACKEND}/api/:path*` }];
   },
 
+  // Old pages nothing links to: /about (old About us) and two empty placeholders
+  async redirects() {
+    return [
+      { source: "/about", destination: "/aboutus", permanent: true },
+      { source: "/:locale(fr|sw)/about", destination: "/:locale/aboutus", permanent: true },
+      { source: "/pages/:path*", destination: "/", permanent: true },
+      { source: "/:locale(fr|sw)/pages/:path*", destination: "/:locale", permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

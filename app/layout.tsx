@@ -13,10 +13,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Default for pages outside the website languages (e.g. the admin panel);
+// the website pages get theirs from app/[locale]/layout.tsx
 export const metadata: Metadata = {
-  title: "acacia SAFARIS LTD",
+  title: "Acacia Safaris",
   description:
-    "acacia safaris ltd is a tour and travel company based in kenya, we offer a wide range of tour and travel services to our clients, we are committed to providing our clients with the best possible service and we strive to exceed their expectations.",
+    "Acacia Safaris Ltd is a Rwandan tour operator based in Kigali: gorilla trekking, wildlife safaris and luxury lodges across Rwanda and East Africa.",
 };
 
 export default async function RootLayout({

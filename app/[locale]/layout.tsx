@@ -2,8 +2,28 @@
 // Gives the pages their language's texts (messages/*.json).
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+
+// Title and description in the page's language, with links to the other languages
+// (search engines show each visitor the right one)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Meta" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: {
+      languages: { en: "/", fr: "/fr", sw: "/sw", "x-default": "/" },
+    },
+    openGraph: { title: t("title"), description: t("description"), locale, siteName: "Acacia Safaris" },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
