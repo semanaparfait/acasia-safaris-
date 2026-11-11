@@ -16,6 +16,7 @@ import {
   Star,
   Images,
   Settings,
+  History,
   ExternalLink,
   X,
 } from "lucide-react";
@@ -23,12 +24,14 @@ import logo from "@/public/logo2.png";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
 import { useReviewsStore } from "@/store/reviewsStore";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const bookings = useBookingsStore((s) => s.bookings);
   const messages = useMessagesStore((s) => s.messages);
   const reviews = useReviewsStore((s) => s.reviews);
+  const me = useAuthStore((s) => s.worker);
 
   const groups = [
     {
@@ -57,7 +60,11 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     },
     {
       label: "System",
-      items: [{ name: "Settings", href: "/admin/settings", icon: Settings }],
+      items: [
+        { name: "Settings", href: "/admin/settings", icon: Settings },
+        // Who did what: the main admin only
+        ...(me?.isOwner ? [{ name: "Activity", href: "/admin/activity", icon: History }] : []),
+      ],
     },
   ];
 

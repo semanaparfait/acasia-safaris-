@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { randomBytes, randomInt } from 'crypto';
 import { toBuffer } from 'qrcode';
 import { LiveGateway } from '../live/live.gateway';
+import { checkLinkIsValid } from './link';
 import { MailService } from '../mail/mail.service';
 import { ratesOf } from '../packages/quotation.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -415,6 +416,13 @@ export class BookingsService {
 
   // The visitor's booking page: /my-booking/<token>
   async findByToken(token: string) {
+    const booking = await this.publicView(token);
+    checkLinkIsValid(booking.endDate);
+    return booking;
+  }
+
+  // The visitor's view, without the expiry check (live updates after an admin change)
+  private async publicView(token: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { accessToken: token },
       select: publicSelect,
@@ -455,6 +463,7 @@ export class BookingsService {
       omit: adminOmit,
     });
     if (!booking) throw new NotFoundException('This booking link is not valid');
+    checkLinkIsValid(booking.endDate);
     return booking;
   }
 
@@ -682,7 +691,7 @@ export class BookingsService {
     this.live.toVisitor(
       booking.accessToken,
       'booking',
-      await this.findByToken(booking.accessToken),
+      await this.publicView(booking.accessToken),
     );
     return booking;
   }

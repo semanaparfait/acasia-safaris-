@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { DestinationsModule } from './destinations/destinations.module';
@@ -29,6 +30,7 @@ import { WorkersModule } from './workers/workers.module';
         'Too many attempts. Please wait a few minutes and try again.',
     }),
     PrismaModule,
+    AuditModule,
     AuthModule,
     LiveModule,
     StorageModule,

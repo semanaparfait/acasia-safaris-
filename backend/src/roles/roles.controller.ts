@@ -9,6 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { RoleDto } from './dto/role.dto';
@@ -30,16 +31,19 @@ export class RolesController {
 
   // POST /api/roles   body: { "name": "Chef", "description": "..." }
   @Post()
+  @Audit('Added a role', 'Role')
   create(@Body() dto: RoleDto) {
     return this.rolesService.create(dto);
   }
 
   @Put(':id')
+  @Audit('Edited a role', 'Role')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RoleDto) {
     return this.rolesService.update(id, dto);
   }
 
   @Delete(':id')
+  @Audit('Deleted a role', 'Role')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.rolesService.remove(id);
   }

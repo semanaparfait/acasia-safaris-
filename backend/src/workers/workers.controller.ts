@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { WorkerDto } from './dto/worker.dto';
@@ -36,11 +37,13 @@ export class WorkersController {
   }
 
   @Post()
+  @Audit('Added a worker', 'Worker')
   create(@Body() dto: WorkerDto, @Req() request: AdminRequest) {
     return this.workersService.create(dto, request.worker);
   }
 
   @Put(':id')
+  @Audit('Edited a worker (role, access or details)', 'Worker')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: WorkerDto,
@@ -50,6 +53,7 @@ export class WorkersController {
   }
 
   @Delete(':id')
+  @Audit('Deleted a worker', 'Worker')
   remove(@Param('id', ParseUUIDPipe) id: string, @Req() request: AdminRequest) {
     return this.workersService.remove(id, request.worker);
   }

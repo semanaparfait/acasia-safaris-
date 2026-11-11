@@ -13,6 +13,7 @@ import {
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { BookingsService } from './bookings.service';
@@ -88,6 +89,7 @@ export class BookingsController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Checked in travelers', 'Ticket')
   checkIn(@Param('code') code: string) {
     return this.bookingsService.checkIn(code);
   }
@@ -110,6 +112,7 @@ export class BookingsController {
   @Patch(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Changed a booking (status, payment or price)', 'Booking')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBookingDto,
@@ -121,6 +124,7 @@ export class BookingsController {
   @Post(':id/messages')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Wrote to the customer / sent a price', 'Booking')
   teamMessage(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: BookingMessageDto,
@@ -134,6 +138,7 @@ export class BookingsController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit("Accepted the customer's price", 'Booking')
   teamAccept(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() request: AdminRequest,
@@ -144,6 +149,7 @@ export class BookingsController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Deleted a booking', 'Booking')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.bookingsService.remove(id);
   }

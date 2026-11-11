@@ -1,6 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash } from 'bcryptjs';
+import { AuditService } from '../audit/audit.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -27,12 +28,13 @@ const setup = () => {
     signAsync: jest.fn().mockResolvedValue('new-token'),
   };
   const storage = { deleteByUrl: jest.fn() };
-  const mail = { sendResetCode: jest.fn() };
+  const mail = { sendResetCode: jest.fn(), sendLoginCode: jest.fn() };
   const service = new AuthService(
     { worker } as unknown as PrismaService,
     jwt as unknown as JwtService,
     storage as unknown as StorageService,
     mail as unknown as MailService,
+    { record: jest.fn() } as unknown as AuditService,
   );
   return { service, worker, jwt, storage, mail };
 };
@@ -135,7 +137,10 @@ describe('AuthService', () => {
       currentPassword: 'secret123',
       newPassword: 'another123',
     });
-    expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'w1', v: 4 });
+    expect(jwt.signAsync).toHaveBeenCalledWith(
+      { sub: 'w1', v: 4, purpose: 'session' },
+      undefined,
+    );
     expect(result.token).toBe('new-token');
     expect(result.worker).not.toHaveProperty('tokenVersion');
   });
@@ -251,8 +256,114 @@ describe('AuthService', () => {
       ];
       expect(data.resetCodeHash).toBeNull();
       expect(data.tokenVersion).toEqual({ increment: 1 });
-      expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'w1', v: 4 });
+      expect(jwt.signAsync).toHaveBeenCalledWith(
+        { sub: 'w1', v: 4, purpose: 'session' },
+        undefined,
+      );
       expect(result.token).toBe('new-token');
+    });
+  });
+
+  describe('two-step login', () => {
+    const admin = async (changes = {}) =>
+      row({
+        name: 'Jean',
+        personalEmail: 'jean@gmail.com',
+        passwordHash: await hash('secret123', 4),
+        loginCodeExpires: null,
+        ...changes,
+      });
+
+    it('asks for a code after the right password, and emails it', async () => {
+      const { service, worker, mail, jwt } = setup();
+      worker.findUnique.mockResolvedValue(await admin());
+      worker.findUniqueOrThrow.mockResolvedValue(await admin());
+
+      const result = await service.login('jean@acaciasafaris.com', 'secret123');
+      expect(result).toMatchObject({ twoStep: true, sentTo: 'j***@gmail.com' });
+      expect(result).not.toHaveProperty('token');
+      expect(mail.sendLoginCode).toHaveBeenCalled();
+      expect(jwt.signAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ purpose: 'login' }),
+        { expiresIn: '10m' },
+      );
+    });
+
+    it('skips the code on a trusted device of the same worker', async () => {
+      const { service, worker, mail, jwt } = setup();
+      worker.findUnique.mockResolvedValue(await admin());
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'device' });
+
+      const result = await service.login(
+        'jean@acaciasafaris.com',
+        'secret123',
+        {
+          deviceToken: 'device-token',
+        },
+      );
+      expect(result).toHaveProperty('token', 'new-token');
+      expect(mail.sendLoginCode).not.toHaveBeenCalled();
+    });
+
+    it('does not trust a device from before a password change', async () => {
+      const { service, worker, mail, jwt } = setup();
+      worker.findUnique.mockResolvedValue(await admin());
+      worker.findUniqueOrThrow.mockResolvedValue(await admin());
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 2, purpose: 'device' });
+
+      const result = await service.login(
+        'jean@acaciasafaris.com',
+        'secret123',
+        {
+          deviceToken: 'old-device-token',
+        },
+      );
+      expect(result).toHaveProperty('twoStep', true);
+      expect(mail.sendLoginCode).toHaveBeenCalled();
+    });
+
+    it('logs in with the right code and can trust the device', async () => {
+      const { service, worker, jwt } = setup();
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'login' });
+      // As the database returns it: the password hash is never selected (PrismaService omit)
+      const { passwordHash, ...stored } = (await admin({
+        loginCodeHash: await hash('123456', 4),
+        loginCodeExpires: new Date(Date.now() + 60_000),
+        loginAttempts: 0,
+      })) as Record<string, unknown>;
+      void passwordHash;
+      worker.findUnique.mockResolvedValue(stored);
+
+      const result = await service.verifyLogin('challenge', '123456', true);
+      expect(result.token).toBe('new-token');
+      expect(result.deviceToken).toBe('new-token');
+      expect(result.worker).not.toHaveProperty('loginCodeHash');
+      expect(result.worker).not.toHaveProperty('passwordHash');
+    });
+
+    it('refuses a wrong code and counts it', async () => {
+      const { service, worker, jwt } = setup();
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'login' });
+      worker.findUnique.mockResolvedValue(
+        await admin({
+          loginCodeHash: await hash('123456', 4),
+          loginCodeExpires: new Date(Date.now() + 60_000),
+          loginAttempts: 0,
+        }),
+      );
+      worker.update.mockResolvedValue({ loginAttempts: 1 });
+
+      await expect(
+        service.verifyLogin('challenge', '000000', false),
+      ).rejects.toThrow('Wrong code. 4 tries left.');
+    });
+
+    it('a login-code token is not a login', async () => {
+      const { service, jwt } = setup();
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'login' });
+      await expect(service.verify('challenge')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

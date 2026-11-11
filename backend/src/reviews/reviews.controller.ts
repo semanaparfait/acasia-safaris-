@@ -9,6 +9,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
@@ -46,6 +47,7 @@ export class ReviewsController {
   @Patch(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Changed a review', 'Review')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateReviewDto) {
     return this.reviewsService.update(id, dto);
   }
@@ -53,6 +55,7 @@ export class ReviewsController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Deleted a review', 'Review')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.reviewsService.remove(id);
   }

@@ -10,6 +10,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { PackageDto, QuotationEmailDto } from './dto/package.dto';
@@ -67,6 +68,7 @@ export class PackagesController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Remade the quotation PDF', 'Package')
   generateQuotation(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.generateQuotation(id);
   }
@@ -75,6 +77,7 @@ export class PackagesController {
   @Post()
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Added a package', 'Package')
   create(@Body() dto: PackageDto) {
     return this.packagesService.create(dto);
   }
@@ -83,6 +86,7 @@ export class PackagesController {
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Edited a package', 'Package')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PackageDto) {
     return this.packagesService.update(id, dto);
   }
@@ -91,6 +95,7 @@ export class PackagesController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Deleted a package', 'Package')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.remove(id);
   }

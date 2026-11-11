@@ -160,6 +160,29 @@ export class MailService {
     }
   }
 
+  // Two-step login: the 6 digit code after the password. Throws if it could not be sent.
+  async sendLoginCode(email: ResetCodeEmail) {
+    const failed = new ServiceUnavailableException(
+      'We could not email your sign-in code right now. Please try again in a minute.',
+    );
+    if (!this.transport) {
+      this.logger.warn('Email is not configured: login code not sent');
+      throw failed;
+    }
+    try {
+      await this.transport.sendMail({
+        from: this.from,
+        to: email.to,
+        subject: `${email.code} is your Acacia Safaris sign-in code`,
+        text: `Hello ${email.name},\n\nYour sign-in code is ${email.code}. It works for ${email.minutes} minutes.\n\nIf you did not just sign in, someone knows your password: change it now in Admin > Settings.\n\nAcacia Safaris`,
+        html: loginCodeHtml(email),
+      });
+    } catch (error) {
+      this.logger.error(`Login code email failed: ${error}`);
+      throw failed;
+    }
+  }
+
   // Forgot password: sends the 6 digit code to the worker's personal email.
   // Throws ServiceUnavailableException if the email could not be sent.
   async sendResetCode(email: ResetCodeEmail) {
@@ -530,6 +553,25 @@ export type ResetCodeEmail = {
   code: string;
   minutes: number; // how long the code works
 };
+
+function loginCodeHtml({ name, code, minutes }: ResetCodeEmail) {
+  return `
+<div style="background:#f7f5f0;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#0a120b">
+  <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden">
+    <div style="background:#12231a;padding:28px 32px">
+      <p style="margin:0;color:#c5a86d;font-size:11px;letter-spacing:3px;text-transform:uppercase">Acacia Safaris · Admin</p>
+      <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;font-weight:normal">Your sign-in code</h1>
+    </div>
+    <div style="padding:28px 32px;font-size:15px;line-height:1.6">
+      <p style="margin:0 0 14px">Hello ${escapeHtml(name)},</p>
+      <p style="margin:0 0 14px">Enter this code to finish signing in to the admin panel:</p>
+      <p style="margin:24px 0;font-size:32px;font-weight:bold;letter-spacing:10px;color:#12231a">${escapeHtml(code)}</p>
+      <p style="margin:0 0 10px;color:#0a120b99;font-size:13px">The code works for ${minutes} minutes.</p>
+      <p style="margin:0;color:#b4483c;font-size:13px"><strong>Not you?</strong> Someone has your password: change it now in Admin &gt; Settings.</p>
+    </div>
+  </div>
+</div>`;
+}
 
 function resetCodeHtml({ name, code, minutes }: ResetCodeEmail) {
   return `

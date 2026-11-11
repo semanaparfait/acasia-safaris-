@@ -6,10 +6,11 @@ import {
 } from '@nestjs/websockets';
 import type { Namespace, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
+import { linkExpired } from '../bookings/link';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Live updates, so nobody has to reload: ws://<api>/live (Socket.IO)
-//  - Admins connect with   auth: { token: <login token> }   and get every booking change
+//  - Admins connect with   auth: { token }   (from GET /api/auth/live-token) and get every booking change
 //    ("booking" with the admin view, "booking:deleted" with { id }).
 //  - A visitor connects with   auth: { booking: <accessToken> }   and gets their own booking
 //    ("booking" with the public view) whenever the team answers or something changes.
@@ -32,16 +33,16 @@ export class LiveGateway implements OnGatewayConnection {
     };
     try {
       if (typeof token === 'string' && token) {
-        await this.auth.verify(token); // throws if the login is not valid anymore
+        await this.auth.verify(token, 'live'); // throws if the login is not valid anymore
         await client.join('admins');
         return;
       }
       if (typeof booking === 'string' && booking) {
         const found = await this.prisma.booking.findUnique({
           where: { accessToken: booking },
-          select: { id: true },
+          select: { endDate: true },
         });
-        if (found) {
+        if (found && !linkExpired(found.endDate)) {
           await client.join(`booking:${booking}`);
           return;
         }

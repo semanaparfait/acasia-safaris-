@@ -9,6 +9,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
@@ -58,6 +59,7 @@ export class MessagesController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
+  @Audit('Deleted a message', 'Message')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.messagesService.remove(id);
   }

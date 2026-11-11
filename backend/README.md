@@ -242,3 +242,21 @@ Online behind a proxy, set `TRUST_PROXY=1` so each visitor's real IP is counted.
 ## Secrets
 
 Real keys and passwords go only in `backend/.env` (ignored by git). `.env.example` is public: placeholders only.
+
+## Admin login and security
+
+- **Two-step login.** After the password, a 6 digit code is emailed to the admin's personal email
+  (valid 10 minutes, 5 tries). "Trust this device" skips the code on that browser for 30 days;
+  changing the password (or logging out everywhere) ends every trusted device. An admin without a
+  personal email cannot sign in until the main admin adds one under Workers.
+- **Login cookie.** The login is an httpOnly cookie (`acacia_session`, 7 days): the page's JavaScript
+  never sees it. The website calls `/api/...` on its own address and Next.js forwards it to the backend
+  (`next.config.ts`), so it is a first-party cookie. Changes also need the `X-Requested-With` header
+  (sent by `lib/api.ts`), which other websites cannot add (CSRF). Swagger can still use `Authorization: Bearer`.
+- **Live connection.** The admin panel asks `GET /api/auth/live-token` for a 2-minute token to open the WebSocket.
+- **Activity log.** Admin > Activity (main admin only): logins, failed logins, and every change marked
+  with `@Audit(...)` in the controllers (prices, offers, deletions, check-ins, workers…), with who, when and IP.
+  Passwords and codes are removed before saving.
+- **Booking links** (`/my-booking/<token>`) stop working 90 days after the trip ends (`src/bookings/link.ts`).
+- **Security headers:** `helmet` on the API, and headers for every website page in `next.config.ts`.
+

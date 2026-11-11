@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { liveSocket } from "@/lib/live";
+import { adminLiveAuth, liveSocket } from "@/lib/live";
 import type { Booking } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingsStore } from "@/store/bookingsStore";
@@ -19,7 +19,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const token = useAuthStore((s) => s.token);
+  // Logged in = we know the worker (the login itself is an httpOnly cookie)
+  const loggedIn = useAuthStore((s) => Boolean(s.worker));
   // Pages that work without a login (sign in, forgot password)
   const isLoginPage = pathname === "/admin/login" || pathname === "/admin/forgot-password";
 
@@ -30,15 +31,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   // Not logged in -> go to the login page
   useEffect(() => {
-    if (mounted && !token && !isLoginPage) router.replace("/admin/login");
-  }, [mounted, token, isLoginPage, router]);
+    if (mounted && !loggedIn && !isLoginPage) router.replace("/admin/login");
+  }, [mounted, loggedIn, isLoginPage, router]);
 
   // Data used by the sidebar badges and the top bar on every admin page
   const loadBookings = useBookingsStore((s) => s.load);
   const loadMessages = useMessagesStore((s) => s.load);
   const loadReviews = useReviewsStore((s) => s.loadAll);
   useEffect(() => {
-    if (!mounted || !token || isLoginPage) return;
+    if (!mounted || !loggedIn || isLoginPage) return;
     const refresh = () => {
       loadBookings();
       loadMessages();
@@ -48,12 +49,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     // Coming back to the tab shows anything that arrived from the website meanwhile
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
-  }, [mounted, token, isLoginPage, loadBookings, loadMessages, loadReviews]);
+  }, [mounted, loggedIn, isLoginPage, loadBookings, loadMessages, loadReviews]);
 
   // Live: bookings, customer messages and offers appear instantly (lib/live.ts)
   useEffect(() => {
-    if (!mounted || !token || isLoginPage) return;
-    const socket = liveSocket({ token });
+    if (!mounted || !loggedIn || isLoginPage) return;
+    const socket = liveSocket(adminLiveAuth);
     socket.on("booking", (booking: Booking) => {
       const { bookings, upsertBooking } = useBookingsStore.getState();
       const before = bookings.find((b) => b.id === booking.id);
@@ -71,7 +72,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     return () => {
       socket.disconnect();
     };
-  }, [mounted, token, isLoginPage, loadBookings]);
+  }, [mounted, loggedIn, isLoginPage, loadBookings]);
 
   const toaster = (
     <Toaster
@@ -89,7 +90,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }
 
   // Nothing to show until we know the admin is logged in
-  if (!mounted || !token) return null;
+  if (!mounted || !loggedIn) return null;
 
   return (
     <>

@@ -19,6 +19,9 @@ export class PrismaService
           resetCodeHash: true,
           resetCodeExpires: true,
           resetAttempts: true,
+          loginCodeHash: true,
+          loginCodeExpires: true,
+          loginAttempts: true,
         },
         // The lowest bargaining price is for admins only (see PackagesService)
         package: { minPrice: true },

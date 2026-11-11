@@ -3,12 +3,18 @@
 import { useAuthStore } from "@/store/authStore";
 import type { Bucket } from "./types";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+// The website's own /api address: Next.js forwards it to the backend (see next.config.ts).
+// Same address as the page, so the admin login cookie is a normal first-party cookie.
+export const API_URL = "/api";
+
+// Every request carries this header. With the login cookie, the backend only accepts
+// changes that have it, which other websites cannot add (protection against CSRF).
+const BASE_HEADERS = { "X-Requested-With": "acacia" };
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown; // sent as JSON
-  admin?: boolean; // true = send the login token (routes marked 🔒 in backend/README.md)
+  admin?: boolean; // true = an admin route (🔒 in backend/README.md): a 401 logs the admin out
 };
 
 /**
@@ -21,15 +27,15 @@ type RequestOptions = {
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, admin = false } = options;
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { ...BASE_HEADERS };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (admin) headers["Authorization"] = `Bearer ${useAuthStore.getState().token}`;
 
   let response: Response;
   try {
     response = await fetch(API_URL + path, {
       method,
       headers,
+      credentials: "include", // the login cookie
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
@@ -52,7 +58,8 @@ export async function uploadImage(bucket: Bucket, file: File): Promise<string> {
   try {
     response = await fetch(`${API_URL}/uploads/${bucket}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
+      headers: BASE_HEADERS,
+      credentials: "include",
       body: form,
     });
   } catch {
@@ -67,7 +74,7 @@ async function readResponse<T>(response: Response, admin: boolean): Promise<T> {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    // Expired token or admin access removed: log out so the admin is sent back to the login page
+    // Login expired or admin access removed: log out so the admin is sent back to the login page
     if (response.status === 401 && admin) useAuthStore.getState().logout();
     throw new Error(errorMessage(data, response.status));
   }

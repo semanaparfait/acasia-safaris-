@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { allowedOrigins } from './common/origins';
 import { LiveAdapter } from './live/live.adapter';
@@ -18,8 +20,21 @@ async function bootstrap() {
   // Every route starts with /api, e.g. GET http://localhost:4000/api/packages
   app.setGlobalPrefix('api');
 
+  // Security headers (no sniffing, no framing, HSTS on https…). Images and PDFs are
+  // shown by the website on another address, so they may be loaded cross-origin.
+  // No Content-Security-Policy here: this API only returns JSON and files (Swagger needs inline scripts).
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
+  // Reads the login cookie (see auth/session.ts)
+  app.use(cookieParser());
+
   // Websites allowed to call this API (see common/origins.ts)
-  app.enableCors({ origin: allowedOrigins() });
+  app.enableCors({ origin: allowedOrigins(), credentials: true });
 
   // Live updates (Socket.IO at /socket.io, namespace /live), same allowed websites
   app.useWebSocketAdapter(new LiveAdapter(app));
