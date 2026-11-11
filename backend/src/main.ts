@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { allowedOrigins } from './common/origins';
+import { LiveAdapter } from './live/live.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,15 +11,11 @@ async function bootstrap() {
   // Every route starts with /api, e.g. GET http://localhost:4000/api/packages
   app.setGlobalPrefix('api');
 
-  // Websites allowed to call this API from the browser.
-  // FRONTEND_URL can hold several, separated by commas:
-  //   FRONTEND_URL="http://localhost:3000,https://acacia-safaris.vercel.app"
-  const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:3000')
-    .split(',')
-    .map((url) => url.trim().replace(/^["']|["']$/g, '')) // ignore quotes copied from .env
-    .map((url) => url.replace(/\/$/, '')) // ignore a trailing "/"
-    .filter(Boolean);
-  app.enableCors({ origin: allowedOrigins });
+  // Websites allowed to call this API (see common/origins.ts)
+  app.enableCors({ origin: allowedOrigins() });
+
+  // Live updates (Socket.IO at /socket.io, namespace /live), same allowed websites
+  app.useWebSocketAdapter(new LiveAdapter(app));
 
   // Check request bodies against the DTO classes (dto/*.ts).
   // whitelist: unknown fields are removed. transform: "5" becomes 5 where a number is expected.
@@ -44,6 +42,6 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`API running on http://localhost:${port}/api`);
   console.log(`API docs on   http://localhost:${port}/api/docs`);
-  console.log(`CORS allows:  ${allowedOrigins.join(', ')}`);
+  console.log(`CORS allows:  ${allowedOrigins().join(', ')}`);
 }
 bootstrap();

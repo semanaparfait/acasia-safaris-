@@ -45,6 +45,7 @@ export function toInput(pkg: TourPackage): PackageInput {
     lodging: pkg.lodging,
     image: pkg.image,
     price: pkg.price,
+    minPrice: pkg.minPrice ?? null,
     // Left out unless the admin changed it, so an old copy cannot replace a newer PDF
     quotation: pkg.quotation === undefined ? undefined : pkg.quotation || null,
     active: pkg.active,
@@ -69,7 +70,7 @@ export function usePackage(id: string) {
 
   useEffect(() => {
     if (!id) return;
-    loadOne(id).catch((err: Error) => setError(err.message));
+    loadOne(id, true).catch((err: Error) => setError(err.message));
   }, [id, loadOne]);
 
   return { pkg, error };

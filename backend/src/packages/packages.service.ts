@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -20,6 +21,18 @@ const MAX_EMAILS_TOTAL = 100; // per hour
 
 // Always return the itinerary with each package, sorted Day 1, Day 2, ...
 const withItinerary = { itinerary: { orderBy: { day: 'asc' as const } } };
+
+// Admin answers also hold the lowest bargaining price (hidden from the website by PrismaService)
+const adminView = { minPrice: false } as const;
+
+// The lowest price cannot be above the normal price
+function checkMinPrice(dto: PackageDto) {
+  if (dto.minPrice != null && dto.minPrice > dto.price) {
+    throw new BadRequestException(
+      'The lowest price cannot be higher than the price per person',
+    );
+  }
+}
 
 // Turns the itinerary list from the request into rows with a day number.
 function toDays(dto: PackageDto) {
@@ -61,6 +74,7 @@ export class PackagesService {
   findAll() {
     return this.prisma.package.findMany({
       include: withItinerary,
+      omit: adminView,
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -74,7 +88,19 @@ export class PackagesService {
     return pkg;
   }
 
+  // Admin: one package with its lowest bargaining price
+  async findOneForAdmin(id: string) {
+    const pkg = await this.prisma.package.findUnique({
+      where: { id },
+      include: withItinerary,
+      omit: adminView,
+    });
+    if (!pkg) throw new NotFoundException(`Package "${id}" not found`);
+    return pkg;
+  }
+
   async create(dto: PackageDto) {
+    checkMinPrice(dto);
     // The database gives the new package a UUID
     const pkg = await this.prisma.package.create({
       data: {
@@ -83,11 +109,13 @@ export class PackagesService {
         itinerary: { create: toDays(dto) },
       },
       include: withItinerary,
+      omit: adminView,
     });
     return dto.quotation ? pkg : this.refreshQuotation(pkg);
   }
 
   async update(id: string, dto: PackageDto) {
+    checkMinPrice(dto);
     const current = await this.findOne(id); // 404 if it does not exist
 
     // The admin uploaded their own PDF, or removed the one there was
@@ -105,6 +133,7 @@ export class PackagesService {
         itinerary: { deleteMany: {}, create: toDays(dto) },
       },
       include: withItinerary,
+      omit: adminView,
     });
 
     if (pdfChanged) {
@@ -132,6 +161,7 @@ export class PackagesService {
       where: { id },
       data: { quotation: url, quotationManual: false },
       include: withItinerary,
+      omit: adminView,
     });
     await this.storage.deleteByUrl(pkg.quotation);
     return updated;

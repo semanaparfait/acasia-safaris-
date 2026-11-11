@@ -101,7 +101,9 @@ export const defaultRates = (price: number): Rate[] => [
 ];
 
 // The first row is always the adult price of the package
-const ratesOf = (pkg: QuotationPackage): Rate[] => {
+export const ratesOf = (
+  pkg: Pick<QuotationPackage, 'price' | 'rates'>,
+): Rate[] => {
   const saved = Array.isArray(pkg.rates) ? (pkg.rates as Rate[]) : [];
   if (saved.length === 0) return defaultRates(pkg.price);
   return saved.map((r, i) => (i === 0 ? { ...r, price: pkg.price } : r));

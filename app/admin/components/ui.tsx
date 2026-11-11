@@ -101,6 +101,7 @@ export type Tone = keyof typeof tones;
 
 export const statusTone: Record<string, Tone> = {
   Pending: "amber",
+  Negotiating: "gold",
   Confirmed: "green",
   Completed: "blue",
   Cancelled: "red",

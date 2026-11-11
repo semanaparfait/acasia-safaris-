@@ -23,7 +23,8 @@ export type TourPackage = {
   tripType: string;
   lodging: string;
   image: string;
-  price: number; // USD per person (admin only, not shown on the website)
+  price: number; // USD per adult (shown in the quotation and when booking)
+  minPrice?: number | null; // lowest adult price accepted when bargaining (admins only, never sent to the website)
   quotation?: string | null; // URL of the quotation PDF
   quotationManual?: boolean; // true = the admin uploaded it, false = made from the package
   rates?: Rate[] | null; // prices in the PDF; empty = defaultRates in helpers.ts
@@ -115,7 +116,7 @@ export type TeamMember = {
   socials: Socials;
 };
 
-export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
+export type BookingStatus = "Pending" | "Negotiating" | "Confirmed" | "Completed" | "Cancelled";
 export type PaymentStatus = "Unpaid" | "Deposit" | "Paid" | "Refunded";
 
 // One destination of a booking, with what the visitor chose for it
@@ -145,6 +146,42 @@ export type Booking = {
   payment: PaymentStatus;
   notes?: string | null;
   createdAt: string;
+
+  // Price and bargaining
+  guests?: Guest[] | null; // package bookings: travelers per price group
+  listAmount: number; // the full price when booked
+  floorAmount?: number | null; // lowest total the team accepts (admins only)
+  offer?: number | null; // a price proposal waiting for an answer
+  offerBy?: "customer" | "team" | null; // who made it
+  needsReply?: boolean; // the customer wrote last
+  accessToken?: string; // the visitor's link: /my-booking/<accessToken>
+  messages: BookingMessage[];
+
+  // Ticket: made when the booking is confirmed (QR code in the email and on the booking page)
+  ticketCode?: string | null;
+  checkedInAt?: string | null; // when the QR code was scanned in Admin > Check-in
+};
+
+// Travelers in one price group of a package, e.g. 2 adults at $1,450
+export type Guest = { label: string; ages: string; count: number; price: number };
+
+// One message of the conversation on a booking
+export type BookingMessage = {
+  id: string;
+  sender: "customer" | "team";
+  authorName: string;
+  text: string;
+  offer?: number | null; // a price proposed with this message
+  event?: "offer" | "accepted" | null;
+  createdAt: string;
+};
+
+// What a visitor sees on their booking page (GET /api/bookings/track/<token>)
+export type PublicBooking = Omit<
+  Booking,
+  "phone" | "packageId" | "package" | "notes" | "floorAmount" | "needsReply" | "accessToken"
+> & {
+  package: { id: string; title: string; image: string; location: string; _count: { itinerary: number } } | null;
 };
 
 export type Message = {

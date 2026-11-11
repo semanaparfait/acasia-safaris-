@@ -72,6 +72,12 @@ export class PackageDto {
   @Min(0)
   price: number;
 
+  // Lowest adult price accepted when a visitor bargains (admins only). null = no limit.
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minPrice?: number | null;
+
   // URL returned by POST /api/uploads/tourpackages (a PDF), or null for none
   @IsOptional()
   @IsString()

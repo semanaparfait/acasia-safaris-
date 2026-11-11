@@ -20,6 +20,9 @@ export class PrismaService
           resetCodeExpires: true,
           resetAttempts: true,
         },
+        // The lowest bargaining price is for admins only (see PackagesService)
+        package: { minPrice: true },
+        booking: { floorAmount: true, accessToken: true },
       },
     });
   }

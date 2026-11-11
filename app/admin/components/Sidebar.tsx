@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarCheck,
+  ScanLine,
   Package,
   MapPinned,
   Users,
@@ -37,7 +38,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     {
       label: "Operations",
       items: [
-        { name: "Bookings", href: "/admin/bookings", icon: CalendarCheck, count: bookings.filter((b) => b.status === "Pending").length },
+        { name: "Bookings", href: "/admin/bookings", icon: CalendarCheck, count: bookings.filter((b) => b.status === "Pending" || b.needsReply).length },
+        { name: "Check-in", href: "/admin/check-in", icon: ScanLine },
         { name: "Customers", href: "/admin/customers", icon: Users },
         { name: "Workers", href: "/admin/workers", icon: UserCog },
         { name: "Roles", href: "/admin/roles", icon: BriefcaseBusiness },

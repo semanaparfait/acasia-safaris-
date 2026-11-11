@@ -36,6 +36,14 @@ export class PackagesController {
     return this.packagesService.findAll();
   }
 
+  // GET /api/packages/all/<id>   (admin: one package, with its lowest bargaining price)
+  @Get('all/:id')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  findOneForAdmin(@Param('id', ParseUUIDPipe) id: string) {
+    return this.packagesService.findOneForAdmin(id);
+  }
+
   // GET /api/packages/<id>
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {

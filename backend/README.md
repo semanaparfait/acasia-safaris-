@@ -173,7 +173,16 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | GET | `/api/team` | website: workers with `showOnWebsite` (and Active) for the About us page: name, companyRole, photo, bio, personalEmail, phone, languages, socials |
 | GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 send `personalEmail`, not `email` (the company email is made from the first name). About us fields: `showOnWebsite`, `companyRole` (needed when shown), `bio`, `socials: { youtube?, instagram?, x?, tiktok?, snapchat?, facebook? }` (full links). `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
 | GET / POST / PUT / DELETE | `/api/roles[/:id]` | 🔒 `{ name, description }`. Renaming updates workers; a role in use cannot be deleted |
-| POST | `/api/bookings` | website: `{ customer, email, phone?, country, startDate, travelers, children?, notes? }` plus `packageId` (end date and price are calculated by the server) or `destinations: [{ title, travelStyle, accommodation, budget }]` + `endDate` (the admin sets the price later) |
+| POST | `/api/bookings` | website (package bookings also send `guests: [{ label, count }]` per price group, and `offer?` + `offerNote?` to ask for a lower price): `{ customer, email, phone?, country, startDate, travelers, children?, notes? }` plus `packageId` (end date and price are calculated by the server) or `destinations: [{ title, travelStyle, accommodation, budget }]` + `endDate` (the admin sets the price later) |
+| GET | `/api/bookings/track/:token` | website: the visitor's booking page (`/my-booking/<token>`, link emailed on booking): trip, price, offers and messages |
+| GET | `/api/bookings/track/:token/qr` | website: the ticket QR code (PNG), once the booking is confirmed |
+| POST | `/api/bookings/track/:token/messages` | website: `{ text?, offer? }` the visitor writes or proposes a lower price |
+| POST | `/api/bookings/track/:token/accept` | website: accepts the team's price (or books at the full price) → Confirmed |
+| POST | `/api/bookings/:id/messages` | 🔒 `{ text?, offer? }` reply or counter-offer; emails the visitor |
+| POST | `/api/bookings/:id/accept` | 🔒 accepts the visitor's price → Confirmed; emails the visitor |
+| GET | `/api/bookings/ticket/:code` | 🔒 Admin > Check-in: the booking of a ticket (the code, or the scanned `ACACIA:<code>`) |
+| POST | `/api/bookings/ticket/:code/check-in` | 🔒 marks the travelers as arrived → `{ booking, alreadyCheckedIn }` |
+| GET | `/api/packages/all/:id` | 🔒 one package with `minPrice` (the lowest bargaining price, never sent to the website) |
 | GET / PATCH / DELETE | `/api/bookings[/:id]` | 🔒 PATCH body: `{ status?, payment?, amount?, notes? }` |
 | POST | `/api/messages` | website contact form: `{ name, email, subject, body }` |
 | GET / PATCH / DELETE | `/api/messages[/:id]` | 🔒 PATCH body: `{ read?, starred? }` |
@@ -205,3 +214,19 @@ A package is sent as one object with its days in order:
 ```
 
 The number of days is the length of `itinerary`; day numbers are given by the order.
+
+## Live updates (WebSockets)
+
+Socket.IO on the same port, namespace `/live` (allowed websites: `FRONTEND_URL`).
+- The admin panel connects with `auth: { token }` and gets `booking` (every change) and `booking:deleted`.
+- A visitor's booking page connects with `auth: { booking: <accessToken> }` and gets `booking`.
+So new bookings, messages, offers, confirmations and check-ins show up instantly, without reloading.
+
+## Confirmation and tickets
+
+A booking is **Confirmed** when the visitor books at the full price (at once), when an offer is accepted,
+or when an admin sets the status to Confirmed. It then gets a ticket code, and the visitor is emailed
+the confirmation (trip, day by day itinerary, included / not included, price and deposit) with a **QR code**.
+On the day, the team scans it in **Admin > Check-in** (the camera needs https or localhost; the code can also be typed).
+Online payment is not built yet: the deposit text says the team sends the payment details.
+

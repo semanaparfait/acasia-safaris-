@@ -28,8 +28,9 @@ export default function PackageForm({
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof TourPackage>(key: K, value: TourPackage[K]) => setForm((f) => ({ ...f, [key]: value }));
 
+  const minPriceTooHigh = form.minPrice != null && form.minPrice > form.price;
   const valid =
-    form.title.trim() && form.location.trim() && form.price > 0 &&
+    form.title.trim() && form.location.trim() && form.price > 0 && !minPriceTooHigh &&
     form.itinerary.length > 0 && form.itinerary.every((d) => d.title.trim());
 
   // ---- itinerary days ----
@@ -201,6 +202,23 @@ export default function PackageForm({
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#0a120b]/40">$</span>
               <input type="number" min={0} className={`${inputClass} pl-7`} value={form.price || ""} onChange={(e) => set("price", Number(e.target.value))} placeholder="2450" />
             </div>
+            <label className={`${labelClass} mt-4`}>Lowest price when bargaining (USD)</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#0a120b]/40">$</span>
+              <input
+                type="number"
+                min={0}
+                className={`${inputClass} pl-7`}
+                value={form.minPrice ?? ""}
+                onChange={(e) => set("minPrice", e.target.value === "" ? null : Number(e.target.value))}
+                placeholder="Optional, e.g. 2100"
+              />
+            </div>
+            <p className={`text-xs mt-1 ${minPriceTooHigh ? "text-red-600" : "text-[#0a120b]/50"}`}>
+              {minPriceTooHigh
+                ? "Must not be higher than the price per person."
+                : "Per adult. Only admins see it: offers below it are flagged in Bookings."}
+            </p>
             <div className="flex items-start justify-between gap-4 mt-4 pt-4 border-t border-[#0a120b]/[0.06]">
               <div>
                 <p className="text-sm font-medium">Publish on website</p>

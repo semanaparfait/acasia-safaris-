@@ -21,7 +21,7 @@ type PackagesState = {
 
   loadPublished: () => Promise<void>; // website
   loadAll: () => Promise<void>; // admin (drafts included)
-  loadOne: (id: string) => Promise<TourPackage>; // one package (details / edit pages)
+  loadOne: (id: string, admin?: boolean) => Promise<TourPackage>; // one package (details / edit pages)
   createPackage: (input: PackageInput) => Promise<TourPackage>;
   updatePackage: (id: string, input: PackageInput) => Promise<TourPackage>;
   deletePackage: (id: string) => Promise<void>;
@@ -57,8 +57,9 @@ export const usePackagesStore = create<PackagesState>()(
       },
 
       // Fetches one package and puts it in the list (replacing the old copy)
-      loadOne: async (id) => {
-        const pkg = await api<TourPackage>(`/packages/${id}`);
+      loadOne: async (id, admin = false) => {
+        // Admins get the package with its lowest bargaining price
+        const pkg = await api<TourPackage>(admin ? `/packages/all/${id}` : `/packages/${id}`, { admin });
         set(
           (state) => ({
             packages: state.packages.some((p) => p.id === id)

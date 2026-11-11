@@ -26,6 +26,15 @@ export const defaultRates = (price: number): Rate[] => [
   { label: "Infant", ages: "0 to 3 years", price: 0 },
 ];
 
+// The package's price groups, as in its quotation (same rule as the backend):
+// the saved rates with the first row at the package price, or the default ones
+export const packageRates = (p: Pick<TourPackage, "price" | "rates">): Rate[] =>
+  p.rates?.length ? p.rates.map((r, i) => (i === 0 ? { ...r, price: p.price } : r)) : defaultRates(p.price);
+
+// 30% of the price holds the dates once a booking is confirmed
+export const DEPOSIT_RATE = 0.3;
+export const depositOf = (amount: number) => Math.round(amount * DEPOSIT_RATE);
+
 // The duration of a package is the number of itinerary days
 export const packageDays = (p: TourPackage) => p.itinerary.length;
 

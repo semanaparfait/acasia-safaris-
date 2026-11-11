@@ -4,14 +4,15 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { Download, Eye, Trash2, X, Mail, CalendarDays, Users, Globe, StickyNote, Check, Ban } from "lucide-react";
+import { Download, Eye, Trash2, X, Mail, CalendarDays, Users, Globe, StickyNote, Check, Ban, ExternalLink } from "lucide-react";
+import BookingConversation from "./BookingConversation";
 import { Avatar, Button, Card, ConfirmDialog, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs, inputClass } from "../components/ui";
 import { bookingAmount, bookingTitle, money, shortId } from "@/lib/helpers";
 import type { BookingStatus, PaymentStatus } from "@/lib/types";
 import { useBookingsStore, type BookingChanges } from "@/store/bookingsStore";
 
 type Filter = "All" | BookingStatus;
-const statusList: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
+const statusList: BookingStatus[] = ["Pending", "Negotiating", "Confirmed", "Completed", "Cancelled"];
 const paymentList: PaymentStatus[] = ["Unpaid", "Deposit", "Paid", "Refunded"];
 
 export default function BookingsPage() {
@@ -86,7 +87,7 @@ export default function BookingsPage() {
         actions={<Button variant="secondary" onClick={exportCsv}><Download className="size-4" /> Export CSV</Button>}
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {totals.map((t) => (
           <Card key={t.status} className="p-4">
             <div className="flex items-center justify-between">
@@ -149,7 +150,13 @@ export default function BookingsPage() {
                         <Avatar name={b.customer} size={32} />
                         <div>
                           <p className="font-medium whitespace-nowrap">{b.customer}</p>
-                          <p className="text-xs text-[#0a120b]/45">{b.country}</p>
+                          {b.needsReply ? (
+                            <p className="flex items-center gap-1.5 text-xs font-medium text-[#8a6d2f]">
+                              <span className="size-1.5 rounded-full bg-[#c5a86d]" /> New message
+                            </p>
+                          ) : (
+                            <p className="text-xs text-[#0a120b]/45">{b.country}</p>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -158,7 +165,12 @@ export default function BookingsPage() {
                       {format(new Date(b.startDate), "d MMM")} – {format(new Date(b.endDate), "d MMM yyyy")}
                     </td>
                     <td className="px-5 py-3 text-center tabular-nums">{b.travelers}</td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums">{bookingAmount(b)}</td>
+                    <td className="px-5 py-3 text-right font-medium tabular-nums">
+                      {bookingAmount(b)}
+                      {b.offer != null && (
+                        <p className="text-[11px] font-normal text-[#8a6d2f]">{b.offerBy === "customer" ? "Asks" : "Offered"} {money(b.offer)}</p>
+                      )}
+                    </td>
                     <td className="px-5 py-3"><StatusBadge status={b.payment} /></td>
                     <td className="px-5 py-3"><StatusBadge status={b.status} /></td>
                     <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
@@ -197,7 +209,7 @@ export default function BookingsPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute right-0 inset-y-0 w-full max-w-md bg-white shadow-2xl flex flex-col"
+              className="absolute right-0 inset-y-0 w-full max-w-xl bg-white shadow-2xl flex flex-col"
             >
               <div className="flex items-center justify-between px-6 h-16 border-b border-[#0a120b]/[0.06]">
                 <div>
@@ -212,12 +224,23 @@ export default function BookingsPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 <div className="flex items-center gap-4">
                   <Avatar name={selected.customer} size={48} />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="font-semibold">{selected.customer}</p>
                     <a href={`mailto:${selected.email}`} className="text-sm text-[#2E7D5B] hover:underline flex items-center gap-1">
                       <Mail className="size-3.5" /> {selected.email}
                     </a>
                   </div>
+                  {selected.accessToken && (
+                    <a
+                      href={`/my-booking/${selected.accessToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="What the customer sees"
+                      className="shrink-0 inline-flex items-center gap-1 text-xs text-[#0a120b]/55 hover:text-[#2E7D5B]"
+                    >
+                      Customer page <ExternalLink className="size-3.5" />
+                    </a>
+                  )}
                 </div>
 
                 <div className="rounded-xl bg-[#f7f5f0] p-4 space-y-3 text-sm">
@@ -229,11 +252,45 @@ export default function BookingsPage() {
                     value={`${selected.travelers} ${selected.travelers > 1 ? "people" : "person"}${selected.children > 0 ? ` (${selected.children} child${selected.children > 1 ? "ren" : ""})` : ""}`}
                   />
                   <Row icon={Globe} label="Country" value={selected.country} />
+                  {selected.guests && selected.guests.length > 0 && (
+                    <div className="pt-3 border-t border-[#0a120b]/10 space-y-1">
+                      {selected.guests.map((g) => (
+                        <div key={g.label} className="flex justify-between text-[#0a120b]/65">
+                          <span>{g.count} × {g.label} ({money(g.price)})</span>
+                          <span className="tabular-nums">{money(g.count * g.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="pt-3 border-t border-[#0a120b]/10 flex justify-between">
-                    <span className="text-[#0a120b]/55">Total</span>
+                    <span className="text-[#0a120b]/55">{selected.status === "Confirmed" || selected.status === "Completed" ? "Agreed price" : "Total"}</span>
                     <span className="text-lg font-semibold tabular-nums">{bookingAmount(selected)}</span>
                   </div>
+                  {selected.listAmount > 0 && selected.amount !== selected.listAmount && (
+                    <p className="text-xs text-[#0a120b]/50 text-right -mt-2">Full price {money(selected.listAmount)}</p>
+                  )}
+                  {selected.floorAmount != null && (
+                    <p className="text-xs text-[#0a120b]/50 text-right">Lowest you accept: {money(selected.floorAmount)}</p>
+                  )}
                 </div>
+
+                {selected.ticketCode && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-[#c5a86d]/60 bg-[#c5a86d]/[0.06] px-4 py-3 text-sm">
+                    <div>
+                      <p className="text-xs text-[#0a120b]/50">Ticket</p>
+                      <p className="font-mono font-semibold tracking-widest">{selected.ticketCode}</p>
+                    </div>
+                    {selected.checkedInAt ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                        <Check className="size-3.5" /> Checked in {format(new Date(selected.checkedInAt), "d MMM, HH:mm")}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[#0a120b]/50">Not checked in yet</span>
+                    )}
+                  </div>
+                )}
+
+                <BookingConversation booking={selected} />
 
                 {selected.destinations?.length > 0 && (
                   <div className="space-y-2 text-sm">

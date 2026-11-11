@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { LiveModule } from './live/live.module';
 import { MessagesModule } from './messages/messages.module';
 import { PackagesModule } from './packages/packages.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -20,6 +21,7 @@ import { WorkersModule } from './workers/workers.module';
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
     PrismaModule,
     AuthModule,
+    LiveModule,
     StorageModule,
     PackagesModule,
     DestinationsModule,

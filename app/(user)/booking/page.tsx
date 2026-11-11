@@ -254,6 +254,7 @@ export default function BookingPage({
   });
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [bookingLink, setBookingLink] = useState(""); // the visitor's booking page
   const [sending, setSending] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -383,7 +384,7 @@ export default function BookingPage({
     setSending(true);
     setError("");
     try {
-      await createBooking({
+      const booking = await createBooking({
         customer: details.name.trim(),
         email: details.email.trim(),
         phone: details.phone.trim(),
@@ -404,6 +405,7 @@ export default function BookingPage({
         children,
         notes: details.notes.trim() || undefined,
       });
+      setBookingLink(`/my-booking/${booking.accessToken}`);
       setSubmitted(true);
       document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
@@ -560,10 +562,19 @@ export default function BookingPage({
                 </h2>
                 <p className="text-sm text-[#0a120b]/60 max-w-md mx-auto leading-relaxed mb-8">
                   Thank you for choosing acacia Safaris. One of our travel
-                  experts will contact you within 24 hours with your
-                  personalised itinerary.
+                  experts will send your personalised itinerary and price
+                  within 24 hours. Follow it and talk with us on your booking
+                  page (we also emailed you the link).
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
+                  {bookingLink && (
+                    <Link
+                      href={bookingLink}
+                      className="bg-[#12231a] hover:bg-[#1F5A42] text-white font-medium text-sm px-7 py-3 rounded-sm transition-all"
+                    >
+                      Follow my booking
+                    </Link>
+                  )}
                   <Link
                     href="/destination"
                     className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all"

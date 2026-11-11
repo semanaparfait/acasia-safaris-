@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { Booking, BookingDestination, BookingStatus, PaymentStatus } from "@/lib/types";
+import type { Booking, BookingDestination, BookingStatus, PaymentStatus, PublicBooking } from "@/lib/types";
 
 // A booking is for a package (packageId) or for destinations (destinations + endDate)
 export type BookingInput = {
@@ -18,6 +18,9 @@ export type BookingInput = {
   travelers: number;
   children?: number;
   notes?: string;
+  guests?: { label: string; count: number }[]; // package bookings: travelers per price group
+  offer?: number; // package bookings: a lower total price the visitor asks for
+  offerNote?: string; // why they ask for it
 };
 
 export type BookingChanges = {
@@ -33,7 +36,17 @@ type BookingsState = {
   error: string | null;
 
   load: () => Promise<void>; // admin
-  createBooking: (input: BookingInput) => Promise<Booking>; // website
+  // Website: returns the visitor's view of the booking and its private link token
+  createBooking: (input: BookingInput) => Promise<PublicBooking & { accessToken: string }>;
+  // Admin: write to the customer (optionally with a new price), or accept their price
+  sendMessage: (id: string, text: string, offer?: number) => Promise<Booking>;
+  acceptOffer: (id: string) => Promise<Booking>;
+  // Live updates (lib/live.ts): put a changed booking in the list, or take a deleted one out
+  upsertBooking: (booking: Booking) => void;
+  removeBooking: (id: string) => void;
+  // Admin > Check-in: find a ticket from its QR code, and mark the travelers as arrived
+  findTicket: (code: string) => Promise<Booking>;
+  checkIn: (code: string) => Promise<{ booking: Booking; alreadyCheckedIn: boolean }>;
   updateBooking: (id: string, changes: BookingChanges) => Promise<Booking>; // admin
   deleteBooking: (id: string) => Promise<void>; // admin
 };
@@ -55,10 +68,22 @@ export const useBookingsStore = create<BookingsState>()(
         }
       },
 
-      createBooking: async (input) => {
-        const created = await api<Booking>("/bookings", { method: "POST", body: input });
-        set((state) => ({ bookings: [created, ...state.bookings] }), false, "bookings/create");
-        return created;
+      createBooking: (input) => api("/bookings", { method: "POST", body: input }),
+
+      sendMessage: async (id, text, offer) => {
+        const updated = await api<Booking>(`/bookings/${id}/messages`, {
+          method: "POST",
+          body: { text: text || undefined, offer },
+          admin: true,
+        });
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/sendMessage");
+        return updated;
+      },
+
+      acceptOffer: async (id) => {
+        const updated = await api<Booking>(`/bookings/${id}/accept`, { method: "POST", admin: true });
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/acceptOffer");
+        return updated;
       },
 
       updateBooking: async (id, changes) => {
@@ -70,6 +95,25 @@ export const useBookingsStore = create<BookingsState>()(
         );
         return updated;
       },
+
+      upsertBooking: (booking) =>
+        set(
+          (state) => ({
+            bookings: state.bookings.some((b) => b.id === booking.id)
+              ? state.bookings.map((b) => (b.id === booking.id ? booking : b))
+              : [booking, ...state.bookings],
+          }),
+          false,
+          "bookings/live",
+        ),
+
+      removeBooking: (id) =>
+        set((state) => ({ bookings: state.bookings.filter((b) => b.id !== id) }), false, "bookings/liveDelete"),
+
+      findTicket: (code) => api<Booking>(`/bookings/ticket/${encodeURIComponent(code)}`, { admin: true }),
+
+      checkIn: (code) =>
+        api(`/bookings/ticket/${encodeURIComponent(code)}/check-in`, { method: "POST", admin: true }),
 
       deleteBooking: async (id) => {
         await api(`/bookings/${id}`, { method: "DELETE", admin: true });

@@ -20,6 +20,7 @@ import { daysLabel } from "@/lib/helpers";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
 import QuotationModal from "./QuotationModal";
+import BookPackageModal from "./BookPackageModal";
 
 const guestOptions = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
 const tripStyles = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
@@ -44,6 +45,12 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [quotationOpen, setQuotationOpen] = useState(false);
+  const [bookOpen, setBookOpen] = useState(false);
+  const closeBooking = useCallback(() => setBookOpen(false), []);
+  const openBooking = useCallback(() => {
+    setQuotationOpen(false);
+    setBookOpen(true);
+  }, []);
   const [quotationRequested, setQuotationRequested] = useState(false);
   const closeQuotation = useCallback(() => setQuotationOpen(false), []);
   const markRequested = useCallback(() => setQuotationRequested(true), []);
@@ -219,6 +226,28 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   className="group w-full inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-4 py-3 rounded-lg shadow-md transition cursor-pointer"
                 >
                   Request Quotation
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Book this package: dates, travelers, price (or an offer) */}
+          {showInquiry && (
+            <div className="relative overflow-hidden rounded-2xl bg-[#12231a] p-5 text-white shadow-lg">
+              <div className="absolute -bottom-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
+              <div className="relative">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C29342] mb-1.5">Ready to go?</p>
+                <h2 className="font-serif text-lg font-bold leading-snug">Book this package</h2>
+                <p className="text-xs text-neutral-300 mt-2 mb-4 leading-relaxed">
+                  Choose your dates and travelers and see your price. Not sure about the price? Make us an offer.
+                </p>
+                <button
+                  type="button"
+                  onClick={openBooking}
+                  className="group w-full inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-4 py-3 rounded-lg shadow-md transition cursor-pointer"
+                >
+                  Book Now
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
@@ -406,7 +435,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
         </div>
       </div>
 
-      <QuotationModal tour={tour} open={quotationOpen} onClose={closeQuotation} onRequested={markRequested} />
+      <QuotationModal tour={tour} open={quotationOpen} onClose={closeQuotation} onRequested={markRequested} onBook={openBooking} />
+      <BookPackageModal tour={tour} open={bookOpen} onClose={closeBooking} />
     </div>
   );
 }

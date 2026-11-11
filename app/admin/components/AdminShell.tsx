@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+import { liveSocket } from "@/lib/live";
+import type { Booking } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -47,6 +49,29 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, [mounted, token, isLoginPage, loadBookings, loadMessages, loadReviews]);
+
+  // Live: bookings, customer messages and offers appear instantly (lib/live.ts)
+  useEffect(() => {
+    if (!mounted || !token || isLoginPage) return;
+    const socket = liveSocket({ token });
+    socket.on("booking", (booking: Booking) => {
+      const { bookings, upsertBooking } = useBookingsStore.getState();
+      const before = bookings.find((b) => b.id === booking.id);
+      const last = booking.messages?.at(-1);
+      if (!before) {
+        toast.success(`New booking from ${booking.customer}`);
+      } else if (last && last.sender === "customer" && !before.messages?.some((m) => m.id === last.id)) {
+        toast(last.event === "accepted" ? `${booking.customer} accepted the price` : `New message from ${booking.customer}`, { icon: "💬" });
+      }
+      upsertBooking(booking);
+    });
+    socket.on("booking:deleted", ({ id }: { id: string }) => useBookingsStore.getState().removeBooking(id));
+    // Back online after a break: load everything once, in case something was missed
+    socket.io.on("reconnect", () => loadBookings());
+    return () => {
+      socket.disconnect();
+    };
+  }, [mounted, token, isLoginPage, loadBookings]);
 
   const toaster = (
     <Toaster

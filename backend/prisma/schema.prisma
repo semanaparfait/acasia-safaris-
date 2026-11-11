@@ -25,6 +25,7 @@ model Package {
   lodging     String
   image       String
   price       Int // USD per person
+  minPrice    Int? // lowest adult price the team accepts when bargaining (admins only, never sent to the website)
   quotation   String? // URL of the quotation PDF (in the "tourpackages" bucket)
 
   // false = the PDF is made from this package and is remade each time it is saved.
@@ -151,8 +152,42 @@ model Booking {
   status       String               @default("Pending") // "Pending", "Confirmed", "Completed", "Cancelled"
   payment      String               @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
   notes        String?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+
+  // Price and bargaining. amount (above) is the price the booking is at now.
+  guests      Json? // package bookings: travelers per price group, e.g. [{ label: "Adult", count: 2, price: 1450 }]
+  listAmount  Int     @default(0) // the full price when booked
+  floorAmount Int? // lowest total the team accepts (from Package.minPrice), admins only
+  offer       Int? // a price proposal waiting for an answer
+  offerBy     String? // who made it: "customer" or "team"
+  needsReply  Boolean @default(false) // the customer wrote last and the team has not answered
+
+  // The visitor's private link to their booking: /my-booking/<accessToken>
+  accessToken String @unique
+
+  // Ticket: made when the booking is confirmed. Its QR code is in the confirmation email
+  // and on the booking page; the team scans it in Admin > Check-in on the day.
+  ticketCode  String?          @unique // e.g. "AC7K2M9QXP"
+  checkedInAt DateTime? // when the QR code was scanned
+  messages    BookingMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// The conversation on a booking (bargaining, questions). Visitors write from their
+// booking page, the team from Admin > Bookings.
+model BookingMessage {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId  String   @db.Uuid
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  sender     String // "customer" or "team"
+  authorName String // the customer's name, or the worker who answered
+  text       String
+  offer      Int? // a price proposed with this message
+  event      String? // "offer", "accepted" (shown differently in the thread)
+  createdAt  DateTime @default(now())
+
+  @@index([bookingId, createdAt])
 }
 
 // One destination of a booking, with what the visitor chose for it.

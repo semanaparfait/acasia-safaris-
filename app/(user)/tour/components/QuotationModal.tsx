@@ -71,11 +71,13 @@ export default function QuotationModal({
   open,
   onClose,
   onRequested,
+  onBook,
 }: {
   tour: TourPackage;
   open: boolean;
   onClose: () => void;
   onRequested: () => void; // the visitor chose how to get the quotation
+  onBook: () => void; // opens "Book this package"
 }) {
   const emailQuotation = usePackagesStore((s) => s.emailQuotation);
   const [view, setView] = useState<"options" | "email" | "sent">("options");
@@ -267,13 +269,22 @@ export default function QuotationModal({
                   <p className="text-sm text-[#0a120b]/55 mb-5">
                     Check your inbox at <span className="font-medium text-[#0a120b]">{form.email}</span>, and your spam folder if you do not see it.
                   </p>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="text-sm font-medium border border-[#0a120b]/15 hover:border-[#0a120b] px-6 py-2.5 rounded-lg transition-all cursor-pointer"
-                  >
-                    Done
-                  </button>
+                  <div className="flex flex-col sm:flex-row justify-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={onBook}
+                      className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-semibold text-sm px-6 py-2.5 rounded-lg shadow-md transition-all cursor-pointer"
+                    >
+                      Book this package <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="text-sm font-medium border border-[#0a120b]/15 hover:border-[#0a120b] px-6 py-2.5 rounded-lg transition-all cursor-pointer"
+                    >
+                      Later
+                    </button>
+                  </div>
                 </div>
               )}
 
