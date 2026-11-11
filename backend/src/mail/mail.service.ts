@@ -237,7 +237,7 @@ export type ConfirmationEmail = {
   travelers: string; // "2 adults, 1 child"
   guests: { label: string; count: number; price: number }[]; // price per group
   price: string; // "$7,250"
-  payment: string; // e.g. "30% deposit ($2,175) holds your dates…"
+  payment: string; // e.g. "50% deposit ($3,625) holds your dates…"
   itinerary: {
     day: number;
     title: string;

@@ -82,6 +82,9 @@ const CAN_BARGAIN = ['Pending', 'Negotiating']; // price proposals are only for 
 type Sender = 'customer' | 'team';
 type Guest = { label: string; ages: string; count: number; price: number };
 
+// The first payment: 50% of the price holds the dates (same as DEPOSIT_RATE in lib/helpers.ts)
+const DEPOSIT_RATE = 0.5;
+
 const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
 const newToken = () => randomBytes(24).toString('hex');
 
@@ -622,7 +625,7 @@ export class BookingsService {
     const days =
       Math.round((b.endDate.getTime() - b.startDate.getTime()) / 86_400_000) +
       1;
-    const deposit = Math.round(b.amount * 0.3);
+    const deposit = Math.round(b.amount * DEPOSIT_RATE);
     const short = (text: string) =>
       text.length > 450 ? `${text.slice(0, 447)}…` : text; // keeps the email under Gmail's size limit
 
@@ -649,7 +652,7 @@ export class BookingsService {
           ? 'Paid in full'
           : b.payment === 'Deposit'
             ? 'Deposit received'
-            : `30% deposit (${usd(deposit)}) holds your dates. We will send you the payment details.`,
+            : `${DEPOSIT_RATE * 100}% deposit (${usd(deposit)}) holds your dates. We will send you the payment details.`,
       itinerary: (b.package?.itinerary ?? []).map((d) => ({
         ...d,
         description: short(d.description),

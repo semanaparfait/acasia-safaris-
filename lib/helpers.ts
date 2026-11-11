@@ -31,8 +31,9 @@ export const defaultRates = (price: number): Rate[] => [
 export const packageRates = (p: Pick<TourPackage, "price" | "rates">): Rate[] =>
   p.rates?.length ? p.rates.map((r, i) => (i === 0 ? { ...r, price: p.price } : r)) : defaultRates(p.price);
 
-// 30% of the price holds the dates once a booking is confirmed
-export const DEPOSIT_RATE = 0.3;
+// The first payment: 50% of the price holds the dates once a booking is confirmed
+// (same as DEPOSIT_RATE in backend/src/bookings/bookings.service.ts)
+export const DEPOSIT_RATE = 0.5;
 export const depositOf = (amount: number) => Math.round(amount * DEPOSIT_RATE);
 
 // The duration of a package is the number of itinerary days
