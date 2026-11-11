@@ -14,10 +14,12 @@ import {
 } from "lucide-react";
 import founders from "@/public/aboutus/founders.png";
 import TeamSection from "../components/TeamSection";
+import { useTranslations } from "next-intl";
 import shema from "@/public/aboutus/shema.jpeg";
 import yassel from "@/public/aboutus/yassel.jpeg";
 
 export default function AboutPage() {
+  const t = useTranslations("About");
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#222a24] px-5 font-sans antialiased selection:bg-[#c5a86d] selection:text-white">
       {/* 2. HERO SECTION */}
@@ -27,7 +29,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=2200&q=85"
-            alt="East Africa volcanic landscape with mist"
+            alt={t("heroAlt")}
             fill
             priority
             className="object-cover object-center filter brightness-[0.78]"
@@ -38,15 +40,14 @@ export default function AboutPage() {
         {/* Hero Copy */}
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-white text-center md:text-left">
           <span className="text-xs uppercase tracking-[0.3em] font-semibold text-[#d4b47c] block mb-3">
-            ABOUT US
+            {t("eyebrow")}
           </span>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif uppercase tracking-tight leading-[1.1] mb-5 max-w-4xl">
-            ROOTED IN EAST AFRICA, <br />
-            DRIVEN BY CONSERVATION.
+            {t("title1")} <br />
+            {t("title2")}
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-zinc-200 font-light max-w-2xl leading-relaxed mb-6">
-            Creating extraordinary, luxury safaris while protecting the wild
-            spaces we call home.
+            {t("subtitle")}
           </p>
           <div className="w-20 h-0.5 bg-[#d4b47c]" />
         </div>
@@ -61,7 +62,7 @@ export default function AboutPage() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] bg-zinc-900">
               <Image
                 src={founders}
-                alt="SHEMA Alain and ISHIMWE Yassel by Acacia Safari Cruiser"
+                alt={t("foundersAlt")}
                 fill
                 className="object-cover"
               />
@@ -74,7 +75,7 @@ export default function AboutPage() {
                     SHEMA Alain
                   </p>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                    CEO & Founder
+                    {t("ceo")}
                   </p>
                 </div>
                 <div className="bg-[#faf8f5]/95 backdrop-blur-md px-4 py-2 rounded-md shadow-md">
@@ -82,7 +83,7 @@ export default function AboutPage() {
                     ISHIMWE Yassel
                   </p>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                    MD & Founder
+                    {t("md")}
                   </p>
                 </div>
               </div>
@@ -105,27 +106,21 @@ export default function AboutPage() {
           {/* Right: Narrative Story */}
           <div className="lg:col-span-6 space-y-6">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345]">
-              OUR STORY
+              {t("storyTag")}
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#1c2e22] leading-tight">
-              Our Story &amp;{" "}
-              <span className="italic font-normal">Local Expertise</span>
+              {t("storyTitle1")}{" "}
+              <span className="italic font-normal">{t("storyTitle2")}</span>
             </h2>
             <div className="space-y-4 text-sm sm:text-base text-[#4f5951] leading-relaxed font-light">
               <p>
-                Founded by <strong>SHEMA Alain</strong> and{" "}
-                <strong>ISHIMWE Yassel</strong>, ACACIA SAFARIS began with a
-                shared vision to connect travelers with the raw, untouched
-                beauty of East Africa.
+                {t.rich("story1", { b: (chunks) => <strong>{chunks}</strong> })}
               </p>
               <p>
-                As native Rwandans, we built our company on intimate, firsthand
-                knowledge, ensuring every journey is lived, not just toured.
+                {t("story2")}
               </p>
               <p>
-                Our office in Kigali and on-the-ground team manage every
-                logistical detail in-house, offering unparalleled local
-                expertise and access.
+                {t("story3")}
               </p>
             </div>
           </div>
@@ -140,17 +135,14 @@ export default function AboutPage() {
             {/* Left Header & Intro */}
             <div className="lg:col-span-4 space-y-4">
               <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345]">
-                OUR FOUNDERS
+                {t("foundersTag")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-serif text-[#1c2e22] leading-tight">
-                Two Visionaries. <br />
-                One Mission.
+                {t("foundersTitle1")} <br />
+                {t("foundersTitle2")}
               </h2>
               <p className="text-sm text-[#4f5951] leading-relaxed font-light">
-                With a deep love for East Africa and a strong background in
-                tourism, conservation, and community development, SHEMA Alain
-                and ISHIMWE Yassel lead ACACIA SAFARIS with passion, integrity,
-                and a long-term vision for a sustainable future.
+                {t("foundersText")}
               </p>
             </div>
 
@@ -171,12 +163,10 @@ export default function AboutPage() {
                     SHEMA Alain
                   </h3>
                   <p className="text-xs uppercase tracking-wider text-[#8e7345] font-medium mb-3">
-                    CEO &amp; Founder
+                    {t("ceo")}
                   </p>
                   <p className="text-xs italic text-[#586259] leading-relaxed">
-                    &ldquo;Tourism is more than travel — it&apos;s a powerful
-                    force for conservation, community, and lasting
-                    change.&rdquo;
+                    {`“${t("quoteShema")}”`}
                   </p>
                 </div>
               </div>
@@ -196,11 +186,10 @@ export default function AboutPage() {
                     ISHIMWE Yassel
                   </h3>
                   <p className="text-xs uppercase tracking-wider text-[#8e7345] font-medium mb-3">
-                    MD &amp; Founder
+                    {t("md")}
                   </p>
                   <p className="text-xs italic text-[#586259] leading-relaxed">
-                    &ldquo;Our goal is to create meaningful experiences that
-                    benefit people, wildlife, and future generations.&rdquo;
+                    {`“${t("quoteYassel")}”`}
                   </p>
                 </div>
               </div>
@@ -215,10 +204,10 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14 space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345]">
-              WHY TRAVEL WITH US
+              {t("whyTag")}
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#1c2e22]">
-              More Than a Trip — It&apos;s a Deeper Connection.
+              {t("whyTitle")}
             </h2>
           </div>
 
@@ -226,33 +215,33 @@ export default function AboutPage() {
             {[
               {
                 icon: Compass,
-                title: "Local Expertise",
-                desc: "Authentic knowledge and insider access across East Africa.",
+                title: t("why.local.title"),
+                desc: t("why.local.desc"),
               },
               {
                 icon: Map,
-                title: "Tailored Journeys",
-                desc: "Custom itineraries for your unique interests and style.",
+                title: t("why.tailored.title"),
+                desc: t("why.tailored.desc"),
               },
               {
                 icon: Leaf,
-                title: "Responsible Travel",
-                desc: "Supporting conservation, communities, and local economies.",
+                title: t("why.responsible.title"),
+                desc: t("why.responsible.desc"),
               },
               {
                 icon: ShieldCheck,
-                title: "Seamless Service",
-                desc: "From planning to return, we handle every detail with care.",
+                title: t("why.seamless.title"),
+                desc: t("why.seamless.desc"),
               },
               {
                 icon: Users,
-                title: "Small-Group Experiences",
-                desc: "More personal, more meaningful.",
+                title: t("why.small.title"),
+                desc: t("why.small.desc"),
               },
               {
                 icon: Binoculars,
-                title: "Authentic Encounters",
-                desc: "Real people, real culture, real East Africa.",
+                title: t("why.authentic.title"),
+                desc: t("why.authentic.desc"),
               },
             ].map((feature, idx) => {
               const Icon = feature.icon;
@@ -287,17 +276,15 @@ export default function AboutPage() {
   <div className="max-w-7xl mx-auto">
     <div className="mb-14 space-y-1">
       <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345]">
-        OUR JOURNEY
+        {t("journeyTag")}
       </span>
 
       <h2 className="text-2xl sm:text-3xl font-serif text-[#1c2e22]">
-        Growing Across East Africa.
+        {t("journeyTitle")}
       </h2>
 
       <p className="text-sm text-[#5e6960] max-w-2xl leading-relaxed mt-3">
-        From expanding our Rwanda operations to developing seamless
-        multi-destination experiences, our journey continues to be shaped by
-        responsible tourism and meaningful travel.
+        {t("journeyText")}
       </p>
     </div>
 
@@ -310,23 +297,23 @@ export default function AboutPage() {
         {[
           {
             year: "2024",
-            title: "Strategic Expansion",
-            text: "Acacia Safaris strengthened its East African footprint by expanding specialized travel experiences in Rwanda, with a strong focus on eco-tourism and primate tracking.",
+            title: t("timeline.expansion.title"),
+            text: t("timeline.expansion.text"),
           },
           {
             year: "2024",
-            title: "Cross-Border Experiences",
-            text: "New multi-day packages connected Uganda and Rwanda, creating seamless travel corridors for visitors combining gorilla trekking with regional wildlife experiences.",
+            title: t("timeline.crossBorder.title"),
+            text: t("timeline.crossBorder.text"),
           },
           {
             year: "2025",
-            title: "Rwanda Portfolio Diversification",
-            text: "Our Rwanda itineraries expanded across Volcanoes, Nyungwe and Akagera National Parks, offering gorilla and golden monkey trekking, chimpanzee experiences, canopy walks and Big Five safaris.",
+            title: t("timeline.portfolio.title"),
+            text: t("timeline.portfolio.text"),
           },
           {
             year: "2026",
-            title: "Continued Growth & Impact",
-            text: "Today, Acacia Safaris continues delivering tailored journeys across Rwanda and East Africa, with a growing focus on sustainable tourism, family holidays, birding and multi-destination adventures.",
+            title: t("timeline.growth.title"),
+            text: t("timeline.growth.text"),
           },
         ].map((step, idx) => (
           <div key={idx} className="space-y-4">
@@ -358,18 +345,16 @@ export default function AboutPage() {
     <div className="mt-16 pt-8 border-t border-[#d6ccb8] flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div>
         <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8e7345]">
-          TODAY
+          {t("todayTag")}
         </span>
 
         <h3 className="mt-1 text-xl font-serif text-[#1c2e22]">
-          Travel further. Travel responsibly.
+          {t("todayTitle")}
         </h3>
       </div>
 
       <p className="text-sm text-[#5e6960] max-w-xl leading-relaxed">
-        We continue to build authentic experiences that connect travelers with
-        East Africa's wildlife, landscapes, communities and cultures while
-        supporting a more sustainable future for the destinations we call home.
+        {t("todayText")}
       </p>
     </div>
   </div>
@@ -381,25 +366,24 @@ export default function AboutPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=2000&q=80"
-            alt="East Africa Elephants"
+            alt={t("ctaAlt")}
             fill
             className="object-cover filter brightness-[0.4]"
           />
         </div>
         <div className="relative z-10 max-w-3xl mx-auto space-y-4">
           <h2 className="text-2xl sm:text-4xl font-serif">
-            Your East African Story Starts Here
+            {t("ctaTitle")}
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 font-light">
-            Let us design a custom safari that&apos;s personal, meaningful, and
-            unforgettable.
+            {t("ctaText")}
           </p>
           <div className="pt-2">
             <Link
               href="/contact"
               className="inline-flex items-center gap-2 bg-[#d4b47c] hover:bg-[#c2a167] text-[#1c2e22] text-xs font-semibold uppercase tracking-wider px-7 py-3 rounded-full transition-all shadow-lg"
             >
-              <span>Request a Custom Safari</span>
+              <span>{t("ctaButton")}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

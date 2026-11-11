@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Languages, Mail, Phone, X } from "lucide-react";
 import { api } from "@/lib/api";
+import { useTranslations } from "next-intl";
 import { usedSocials } from "@/lib/socials";
 import type { TeamMember } from "@/lib/types";
 
@@ -27,6 +28,7 @@ function Photo({ member, className }: { member: TeamMember; className: string })
 }
 
 export default function TeamSection() {
+  const t = useTranslations("Team");
   const [team, setTeam] = useState<TeamMember[] | null>(null); // null = loading
   const [open, setOpen] = useState<TeamMember | null>(null);
 
@@ -43,9 +45,9 @@ export default function TeamSection() {
     <section className="py-20 px-6 bg-[#faf8f5]">
       <div className="max-w-7xl mx-auto">
         <div className="mb-10">
-          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345] block mb-1">OUR TEAM</span>
-          <h2 className="text-2xl sm:text-3xl font-serif text-[#1c2e22]">Meet the People Behind ACACIA SAFARIS</h2>
-          <p className="text-sm text-[#5e6960] font-light mt-2">Click on someone to read their story and get in touch.</p>
+          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345] block mb-1">{t("tag")}</span>
+          <h2 className="text-2xl sm:text-3xl font-serif text-[#1c2e22]">{t("title")}</h2>
+          <p className="text-sm text-[#5e6960] font-light mt-2">{t("hint")}</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
@@ -68,7 +70,7 @@ export default function TeamSection() {
                     <Photo member={member} className="absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1c2e22]/85 via-[#1c2e22]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="absolute bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-white/95 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#1c2e22] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      View profile <ArrowUpRight className="w-3 h-3" />
+                      {t("view")} <ArrowUpRight className="w-3 h-3" />
                     </span>
                   </div>
                   <div>
@@ -86,6 +88,7 @@ export default function TeamSection() {
 }
 
 function MemberModal({ member, onClose }: { member: TeamMember | null; onClose: () => void }) {
+  const t = useTranslations("Team");
   // Esc closes the pop-up, and the page behind it does not scroll
   useEffect(() => {
     if (!member) return;
@@ -126,7 +129,7 @@ function MemberModal({ member, onClose }: { member: TeamMember | null; onClose: 
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t("close")}
               className="absolute z-10 top-3.5 right-3.5 w-9 h-9 rounded-full bg-white/90 md:bg-[#1c2e22]/[0.06] hover:bg-white md:hover:bg-[#1c2e22]/10 text-[#1c2e22] flex items-center justify-center shadow-sm md:shadow-none transition-colors cursor-pointer"
             >
               <X size={17} />
@@ -152,17 +155,17 @@ function MemberModal({ member, onClose }: { member: TeamMember | null; onClose: 
 
               <div className="mt-6 space-y-2.5">
                 {member.personalEmail && (
-                  <ContactRow icon={<Mail size={15} />} label="Email" value={member.personalEmail} href={`mailto:${member.personalEmail}`} />
+                  <ContactRow icon={<Mail size={15} />} label={t("email")} value={member.personalEmail} href={`mailto:${member.personalEmail}`} />
                 )}
                 {member.phone && (
-                  <ContactRow icon={<Phone size={15} />} label="Phone" value={member.phone} href={`tel:${member.phone.replace(/\s/g, "")}`} />
+                  <ContactRow icon={<Phone size={15} />} label={t("phone")} value={member.phone} href={`tel:${member.phone.replace(/\s/g, "")}`} />
                 )}
               </div>
 
               {member.languages.length > 0 && (
                 <div className="mt-6">
                   <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5e6960] mb-2.5">
-                    <Languages size={13} className="text-[#8e7345]" /> Speaks
+                    <Languages size={13} className="text-[#8e7345]" /> {t("speaks")}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {member.languages.map((language) => (
@@ -176,7 +179,7 @@ function MemberModal({ member, onClose }: { member: TeamMember | null; onClose: 
 
               {usedSocials(member.socials).length > 0 && (
                 <div className="mt-auto pt-7">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5e6960] mb-2.5">Follow</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5e6960] mb-2.5">{t("follow")}</p>
                   <div className="flex flex-wrap gap-2">
                     {usedSocials(member.socials).map(({ key, label, icon: Icon, href }) => (
                       <a
@@ -184,7 +187,7 @@ function MemberModal({ member, onClose }: { member: TeamMember | null; onClose: 
                         href={href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`${member.name} on ${label}`}
+                        aria-label={t("onNetwork", { name: member.name, network: label })}
                         title={label}
                         className="w-10 h-10 rounded-full bg-[#1c2e22] text-white flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#1c2e22] hover:-translate-y-0.5 transition-all"
                       >

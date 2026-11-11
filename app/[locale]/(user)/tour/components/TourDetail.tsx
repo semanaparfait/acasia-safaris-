@@ -16,14 +16,15 @@ import {
   CheckCircle2,
   FileText,
 } from "lucide-react";
-import { daysLabel } from "@/lib/helpers";
+import { useTranslations } from "next-intl";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
 import QuotationModal from "./QuotationModal";
 import BookPackageModal from "./BookPackageModal";
 
-const guestOptions = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
-const tripStyles = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
+// The values go to the team in English; the labels are translated (messages: Detail)
+const guestOptions: string[] = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
+const tripStyles: string[] = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
 
 type TourDetailProps = {
   tour: TourPackage;
@@ -32,7 +33,9 @@ type TourDetailProps = {
 
 export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const isLuxury = tour.category === "Luxury Escapes";
-  const dayLabel = daysLabel(tour);
+  const t = useTranslations("Detail");
+  const tc = useTranslations("Common");
+  const dayLabel = tc("days", { count: tour.itinerary.length });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -101,7 +104,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
           onClick={onBack}
           className="mb-5 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-[#11241A] cursor-pointer"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to packages
+          <ArrowLeft className="w-3.5 h-3.5" /> {t("back")}
         </button>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -167,7 +170,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                       isLuxury ? "text-amber-300" : "text-white"
                     }`}
                   >
-                    <span className="text-[8px] uppercase tracking-wider leading-none">Day</span>
+                    <span className="text-[8px] uppercase tracking-wider leading-none">{t("day")}</span>
                     <span className="text-xs font-bold leading-none">{i + 1}</span>
                   </div>
 
@@ -215,17 +218,17 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   <FileText className="w-6 h-6" />
                 </span>
                 <h2 className="font-serif text-lg font-bold leading-snug">
-                  Full quotation for this package
+                  {t("quoteTitle")}
                 </h2>
                 <p className="text-xs text-neutral-300 mt-2 mb-4 leading-relaxed">
-                  Prices for adults and children, everything included and excluded, and why it is good value.
+                  {t("quoteText")}
                 </p>
                 <button
                   type="button"
                   onClick={() => setQuotationOpen(true)}
                   className="group w-full inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-4 py-3 rounded-lg shadow-md transition cursor-pointer"
                 >
-                  Request Quotation
+                  {t("requestQuote")}
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
@@ -237,17 +240,17 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div className="relative overflow-hidden rounded-2xl bg-[#12231a] p-5 text-white shadow-lg">
               <div className="absolute -bottom-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
               <div className="relative">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C29342] mb-1.5">Ready to go?</p>
-                <h2 className="font-serif text-lg font-bold leading-snug">Book this package</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C29342] mb-1.5">{t("readyToGo")}</p>
+                <h2 className="font-serif text-lg font-bold leading-snug">{t("bookTitle")}</h2>
                 <p className="text-xs text-neutral-300 mt-2 mb-4 leading-relaxed">
-                  Choose your dates and travelers and see your price. Not sure about the price? Make us an offer.
+                  {t("bookText")}
                 </p>
                 <button
                   type="button"
                   onClick={openBooking}
                   className="group w-full inline-flex items-center justify-center gap-2 bg-[#C29342] hover:bg-[#d3a554] text-[#122B1E] font-semibold text-xs tracking-wider uppercase px-4 py-3 rounded-lg shadow-md transition cursor-pointer"
                 >
-                  Book Now
+                  {t("bookNow")}
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
@@ -260,28 +263,28 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div className="flex items-center gap-2 mb-1">
               <Mail className="w-4 h-4 text-[#b28236]" />
               <h2 className="text-xs font-bold tracking-wider uppercase text-neutral-800">
-                Inquire About This Itinerary
+                {t("inquireTitle")}
               </h2>
             </div>
             <p className="text-[11px] text-neutral-500 mb-4">
-              Get a personalized quote and detailed itinerary.
+              {t("inquireText")}
             </p>
 
             {submitted ? (
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
-                Inquiry received! We will reply within 24h.
+                {t("received")}
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    Name *
+                    {t("name")}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Your full name"
+                    placeholder={t("namePlaceholder")}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full text-xs bg-white border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-[#1b3d2f]"
@@ -290,7 +293,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    Email *
+                    {t("email")}
                   </label>
                   <input
                     type="email"
@@ -305,13 +308,13 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                 <div className="grid grid-cols-2 gap-2 hidden">
                   <div>
                     <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                      Travel Dates *
+                      {t("dates")}
                     </label>
                     <div className="relative">
                       <Calendar className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
                       <input
                         type="text"
-                        placeholder="Select dates"
+                        placeholder={t("datesPlaceholder")}
                         value={formData.dates}
                         onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
                         className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f]"
@@ -320,7 +323,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                      Guests *
+                      {t("guests")}
                     </label>
                     <div className="relative">
                       <Users className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
@@ -330,7 +333,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                         className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f] appearance-none"
                       >
                         {guestOptions.map((option) => (
-                          <option key={option}>{option}</option>
+                          <option key={option} value={option}>{t(`guestOptions.${option}` as "guestOptions.1 Guest")}</option>
                         ))}
                       </select>
                     </div>
@@ -339,7 +342,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    Preferred Trip Style *
+                    {t("style")}
                   </label>
                   <div className="relative">
                     <Mountain className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
@@ -349,7 +352,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                       className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f] appearance-none"
                     >
                       {tripStyles.map((style) => (
-                        <option key={style}>{style}</option>
+                        <option key={style} value={style}>{t(`styles.${style}` as "styles.Luxury Safari")}</option>
                       ))}
                     </select>
                   </div>
@@ -362,7 +365,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   disabled={sending}
                   className="w-full mt-2 bg-[#C29342] hover:bg-[#b08336] text-white font-semibold text-xs tracking-wider uppercase py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-60"
                 >
-                  {sending ? "Sending…" : "Request an Itinerary"}
+                  {sending ? t("sending") : t("request")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>
@@ -375,7 +378,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-4 space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-[#11241A]">
                 <Crown className="w-4 h-4 text-amber-600" />
-                <span>Bespoke Perks Included</span>
+                <span>{t("perks")}</span>
               </div>
               <ul className="space-y-1.5 text-[11px] text-neutral-600">
                 {tour.perks.map((perk) => (
@@ -389,7 +392,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
           {tour.route.length > 0 && (
             <div className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-4">
               <h3 className="text-[11px] font-bold tracking-wider uppercase text-neutral-700 mb-2">
-                Tour Route
+                {t("route")}
               </h3>
               <ol className="w-full rounded-lg bg-[#e2ede2] border border-neutral-200 p-3 text-[11px] font-semibold text-neutral-600">
                 {tour.route.map((stop, i) => (
@@ -410,7 +413,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div>
               <div className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-amber-400 mb-2">
                 <Check className="w-3.5 h-3.5" />
-                <span>Inclusions</span>
+                <span>{t("inclusions")}</span>
               </div>
               <ul className="space-y-1.5 pl-1 text-neutral-300">
                 {tour.inclusions.map((item) => (
@@ -422,7 +425,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div className="border-t border-neutral-700/60 pt-3">
               <div className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-amber-400 mb-2">
                 <X className="w-3.5 h-3.5" />
-                <span>Exclusions</span>
+                <span>{t("exclusions")}</span>
               </div>
               <ul className="space-y-1.5 pl-1 text-neutral-300">
                 {tour.exclusions.map((item) => (

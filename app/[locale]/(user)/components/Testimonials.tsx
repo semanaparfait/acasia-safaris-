@@ -1,10 +1,12 @@
 "use client";
 import React, { useEffect } from 'react';
+import { useTranslations } from "next-intl";
 import { motion } from 'framer-motion';
 import { Quote, Star } from 'lucide-react';
 import { useReviewsStore } from '@/store/reviewsStore';
 
 export default function Testimonials() {
+  const t = useTranslations("Home.testimonials");
   // Published reviews from the API (admins publish them under Admin > Reviews)
   const reviews = useReviewsStore((s) => s.reviews);
   const loadPublished = useReviewsStore((s) => s.loadPublished);
@@ -21,10 +23,10 @@ export default function Testimonials() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-            Guest Stories
+            {t("eyebrow")}
           </span>
           <h2 className="text-2xl md:text-4xl font-serif uppercase tracking-wide text-[#12231a]">
-            What our <span className="text-[#c5a86d]">guests say</span>
+            {t("title1")} <span className="text-[#c5a86d]">{t("title2")}</span>
           </h2>
         </div>
 

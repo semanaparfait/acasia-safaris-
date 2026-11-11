@@ -172,5 +172,609 @@
     "fromTeam": "{name} · Acacia Safaris",
     "yourOfferLabel": "Pendekezo lako",
     "ourOfferLabel": "Pendekezo letu"
+  },
+  "Home": {
+    "hero": {
+      "brand": "Acacia Safaris",
+      "title1": "Furahia",
+      "title2": "Maisha ya Porini",
+      "subtitle": "Safari zisizosahaulika katikati ya Rwanda.",
+      "book": "Weka Safari Yako",
+      "explore": "Gundua Vivutio",
+      "pause": "Simamisha video",
+      "play": "Cheza video",
+      "mute": "Zima sauti",
+      "unmute": "Washa sauti",
+      "scroll": "Shuka",
+      "scrollDown": "Shuka chini"
+    },
+    "trust": {
+      "rdb": {
+        "title": "Imesajiliwa na RDB",
+        "text": "Kampuni ya Rwanda iliyosajiliwa"
+      },
+      "local": {
+        "title": "Wataalamu wa ndani",
+        "text": "Waongozaji na wapangaji wa Rwanda"
+      },
+      "reply": {
+        "title": "Jibu ndani ya saa 24",
+        "text": "Majibu ya haraka na binafsi"
+      },
+      "pay": {
+        "title": "Kuuliza ni bure",
+        "text": "Panga kwanza, lipa baadaye"
+      }
+    },
+    "experience": {
+      "heading": "Uzoefu wa Acacia",
+      "gorilla": {
+        "title": "Kutembelea Sokwe",
+        "description": "Kukutana ana kwa ana na sokwe wa milimani katika Hifadhi ya Taifa ya Volcanoes na sokwe-mtu katika Nyungwe."
+      },
+      "savannah": {
+        "title": "Mbuga na Big Five",
+        "description": "Safari binafsi za magari na boti kati ya simba, tembo na vifaru katika Hifadhi ya Taifa ya Akagera."
+      },
+      "lodges": {
+        "title": "Malazi ya Kifahari",
+        "description": "Malazi ya kiikolojia, hoteli za kando ya ziwa na hoteli za kipekee zilizochaguliwa kote Rwanda."
+      },
+      "explore": "Gundua",
+      "quote": "Kila safari tunayoiandaa ni hadithi ya kipekee ya adventure, uhifadhi na anasa. Hatukuonyeshi tu Afrika Mashariki, tunakualika uhisi roho yake.",
+      "ceoRole": "Mkurugenzi Mtendaji wa ACACIA SAFARIS",
+      "ceoAlt": "Shema Alain, Mkurugenzi Mtendaji"
+    },
+    "popular": {
+      "eyebrow": "Safari Maarufu",
+      "title1": "Safari",
+      "title2": "zilizo tayari",
+      "viewAll": "Tazama safari zote",
+      "viewDetails": "Tazama maelezo",
+      "book": "Weka"
+    },
+    "about": {
+      "eyebrow": "Kuhusu Acacia",
+      "title1": "Urithi Bora",
+      "title2": "wa Safari",
+      "text": "Acacia Safaris Ltd imejitolea kuandaa safari zinazokuunganisha na uzuri halisi wa porini wa Afrika.",
+      "features": {
+        "expeditions": "Safari binafsi zinazoongozwa na wataalamu",
+        "lodging": "Malazi ya kifahari porini",
+        "culture": "Kukutana na tamaduni halisi",
+        "conservation": "Safari za uhifadhi wa mazingira"
+      },
+      "stats": {
+        "visitors": "Wageni kwa mwaka",
+        "satisfaction": "Kiwango cha kuridhika",
+        "awards": "Tuzo za sekta"
+      },
+      "learnMore": "Jifunze Zaidi Kutuhusu",
+      "foundersAlt": "Waanzilishi wa Acacia Safaris kando ya gari lao la safari",
+      "meetFounders": "Kutana na waanzilishi",
+      "guideLakeAlt": "Mwongozaji wa Acacia kando ya ziwa",
+      "guideLodgeAlt": "Mwongozaji wa Acacia kwenye malazi ya safari"
+    },
+    "why": {
+      "secure": {
+        "title": "Salama na Imethibitishwa",
+        "desc": "Imesajiliwa kikamilifu na RDB, na bima ya wasafiri kwa amani kamili ya moyo."
+      },
+      "guides": {
+        "title": "Waongozaji Wataalamu",
+        "desc": "Wataalamu wanaojua kila njia, hifadhi na hadithi kote Rwanda."
+      },
+      "tailor": {
+        "title": "Safari za Kipekee",
+        "desc": "Kila safari inaandaliwa kulingana na tarehe zako, mtindo wako na bajeti yako."
+      },
+      "eco": {
+        "title": "Safari Rafiki kwa Mazingira",
+        "desc": "Kila safari inasaidia uhifadhi na kuwawezesha wenyeji."
+      },
+      "walkAlt": "Wasafiri wakitembea na mwongozaji kwenye vilima vya kijani",
+      "gorillasAlt": "Sokwe wa milimani katika msitu wa ukungu wa Virunga",
+      "badgeTop": "Imesajiliwa na RDB",
+      "badgeBottom": "Kampuni ya ndani inayoaminika",
+      "eyebrow": "Kiwango cha Acacia",
+      "title1": "Kwa nini wageni wetu",
+      "title2": "huchagua Acacia",
+      "text": "Tunaamini katika safari zenye ubora na uhalisia. Kujitolea kwetu kwa ubora kunahakikisha safari yako ni salama, halisi na imeandaliwa kikamilifu.",
+      "cta": "Panga Safari Yako"
+    },
+    "good": {
+      "eyebrow": "Vizuri kujua",
+      "title1": "Rwanda",
+      "title2": "kwa urahisi",
+      "text": "Majibu ya haraka kwa maswali ambayo wasafiri hutuuliza zaidi kabla ya kuweka safari.",
+      "ask": "Tuulize chochote",
+      "visa": {
+        "title": "Viza ukifika",
+        "text": "Inapatikana kwa raia wa nchi zote, au omba mtandaoni kabla ya kusafiri."
+      },
+      "season": {
+        "title": "Wakati bora wa kutembelea",
+        "text": "Misimu ya kiangazi: Juni – Septemba na Desemba – Februari."
+      },
+      "travel": {
+        "title": "Rahisi kuzunguka",
+        "text": "Sokwe wako takriban saa 2.5 kutoka Kigali kwa barabara."
+      },
+      "safe": {
+        "title": "Salama na yenye ukarimu",
+        "text": "Mojawapo ya nchi salama na safi zaidi Afrika."
+      }
+    },
+    "gallery": {
+      "eyebrow": "Picha",
+      "title1": "Matukio ya",
+      "title2": "porini",
+      "viewAll": "Tazama picha zote",
+      "open": "{alt}, fungua picha",
+      "photos": {
+        "gorillas": "Sokwe katika msitu wa ukungu wa Virunga",
+        "monkey": "Tumbili wa dhahabu",
+        "elephant": "Tembo katika Akagera",
+        "canopy": "Daraja la juu la miti la Nyungwe",
+        "kivu": "Wavuvi wakati wa machweo katika Ziwa Kivu"
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Simulizi za Wageni",
+      "title1": "Wageni wetu",
+      "title2": "wanasema nini"
+    }
+  },
+  "Groups2": {
+    "All": "Zote",
+    "Wildlife": "Wanyamapori",
+    "Nature": "Mazingira",
+    "Culture": "Utamaduni",
+    "Adventure": "Matukio",
+    "Luxury": "Anasa"
+  },
+  "Destinations": {
+    "breadcrumb": "Njia",
+    "title": "Vivutio",
+    "nowShowing": "Sasa inaonyesha: <name></name>",
+    "where1": "Wapi pa",
+    "where2": "kwenda",
+    "error": "Imeshindwa kupakia vivutio: {error}",
+    "loading": "Inapakia vivutio…",
+    "bestTime": "Wakati bora",
+    "fromKigali": "Kutoka Kigali",
+    "bookNow": "Weka Sasa",
+    "enquire": "Uliza",
+    "decide1": "Huna uhakika?",
+    "decide2": "Tutakusaidia."
+  },
+  "Tours": {
+    "categories": {
+      "all": "Safari Zote",
+      "gorilla": "Kutembelea Sokwe",
+      "wildlife": "Safari ya Wanyamapori",
+      "luxury": "Safari za Kifahari",
+      "cultural": "Ziara za Utamaduni",
+      "group": "Kikundi au Maalum"
+    },
+    "hero": {
+      "all": {
+        "tag": "SAFARI ZA KIPEKEE",
+        "title": "Safari Zetu",
+        "subtitle": "Wanyamapori, Utamaduni, Matukio na Anasa",
+        "description": "Kuanzia mbuga pana hadi hazina zilizofichika za Afrika Mashariki, safari zetu zimeandaliwa kukupa uzoefu usiosahaulika katikati ya mazingira asilia."
+      },
+      "gorilla": {
+        "tag": "KUKUTANA NA SOKWE",
+        "title": "Safari za Sokwe",
+        "subtitle": "Ana kwa Ana na Sokwe wa Milimani Katika Ukungu",
+        "description": "Anza safari isiyosahaulika katika misitu ya kale ya mianzi ya Volcanoes na Bwindi. Simama hatua chache kutoka kwa sokwe wa milimani walio hatarini kutoweka."
+      },
+      "wildlife": {
+        "tag": "MBUGA NA BIG FIVE",
+        "title": "Safari za Wanyamapori",
+        "subtitle": "Shuhudia Uhamaji Mkuu na Wanyama Wawindaji",
+        "description": "Zunguka Serengeti, Maasai Mara na Kreta ya Ngorongoro. Furahia safari binafsi za magari, kuvuka mito na mazingira asilia."
+      },
+      "luxury": {
+        "tag": "MAENEO YA KIPEKEE",
+        "title": "Safari za Kifahari",
+        "subtitle": "Malazi ya Kiwango cha Dunia na Anasa ya Porini",
+        "description": "Furahia mabwawa binafsi ya maji ya joto, mhudumu maalum, usafiri wa helikopta na chakula cha jioni chini ya nyota katika malazi bora ya kifahari Afrika Mashariki."
+      },
+      "cultural": {
+        "tag": "URITHI NA JAMII",
+        "title": "Uzoefu wa Utamaduni",
+        "subtitle": "Unganika na Mila Hai na Jamii za Wenyeji",
+        "description": "Furahia ngoma za kifalme za Intore, warsha za ufundi, mafunzo ya kahawa na kubadilishana tamaduni na jamii za Afrika Mashariki."
+      },
+      "group": {
+        "tag": "SAFARI ZA KIKUNDI NA MAALUM",
+        "title": "Kikundi Kidogo au Safari Maalum",
+        "subtitle": "Safari Yako, Kama Unavyotaka",
+        "description": "Chagua kati ya safari za kikundi kidogo zenye tarehe zilizopangwa, au safari binafsi iliyoandaliwa kwa ajili yako 100% ukiwa na gari na mwongozaji wako."
+      }
+    },
+    "explore": "GUNDUA SAFARI",
+    "error": "Imeshindwa kupakia safari: {error}",
+    "tryAgain": "Jaribu tena",
+    "loading": "Inapakia safari…",
+    "categoryPackages": "Safari: {category}"
+  },
+  "Packages": {
+    "title": "Safari Zetu",
+    "count": "{count, plural, one {Safari #} other {Safari #}} · Chagua kutoka kwenye safari tulizochagua au pata ratiba maalum kwa ajili yako.",
+    "none": "Bado hakuna safari katika kundi hili.",
+    "viewDetails": "Tazama Maelezo",
+    "planTitle": "Panga Safari Yako",
+    "planText": "Pata nukuu binafsi na anza safari yako leo.",
+    "received": "Ombi Limepokelewa!",
+    "thanks": "Wataalamu wetu wa safari watawasiliana nawe hivi karibuni.",
+    "fullName": "Jina Kamili *",
+    "fullNamePlaceholder": "Jina lako kamili",
+    "email": "Barua pepe *",
+    "date": "Tarehe Unayopendelea",
+    "guests": "Idadi ya Wageni *",
+    "guestOptions": {
+      "one": "Mgeni 1",
+      "two": "Wageni 2",
+      "few": "Wageni 3 - 5",
+      "group": "Wageni 6+ (Kikundi)"
+    },
+    "style": "Aina ya Safari Unayopendelea *",
+    "selectStyle": "Chagua aina ya safari",
+    "styles": {
+      "gorilla": "Kutembelea Sokwe",
+      "wildlife": "Safari ya Wanyamapori",
+      "luxury": "Safari ya Kifahari",
+      "cultural": "Ziara ya Utamaduni",
+      "custom": "Safari Maalum"
+    },
+    "sending": "INATUMA…",
+    "send": "TUMA OMBI",
+    "perks": {
+      "guides": "Waongozaji Wataalamu",
+      "safe": "Safari Salama na za Kuaminika",
+      "price": "Bei Bora Imehakikishwa",
+      "support": "Msaada Saa 24/7"
+    },
+    "lionAlt": "Simba dume",
+    "tags": "MAZINGIRA | WANYAMAPORI | UTAMADUNI",
+    "dream": "Safari ya Ndoto Yako Inakusubiri",
+    "exploreDestinations": "GUNDUA VIVUTIO"
+  },
+  "Detail": {
+    "back": "Rudi kwenye safari",
+    "day": "Siku",
+    "quoteTitle": "Nukuu kamili ya safari hii",
+    "quoteText": "Bei za watu wazima na watoto, vilivyojumuishwa na visivyojumuishwa, na kwa nini ina thamani nzuri.",
+    "requestQuote": "Omba Nukuu",
+    "readyToGo": "Uko tayari?",
+    "bookTitle": "Weka safari hii",
+    "bookText": "Chagua tarehe zako na wasafiri uone bei yako. Huna uhakika na bei? Tupe pendekezo.",
+    "bookNow": "Weka Sasa",
+    "inquireTitle": "Uliza Kuhusu Ratiba Hii",
+    "inquireText": "Pata nukuu binafsi na ratiba ya kina.",
+    "received": "Ombi limepokelewa! Tutajibu ndani ya saa 24.",
+    "name": "Jina *",
+    "namePlaceholder": "Jina lako kamili",
+    "email": "Barua pepe *",
+    "dates": "Tarehe za Safari *",
+    "datesPlaceholder": "Chagua tarehe",
+    "guests": "Wageni *",
+    "guestOptions": {
+      "2 Guests": "Wageni 2",
+      "1 Guest": "Mgeni 1",
+      "3-4 Guests": "Wageni 3-4",
+      "5+ Guests": "Wageni 5+"
+    },
+    "style": "Aina ya Safari Unayopendelea *",
+    "styles": {
+      "Luxury Safari": "Safari ya Kifahari",
+      "Mid-range Comfort": "Starehe ya Kati",
+      "Classic Adventure": "Safari ya Kawaida"
+    },
+    "sending": "Inatuma…",
+    "request": "Omba Ratiba",
+    "perks": "Ziada Zilizojumuishwa",
+    "route": "Njia ya Safari",
+    "inclusions": "Vilivyojumuishwa",
+    "exclusions": "Visivyojumuishwa"
+  },
+  "Quote": {
+    "whatsapp": "Habari Acacia Safaris! Ningependa nukuu ya \"{title}\".\n\nNukuu: {url}",
+    "eyebrow": "Nukuu yako",
+    "intro": "Hati kamili: bei za watu wazima na watoto, vilivyojumuishwa na visivyojumuishwa. Ungependa kuipokea vipi?",
+    "download": {
+      "title": "Pakua PDF",
+      "text": "Ihifadhi kwenye kifaa chako sasa"
+    },
+    "wa": {
+      "title": "Ipate kwenye WhatsApp",
+      "text": "Inafungua mazungumzo na timu yetu pamoja na kiungo"
+    },
+    "email": {
+      "title": "Tuma kwa barua pepe yangu",
+      "text": "Tutaituma kwenye sanduku lako la barua"
+    },
+    "allOptions": "Chaguo zote",
+    "name": "Jina lako kamili",
+    "emailLabel": "Barua pepe yako",
+    "sending": "Inatuma…",
+    "send": "Tuma nukuu yangu",
+    "sent": "Nukuu imetumwa!",
+    "checkInbox": "Angalia sanduku lako la barua <email></email>, na folda ya barua taka kama huioni.",
+    "book": "Weka safari hii",
+    "later": "Baadaye",
+    "free": "Bure, bila wajibu wa kuweka safari"
+  },
+  "Compare": {
+    "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
+    "available": "Zinapatikana",
+    "days": {
+      "1": {
+        "title": "Kuwasili na Maelezo ya Safari",
+        "desc": "Mapokezi maalum, kupangiwa gari na chakula cha jioni cha kukaribisha."
+      },
+      "2": {
+        "title": "Safari ya Magari kwenda Hifadhini",
+        "desc": "Safari za asubuhi na alasiri kwa Land Cruiser 4x4 maalum."
+      },
+      "3": {
+        "title": "Siku Nzima ya Kufuatilia Paka Wakubwa",
+        "desc": "Kufuatilia simba, duma na chui alfajiri pamoja na mwongozaji mtaalamu."
+      },
+      "4": {
+        "title": "Ukingo wa Kreta na Kijiji cha Utamaduni",
+        "desc": "Mandhari nzuri ya ukingo wa kreta, kisha ngoma halisi za kitamaduni."
+      },
+      "5": {
+        "title": "Kutembelea Nyani au Safari ya Ziwani",
+        "desc": "Matembezi ya msituni na mwongozaji au safari ya boti katika Ziwa Ihema."
+      },
+      "6": {
+        "title": "Chakula cha Jioni Porini Machweo",
+        "desc": "Safari ya alasiri inayoishia na chakula maalum cha jioni porini."
+      },
+      "7": {
+        "title": "Soko la Zawadi na Kwenda Uwanja wa Ndege",
+        "desc": "Kahawa ya mwisho ya asubuhi, soko la ufundi na kupelekwa uwanja wa ndege."
+      }
+    },
+    "title": "Safari za Kikundi au Safari Maalum",
+    "intro": "Iwe unapenda safari za pamoja na wasafiri wengine au unapendelea ratiba binafsi kabisa iliyoandaliwa kulingana na kasi na mapendeleo yako, chagua inayokufaa hapa chini.",
+    "group": "SAFARI ZA KIKUNDI",
+    "vehicleAlt": "Land Cruiser 4x4 ya safari",
+    "groupAlt": "Kikundi cha wasafiri kwenye safari",
+    "highlights": "Mambo Muhimu:",
+    "groupPoints": {
+      "cost": "Bei nafuu za pamoja",
+      "social": "Mazingira ya urafiki",
+      "fixed": "Ratiba zilizopangwa tayari",
+      "singles": "Inafaa kwa wasafiri pekee na wapenzi",
+      "small": "Vikundi vidogo (Wasafiri 6 kwa gari)"
+    },
+    "upcoming": "Safari Zijazo",
+    "season": "2026/2027",
+    "exploreGroup": "TAZAMA SAFARI ZA KIKUNDI",
+    "tailor": "SAFARI MAALUM",
+    "coupleAlt": "Wapenzi kwenye safari binafsi",
+    "guideAlt": "Mwongozaji binafsi na wageni",
+    "privileges": "Faida za Safari Maalum:",
+    "tailorPoints": {
+      "custom": "Ratiba inayobadilika 100%",
+      "flexible": "Tarehe za safari zinazobadilika",
+      "private": "Mwongozaji binafsi na gari la 4x4",
+      "lodges": "Uchaguzi wa malazi ya kipekee",
+      "families": "Bora kwa familia na fungate",
+      "pace": "Kasi na mahitaji ya chakula kwa chaguo lako"
+    },
+    "concierge": "Huduma Binafsi ya Kipekee",
+    "conciergeText": "Dhibiti kikamilifu muda wa kuamka, ratiba za chakula, uchaguzi wa malazi na shughuli maalum kama safari za helikopta au upigaji picha binafsi.",
+    "startPlanning": "ANZA KUPANGA RATIBA YAKO MAALUM",
+    "matrix": "Ulinganisho wa Vipengele",
+    "matrixText": "Ulinganisho wa kina ili kukusaidia kuchagua mtindo wako wa safari.",
+    "table": {
+      "feature": "Kipengele",
+      "groupCol": "Safari za Kikundi (za Pamoja)",
+      "tailorCol": "Safari Maalum (Binafsi)",
+      "vehicle": {
+        "label": "Gari na Mwongozaji",
+        "group": "Land Cruiser 4x4 ya pamoja (wageni 6 zaidi)",
+        "tailor": "Gari binafsi 100% na mwongozaji maalum"
+      },
+      "dates": {
+        "label": "Tarehe za Kuondoka",
+        "group": "Tarehe zilizopangwa tayari",
+        "tailor": "Inabadilika 100% — anza siku yoyote ya mwaka"
+      },
+      "lodging": {
+        "label": "Uchaguzi wa Malazi",
+        "group": "Malazi na kambi zilizochaguliwa tayari",
+        "tailor": "Chagua kati ya Anasa, Kati au Nyumba Binafsi"
+      },
+      "pace": {
+        "label": "Kasi na Ratiba ya Kila Siku",
+        "group": "Ratiba iliyopangwa ya kikundi",
+        "tailor": "Maalum 100% — amka na uzunguke kwa kasi yako"
+      },
+      "price": {
+        "label": "Bei na Thamani",
+        "group": "Thamani ya juu (gharama za gari na mwongozaji zinagawanywa)",
+        "tailor": "Bei maalum kulingana na malazi unayochagua"
+      }
+    },
+    "previewTag": "Mfano wa Ratiba ya Siku 7",
+    "previewTitle": "Safari ya Siku 7 Inavyokuwa",
+    "groupFormat": "Mtindo wa Kikundi",
+    "tailorFormat": "Mtindo wa Safari Maalum",
+    "setDeparture": "Kuondoka kwa Kikundi kwa Tarehe Maalum",
+    "privateGuide": "Mwongozaji Binafsi Maalum",
+    "quoteTag": "PATA NUKUU YA SAFARI MAALUM",
+    "quoteTitle": "Uko Tayari Kupanga Safari Yako ya Afrika Mashariki?",
+    "quoteText": "Tuambie kama ungependa kujiunga na safari ya kikundi kidogo inayokuja au kuandaa safari binafsi maalum 100%. Timu yetu itakutumia ratiba yako ndani ya saa 24.",
+    "submitted": "Ombi Limetumwa kwa Mafanikio!",
+    "submittedText": "Wataalamu wetu wa safari watawasiliana nawe na pendekezo lako maalum.",
+    "name": "Jina Kamili *",
+    "namePlaceholder": "Jina lako kamili",
+    "email": "Barua pepe *",
+    "option": "Aina ya Safari *",
+    "options": {
+      "custom": "Safari Binafsi Maalum",
+      "group": "Safari ya Kikundi Kidogo",
+      "unsure": "Sina Uhakika — Nahitaji Ushauri"
+    },
+    "send": "TUMA OMBI LA SAFARI",
+    "sending": "INATUMA…"
+  },
+  "About": {
+    "heroAlt": "Mandhari ya volkano ya Afrika Mashariki yenye ukungu",
+    "eyebrow": "KUHUSU SISI",
+    "title1": "TUMEJIKITA AFRIKA MASHARIKI,",
+    "title2": "TUKIONGOZWA NA UHIFADHI.",
+    "subtitle": "Tunaandaa safari za kipekee za kifahari huku tukilinda maeneo ya porini tunayoyaita nyumbani.",
+    "foundersAlt": "SHEMA Alain na ISHIMWE Yassel kando ya gari la Acacia Safaris",
+    "ceo": "Mkurugenzi Mtendaji na Mwanzilishi",
+    "md": "Mkurugenzi Mkuu na Mwanzilishi",
+    "storyTag": "HISTORIA YETU",
+    "storyTitle1": "Historia Yetu na",
+    "storyTitle2": "Utaalamu wa Ndani",
+    "story1": "Ilianzishwa na <b>SHEMA Alain</b> na <b>ISHIMWE Yassel</b>, ACACIA SAFARIS ilianza na ndoto ya pamoja ya kuwaunganisha wasafiri na uzuri halisi wa Afrika Mashariki.",
+    "story2": "Kama Wanyarwanda wazawa, tulijenga kampuni yetu juu ya ujuzi wa karibu na wa moja kwa moja, ili kila safari iishiwe, si kutembelewa tu.",
+    "story3": "Ofisi yetu ya Kigali na timu yetu ya uwanjani hushughulikia kila undani wa safari wenyewe, wakitoa utaalamu na fursa za ndani zisizo na kifani.",
+    "foundersTag": "WAANZILISHI WETU",
+    "foundersTitle1": "Wenye Maono Wawili.",
+    "foundersTitle2": "Lengo Moja.",
+    "foundersText": "Kwa upendo mkubwa kwa Afrika Mashariki na uzoefu imara katika utalii, uhifadhi na maendeleo ya jamii, SHEMA Alain na ISHIMWE Yassel wanaongoza ACACIA SAFARIS kwa shauku, uadilifu na maono ya muda mrefu ya mustakabali endelevu.",
+    "quoteShema": "Utalii ni zaidi ya safari — ni nguvu kubwa ya uhifadhi, jamii na mabadiliko ya kudumu.",
+    "quoteYassel": "Lengo letu ni kuunda uzoefu wenye maana unaonufaisha watu, wanyamapori na vizazi vijavyo.",
+    "whyTag": "KWA NINI USAFIRI NASI",
+    "whyTitle": "Zaidi ya Safari — Ni Muunganiko wa Kina.",
+    "why": {
+      "local": {
+        "title": "Utaalamu wa Ndani",
+        "desc": "Ujuzi halisi na fursa za kipekee kote Afrika Mashariki."
+      },
+      "tailored": {
+        "title": "Safari Maalum",
+        "desc": "Ratiba maalum kulingana na mapendeleo na mtindo wako."
+      },
+      "responsible": {
+        "title": "Utalii wa Kuwajibika",
+        "desc": "Kusaidia uhifadhi, jamii na uchumi wa wenyeji."
+      },
+      "seamless": {
+        "title": "Huduma Isiyo na Kasoro",
+        "desc": "Kuanzia kupanga hadi kurudi, tunashughulikia kila undani kwa uangalifu."
+      },
+      "small": {
+        "title": "Safari za Vikundi Vidogo",
+        "desc": "Binafsi zaidi, zenye maana zaidi."
+      },
+      "authentic": {
+        "title": "Kukutana na Uhalisia",
+        "desc": "Watu halisi, utamaduni halisi, Afrika Mashariki halisi."
+      }
+    },
+    "journeyTag": "SAFARI YETU",
+    "journeyTitle": "Tukikua Kote Afrika Mashariki.",
+    "journeyText": "Kuanzia kupanua shughuli zetu Rwanda hadi kuandaa safari za maeneo mengi bila usumbufu, safari yetu inaendelea kuongozwa na utalii wa kuwajibika na safari zenye maana.",
+    "timeline": {
+      "expansion": {
+        "title": "Upanuzi wa Kimkakati",
+        "text": "Acacia Safaris iliimarisha uwepo wake Afrika Mashariki kwa kupanua safari maalum Rwanda, ikilenga zaidi utalii wa kiikolojia na kufuatilia nyani."
+      },
+      "crossBorder": {
+        "title": "Safari za Kuvuka Mipaka",
+        "text": "Safari mpya za siku kadhaa ziliunganisha Uganda na Rwanda, zikirahisisha wageni kuchanganya kutembelea sokwe na safari za wanyamapori za kanda."
+      },
+      "portfolio": {
+        "title": "Kupanua Safari za Rwanda",
+        "text": "Ratiba zetu za Rwanda zilipanuka katika Hifadhi za Taifa za Volcanoes, Nyungwe na Akagera, zikitoa safari za sokwe na tumbili wa dhahabu, sokwe-mtu, madaraja ya juu ya miti na Big Five."
+      },
+      "growth": {
+        "title": "Ukuaji na Matokeo Endelevu",
+        "text": "Leo, Acacia Safaris inaendelea kutoa safari maalum kote Rwanda na Afrika Mashariki, ikizidi kulenga utalii endelevu, likizo za familia, kutazama ndege na safari za maeneo mengi."
+      }
+    },
+    "todayTag": "LEO",
+    "todayTitle": "Safiri mbali zaidi. Safiri kwa uwajibikaji.",
+    "todayText": "Tunaendelea kuunda uzoefu halisi unaowaunganisha wasafiri na wanyamapori, mandhari, jamii na tamaduni za Afrika Mashariki, huku tukisaidia mustakabali endelevu wa maeneo tunayoyaita nyumbani.",
+    "ctaAlt": "Tembo Afrika Mashariki",
+    "ctaTitle": "Hadithi Yako ya Afrika Mashariki Inaanzia Hapa",
+    "ctaText": "Turuhusu tukuandalie safari maalum yenye maana, binafsi na isiyosahaulika.",
+    "ctaButton": "Omba Safari Maalum"
+  },
+  "Team": {
+    "tag": "TIMU YETU",
+    "title": "Watu Walio Nyuma ya ACACIA SAFARIS",
+    "hint": "Bofya mtu ili usome hadithi yake na uwasiliane naye.",
+    "view": "Tazama wasifu",
+    "close": "Funga",
+    "email": "Barua pepe",
+    "phone": "Simu",
+    "speaks": "Anazungumza",
+    "follow": "Fuata",
+    "onNetwork": "{name} kwenye {network}"
+  },
+  "Contact": {
+    "cards": {
+      "call": {
+        "label": "Tupigie Simu",
+        "note": "Jumatatu – Jumamosi, saa 2 asubuhi – saa 12 jioni"
+      },
+      "email": {
+        "label": "Tutumie Barua Pepe",
+        "note": "Jibu ndani ya saa 24"
+      },
+      "whatsapp": {
+        "label": "WhatsApp",
+        "value": "Ongea na mpangaji",
+        "note": "Njia ya haraka zaidi kutufikia"
+      },
+      "visit": {
+        "label": "Tutembelee",
+        "value": "Kigali, Rwanda",
+        "note": "Kwa miadi"
+      }
+    },
+    "heroAlt": "Watu wawili wakisalimiana kwa mikono",
+    "title1": "Wasiliana",
+    "title2": "Nasi",
+    "intro": "Una swali, maoni au unahitaji msaada kuhusu safari uliyoweka? Tungependa kusikia kutoka kwako. Wasiliana nasi na timu yetu itakujibu haraka iwezekanavyo.",
+    "infoTag": "Mawasiliano",
+    "infoTitle1": "Tuko hapa",
+    "infoTitle2": "kukusaidia",
+    "infoText": "Jaza fomu na timu yetu itakujibu ndani ya saa 24. Unapendelea kuongea? Tupigie au tutumie ujumbe moja kwa moja.",
+    "location": "Kigali, Rwanda",
+    "social": "Mtandao wa kijamii",
+    "thanks": "Asante",
+    "thanksName": "Asante, {name}",
+    "received": "Ujumbe wako umepokelewa. Timu yetu itakujibu ndani ya saa 24.",
+    "another": "Tuma ujumbe mwingine",
+    "formTag": "Tuma ujumbe",
+    "formTitle": "Tuandikie",
+    "name": "Jina Kamili *",
+    "email": "Barua Pepe *",
+    "phone": "Simu / WhatsApp",
+    "subject": "Mada",
+    "selectSubject": "Chagua mada",
+    "subjects": {
+      "general": "Swali la Jumla",
+      "booking": "Safari Niliyoweka",
+      "partnership": "Ushirikiano",
+      "feedback": "Maoni",
+      "other": "Mengineyo"
+    },
+    "message": "Ujumbe Wako *",
+    "messagePlaceholder": "Tukusaidie vipi?",
+    "privacy": "Tunaheshimu faragha yako. Taarifa zako zinatumika tu kukujibu.",
+    "sending": "Inatuma…",
+    "send": "Tuma Ujumbe",
+    "findUs": "Tupate",
+    "office": "Ofisi Yetu ya Kigali",
+    "mapTitle": "Mahali ilipo ofisi ya Acacia Safaris",
+    "officeText": "Kigali, Rwanda. Kutembelea kwa miadi. Tupigie simu kabla ya kuja.",
+    "directions": "Pata Maelekezo"
   }
 }

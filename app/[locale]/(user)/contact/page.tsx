@@ -1,5 +1,6 @@
 "use client";
 import { PhoneField } from "@/components/ui/phone-field";
+import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,30 +22,24 @@ import { useMessagesStore } from "@/store/messagesStore";
 const contactCards = [
   {
     icon: Phone,
-    label: "Call Us",
+    key: "call",
     value: "+250 798 635 578",
-    note: "Mon – Sat, 8am – 6pm CAT",
     href: "tel:+250 798 635 578",
   },
   {
     icon: Mail,
-    label: "Email Us",
+    key: "email",
     value: "info@acaciasafaris.com",
-    note: "Reply within 24 hours",
     href: "mailto:info@acaciasafaris.com",
   },
   {
     icon: MessageCircle,
-    label: "WhatsApp",
-    value: "Chat with a planner",
-    note: "Fastest way to reach us",
+    key: "whatsapp",
     href: "https://wa.me/250798635578",
   },
   {
     icon: MapPin,
-    label: "Visit Us",
-    value: "Kigali, Rwanda",
-    note: "By appointment",
+    key: "visit",
     href: "#map",
   },
 ];
@@ -56,6 +51,7 @@ const labelClass =
   "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
 export default function Contact() {
+  const t = useTranslations("Contact");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -111,7 +107,7 @@ export default function Contact() {
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2000&q=80"
-            alt="Two people shaking hands"
+            alt={t("heroAlt")}
             className="w-full h-full object-cover object-center brightness-[0.8]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
@@ -126,13 +122,11 @@ export default function Contact() {
             className="max-w-2xl"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal uppercase tracking-wide leading-[1.08] mb-6">
-              Get in Touch <br />
-              <span className="text-[#c5a86d]">With Us</span>
+              {t("title1")} <br />
+              <span className="text-[#c5a86d]">{t("title2")}</span>
             </h1>
             <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed max-w-xl">
-              Have a question, a comment or need help with an existing booking?
-              We&apos;d love to hear from you. Reach out and our team will get
-              back to you as soon as possible.
+              {t("intro")}
             </p>
           </motion.div>
         </div>
@@ -143,7 +137,7 @@ export default function Contact() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {contactCards.map((card, i) => (
             <motion.a
-              key={card.label}
+              key={card.key}
               href={card.href}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -154,12 +148,12 @@ export default function Contact() {
                 <card.icon size={20} />
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45 mb-1.5">
-                {card.label}
+                {t(`cards.${card.key}.label`)}
               </p>
               <p className="font-serif text-lg leading-snug mb-1 break-words">
-                {card.value}
+                {card.value ?? t(`cards.${card.key}.value` as "cards.visit.value")}
               </p>
-              <p className="text-xs text-[#0a120b]/50">{card.note}</p>
+              <p className="text-xs text-[#0a120b]/50">{t(`cards.${card.key}.note`)}</p>
             </motion.a>
           ))}
         </div>
@@ -185,20 +179,19 @@ export default function Contact() {
 
             <div className="relative z-10">
               <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">
-                Contact Information
+                {t("infoTag")}
               </span>
               <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide leading-tight mb-6">
-                We&apos;re here <br /> to help
+                {t("infoTitle1")} <br /> {t("infoTitle2")}
               </h2>
               <p className="text-sm text-zinc-300 leading-relaxed mb-8">
-                Fill in the form and our team will reply within 24 hours. Prefer
-                to talk? Call or message us directly.
+                {t("infoText")}
               </p>
               <ul className="space-y-5">
                 {[
-                  { icon: Phone, text: "+250 7XX XXX XXX" },
+                  { icon: Phone, text: "+250 798 635 578" },
                   { icon: Mail, text: "info@acaciasafaris.com" },
-                  { icon: MapPin, text: "Kigali, Rwanda" },
+                  { icon: MapPin, text: t("location") },
                 ].map((item) => (
                   <li
                     key={item.text}
@@ -228,7 +221,7 @@ export default function Contact() {
                   <a
                     key={i}
                     href="#"
-                    aria-label="Social link"
+                    aria-label={t("social")}
                     className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all duration-300 hover:-translate-y-1"
                   >
                     <Icon size={16} />
@@ -259,17 +252,16 @@ export default function Contact() {
                     <CheckCircle2 size={30} />
                   </div>
                   <h3 className="text-3xl font-serif uppercase tracking-wide mb-3">
-                    Thank you{form.name ? `, ${form.name.split(" ")[0]}` : ""}
+                    {form.name ? t("thanksName", { name: form.name.split(" ")[0] }) : t("thanks")}
                   </h3>
                   <p className="text-sm text-[#0a120b]/60 max-w-sm leading-relaxed mb-8">
-                    Your message has been received. Our team will get back to
-                    you within 24 hours.
+                    {t("received")}
                   </p>
                   <button
                     onClick={resetForm}
                     className="border border-[#0a120b]/20 hover:border-[#0a120b] text-sm px-7 py-3 rounded-sm transition-all"
                   >
-                    Send another message
+                    {t("another")}
                   </button>
                 </motion.div>
               ) : (
@@ -281,17 +273,17 @@ export default function Contact() {
                 >
                   <div>
                     <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-                      Send a message
+                      {t("formTag")}
                     </span>
                     <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide leading-tight">
-                      Drop us a line
+                      {t("formTitle")}
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label htmlFor="name" className={labelClass}>
-                        Full Name *
+                        {t("name")}
                       </label>
                       <input
                         id="name"
@@ -304,7 +296,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <label htmlFor="email" className={labelClass}>
-                        Email Address *
+                        {t("email")}
                       </label>
                       <input
                         id="email"
@@ -318,7 +310,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <label htmlFor="phone" className={labelClass}>
-                        Phone / WhatsApp
+                        {t("phone")}
                       </label>
                       <PhoneField
                         id="phone"
@@ -329,7 +321,7 @@ export default function Contact() {
                     </div>
                     <div className="relative">
                       <label htmlFor="subject" className={labelClass}>
-                        Subject
+                        {t("subject")}
                       </label>
                       <select
                         id="subject"
@@ -337,12 +329,12 @@ export default function Contact() {
                         onChange={update("subject")}
                         className={`${fieldClass} appearance-none cursor-pointer`}
                       >
-                        <option value="">Select a subject</option>
-                        <option value="general">General Question</option>
-                        <option value="booking">Existing Booking</option>
-                        <option value="partnership">Partnership</option>
-                        <option value="feedback">Feedback</option>
-                        <option value="other">Other</option>
+                        <option value="">{t("selectSubject")}</option>
+                        <option value="general">{t("subjects.general")}</option>
+                        <option value="booking">{t("subjects.booking")}</option>
+                        <option value="partnership">{t("subjects.partnership")}</option>
+                        <option value="feedback">{t("subjects.feedback")}</option>
+                        <option value="other">{t("subjects.other")}</option>
                       </select>
                       <ChevronDown className="absolute right-3 bottom-3.5 w-4 h-4 text-[#0a120b]/40 pointer-events-none" />
                     </div>
@@ -350,7 +342,7 @@ export default function Contact() {
 
                   <div>
                     <label htmlFor="message" className={labelClass}>
-                      Your Message *
+                      {t("message")}
                     </label>
                     <textarea
                       id="message"
@@ -358,7 +350,7 @@ export default function Contact() {
                       rows={5}
                       value={form.message}
                       onChange={update("message")}
-                      placeholder="How can we help you?"
+                      placeholder={t("messagePlaceholder")}
                       className={`${fieldClass} resize-none`}
                     />
                   </div>
@@ -369,15 +361,14 @@ export default function Contact() {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pt-2">
                     <p className="text-xs text-[#0a120b]/45 max-w-xs">
-                      We respect your privacy. Your details are only used to
-                      reply to you.
+                      {t("privacy")}
                     </p>
                     <button
                       type="submit"
                       disabled={sending}
                       className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-60"
                     >
-                      {sending ? "Sending…" : "Send Message"}
+                      {sending ? t("sending") : t("send")}
                       <ArrowRight
                         size={16}
                         className="group-hover:translate-x-1 transition-transform"
@@ -399,10 +390,10 @@ export default function Contact() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-              Find Us
+              {t("findUs")}
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase text-white">
-              Our Kigali Office
+              {t("office")}
             </h2>
           </div>
 
@@ -412,7 +403,7 @@ export default function Contact() {
               width="100%"
               height="100%"
               allowFullScreen
-              title="acacia Safaris office location"
+              title={t("mapTitle")}
               style={{ border: 0, filter: "grayscale(0.4) contrast(1.1)" }}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -425,8 +416,7 @@ export default function Contact() {
                 <p className="font-serif text-lg">acacia Safaris Ltd</p>
               </div>
               <p className="text-xs text-zinc-300 leading-relaxed mb-4">
-                Kigali, Rwanda. Visits by appointment. Give us a call before you
-                drop by.
+                {t("officeText")}
               </p>
               <a
                 href="https://maps.google.com/?q=-1.9646178980175963,30.098852474015416"
@@ -434,7 +424,7 @@ export default function Contact() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-medium text-[#c5a86d] hover:text-white transition-colors"
               >
-                Get Directions <ArrowRight size={14} />
+                {t("directions")} <ArrowRight size={14} />
               </a>
             </div>
           </div>

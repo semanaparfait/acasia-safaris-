@@ -1,13 +1,16 @@
 "use client";
 import React, { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
-import { daysLabel, tourHref } from "@/lib/helpers";
+import { tourHref } from "@/lib/helpers";
 import { usePackagesStore } from "@/store/packagesStore";
 
 
 export default function PopularPackages() {
+  const t = useTranslations("Home.popular");
+  const tc = useTranslations("Common");
   const allPackages = usePackagesStore((s) => s.packages);
   const loadPublished = usePackagesStore((s) => s.loadPublished);
 
@@ -26,17 +29,17 @@ export default function PopularPackages() {
           <div>
             <div className="flex items-center gap-3 mb-5">
               <span className="w-10 h-px bg-[#c5a86d]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">Popular Packages</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">{t("eyebrow")}</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-[1.1] text-[#12231a]">
-              Ready-made <span className="text-[#c5a86d]">adventures</span>
+              {t("title1")} <span className="text-[#c5a86d]">{t("title2")}</span>
             </h2>
           </div>
           <Link
             href="/tour"
             className="group self-start md:self-auto inline-flex items-center gap-2 border border-[#12231a]/20 hover:border-[#12231a] text-[#12231a] text-sm px-6 py-3 rounded-full transition-all"
           >
-            View all packages
+            {t("viewAll")}
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -65,7 +68,7 @@ export default function PopularPackages() {
                   </span>
                 )}
                 <span className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-xs font-medium text-[#12231a]">
-                  <Calendar size={12} className="text-[#1F5A42]" /> {daysLabel(pkg)}
+                  <Calendar size={12} className="text-[#1F5A42]" /> {tc("days", { count: pkg.itinerary.length })}
                 </span>
               </div>
 
@@ -83,13 +86,13 @@ export default function PopularPackages() {
 
                 <div className="mt-auto pt-5 border-t border-[#0a120b]/5 flex items-center justify-between gap-4">
                   <Link href={tourHref({ package: pkg.id })} className="text-sm text-[#1F5A42] hover:underline">
-                    View details
+                    {t("viewDetails")}
                   </Link>
                   <Link
                     href="/booking"
                     className="group/btn inline-flex items-center gap-2 bg-[#12231a] hover:bg-[#c5a86d] hover:text-[#0e1d16] text-white text-sm px-5 py-2.5 rounded-full transition-all"
                   >
-                    Book
+                    {t("book")}
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </div>

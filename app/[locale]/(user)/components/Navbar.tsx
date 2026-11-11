@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { CurrencyPicker } from "@/components/ui/money";
 
 // name = the text's key in messages/*.json (Nav)
 const navLinks = [
@@ -86,10 +85,9 @@ export default function Navbar() {
           </ul>
 
           <div className="flex items-center gap-2.5 sm:gap-4">
-            {/* Desktop: language and currency */}
-            <div className="hidden lg:flex items-center gap-2">
+            {/* Desktop: language (the currency is chosen where prices are shown: the booking) */}
+            <div className="hidden lg:flex items-center">
               <LanguageSwitcher dark compact />
-              <CurrencyPicker dark compact />
             </div>
             <Link
               href="/booking"
@@ -202,10 +200,9 @@ function MobileMenu({ open, onClose, isActive }: { open: boolean; onClose: () =>
               </ul>
 
               {/* Contact */}
-              <p className="px-3 mt-7 mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/35">{t("language")} · {t("currency")}</p>
-              <div className="flex gap-2 px-3">
-                <LanguageSwitcher dark className="flex-1 py-2.5" />
-                <CurrencyPicker dark className="flex-1 py-2.5" />
+              <p className="px-3 mt-7 mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/35">{t("language")}</p>
+              <div className="px-3">
+                <LanguageSwitcher dark className="w-full py-2.5" />
               </div>
 
               <p className="px-3 mt-7 mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/35">{t("talkToUs")}</p>

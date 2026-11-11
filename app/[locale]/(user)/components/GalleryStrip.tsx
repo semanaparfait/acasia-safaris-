@@ -1,18 +1,21 @@
 "use client";
 import React from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Camera } from "lucide-react";
 
 const photos = [
-  { src: "https://i.pinimg.com/1200x/1d/3a/0e/1d3a0e7dbc04ee5e445faed00f48c164.jpg", alt: "Gorillas in the misty Virunga forest", span: "md:col-span-2 md:row-span-2" },
-  { src: "https://i.pinimg.com/736x/29/c6/d9/29c6d9f0c66cbefe2dfd664176627428.jpg", alt: "Golden monkey", span: "" },
-  { src: "https://i.pinimg.com/1200x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg", alt: "Elephant in Akagera", span: "" },
-  { src: "https://i.pinimg.com/1200x/0f/84/de/0f84dec8e96fc7763eb982ef71295fe8.jpg", alt: "Nyungwe canopy walkway", span: "" },
-  { src: "https://i.pinimg.com/1200x/6d/cd/14/6dcd140b80b210ac445a0eddfc40784a.jpg", alt: "Fishermen at sunset on Lake Kivu", span: "" },
+  { src: "https://i.pinimg.com/1200x/1d/3a/0e/1d3a0e7dbc04ee5e445faed00f48c164.jpg", alt: "gorillas", span: "md:col-span-2 md:row-span-2" },
+  { src: "https://i.pinimg.com/736x/29/c6/d9/29c6d9f0c66cbefe2dfd664176627428.jpg", alt: "monkey", span: "" },
+  { src: "https://i.pinimg.com/1200x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg", alt: "elephant", span: "" },
+  { src: "https://i.pinimg.com/1200x/0f/84/de/0f84dec8e96fc7763eb982ef71295fe8.jpg", alt: "canopy", span: "" },
+  { src: "https://i.pinimg.com/1200x/6d/cd/14/6dcd140b80b210ac445a0eddfc40784a.jpg", alt: "kivu", span: "" },
 ];
 
+// alt = the key of the photo's description in messages: Home.gallery.photos
 export default function GalleryStrip() {
+  const t = useTranslations("Home.gallery");
   return (
     <section className="py-24 px-6 bg-white font-sans">
       <div className="max-w-7xl mx-auto">
@@ -20,17 +23,17 @@ export default function GalleryStrip() {
           <div>
             <div className="flex items-center gap-3 mb-5">
               <span className="w-10 h-px bg-[#c5a86d]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">Gallery</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1F5A42]">{t("eyebrow")}</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-[1.1] text-[#12231a]">
-              Moments from <span className="text-[#c5a86d]">the wild</span>
+              {t("title1")} <span className="text-[#c5a86d]">{t("title2")}</span>
             </h2>
           </div>
           <Link
             href="/gallery"
             className="group self-start md:self-auto inline-flex items-center gap-2 border border-[#12231a]/20 hover:border-[#12231a] text-[#12231a] text-sm px-6 py-3 rounded-full transition-all"
           >
-            <Camera size={16} /> View full gallery
+            <Camera size={16} /> {t("viewAll")}
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -45,16 +48,16 @@ export default function GalleryStrip() {
               transition={{ delay: i * 0.08, duration: 0.5 }}
               className={`group relative overflow-hidden rounded-2xl ${p.span} ${i === 0 ? "col-span-2 row-span-2" : ""}`}
             >
-              <Link href="/gallery" aria-label={`${p.alt}, open the gallery`} className="block w-full h-full">
+              <Link href="/gallery" aria-label={t("open", { alt: t(`photos.${p.alt}`) })} className="block w-full h-full">
                 <img
                   src={p.src}
-                  alt={p.alt}
+                  alt={t(`photos.${p.alt}`)}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="absolute bottom-3 left-4 right-4 text-white text-sm opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                  {p.alt}
+                  {t(`photos.${p.alt}`)}
                 </span>
               </Link>
             </motion.div>

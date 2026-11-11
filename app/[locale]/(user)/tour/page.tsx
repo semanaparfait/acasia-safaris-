@@ -6,6 +6,7 @@ import { GiGorilla, GiElephant, GiMountainRoad } from "react-icons/gi";
 import { FaUsers, FaGem } from "react-icons/fa";
 import { PiPawPrintFill } from "react-icons/pi";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import TourDetail from "@/app/[locale]/(user)/tour/components/TourDetail";
 import { usePackagesStore } from "@/store/packagesStore";
 import { tourHref } from "@/lib/helpers";
@@ -21,7 +22,20 @@ export default function TourPage() {
 }
 
 // The selected category / package lives in the URL (see tourHref) so any link can open it.
+// Category (as in the address) -> its key in messages
+const CATEGORY_KEYS: Record<string, "all" | "gorilla" | "wildlife" | "luxury" | "cultural" | "group"> = {
+  "All Packages": "all",
+  "Gorilla Trekking": "gorilla",
+  "Wildlife Safari": "wildlife",
+  "Luxury Escapes": "luxury",
+  "Cultural Tours": "cultural",
+  "Group vs Tailor made": "group",
+};
+
 function TourPageContent() {
+  const t = useTranslations("Tours");
+  // A category an admin made up has no translation: shown as typed
+  const categoryName = (name: string) => (CATEGORY_KEYS[name] ? t(`categories.${CATEGORY_KEYS[name]}`) : name);
   const router = useRouter();
   const searchParams = useSearchParams();
   const activePackage = searchParams.get("category") ?? "All Packages";
@@ -40,68 +54,28 @@ function TourPageContent() {
   const packages = allPackages.filter((p) => p.active);
   const selectedPackage = packages.find((p) => p.id === selectedId);
 
-  const heroContent: Record<
-    string,
-    { tag: string; title: string; subtitle: string; description: string; image: string }
-  > = {
-    "All Packages": {
-      tag: "EXTRAORDINARY JOURNEYS",
-      title: "Safari Packages",
-      subtitle: "Wildlife, Culture, Adventure & Luxury",
-      description:
-        "From the vast savannas to the hidden gems of East Africa, our safari packages are designed to give you unforgettable experiences in the heart of nature.",
-      image:
-        "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=2200&auto=format&fit=crop&q=85",
-    },
-    "Gorilla Trekking": {
-      tag: "PRIMATE ENCOUNTERS",
-      title: "Gorilla Trekking Safaris",
-      subtitle: "Face-to-Face with Mountain Gorillas in the Mist",
-      description:
-        "Embark on an unforgettable trek into the ancient bamboo forests of Volcanoes and Bwindi. Stand feet away from endangered mountain gorillas in their wild sanctuary.",
-      image:
-        "https://i.pinimg.com/1200x/e9/c3/52/e9c352c52a8ce750ec2aa30acecabb3c.jpg",
-    },
-    "Wildlife Safari": {
-      tag: "SAVANNA & BIG FIVE",
-      title: "Classic Wildlife Safaris",
-      subtitle: "Witness the Great Migration & Iconic Predators",
-      description:
-        "Traverse the iconic Serengeti, Maasai Mara, and Ngorongoro Crater. Experience private game drives, river crossings, and pristine wilderness.",
-      image:
-        "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=2200&auto=format&fit=crop&q=85",
-    },
-    "Luxury Escapes": {
-      tag: "EXCLUSIVE SANCTUARIES",
-      title: "Luxury Safari Escapes",
-      subtitle: "World-Class Lodges & Bespoke Wilderness Luxury",
-      description:
-        "Indulge in private heated plunge pools, dedicated butler service, helicopter transfers, and fine dining under stars at East Africa's finest luxury lodges.",
-      image:
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=2200&auto=format&fit=crop&q=85",
-    },
-    "Cultural Tours": {
-      tag: "HERITAGE & COMMUNITY",
-      title: "Cultural Experiences",
-      subtitle: "Connect with Vibrant Traditions & Local Communities",
-      description:
-        "Immerse in royal Intore warrior drum dances, craft workshops, coffee masterclasses, and meaningful cultural exchanges with East African communities.",
-      image:
-        "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=2200&auto=format&fit=crop&q=85",
-    },
-    "Group vs Tailor made": {
-      tag: "BESPOKE & GROUP EXPEDITIONS",
-      title: "Small Group vs Tailor-Made",
-      subtitle: "Your Journey, Designed Exactly Your Way",
-      description:
-        "Choose between friendly small group departures with pre-scheduled dates or a 100% custom-crafted private safari with your own vehicle and guide.",
-      image:
-        "https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=2200&auto=format&fit=crop&q=85",
-    },
+  // The category names stay in English (they are in the address and the database);
+  // their texts are in messages: Tours.categories.<key> and Tours.hero.<key>
+  const heroImages: Record<string, string> = {
+    "All Packages": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=2200&auto=format&fit=crop&q=85",
+    "Gorilla Trekking": "https://i.pinimg.com/1200x/e9/c3/52/e9c352c52a8ce750ec2aa30acecabb3c.jpg",
+    "Wildlife Safari": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=2200&auto=format&fit=crop&q=85",
+    "Luxury Escapes": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=2200&auto=format&fit=crop&q=85",
+    "Cultural Tours": "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=2200&auto=format&fit=crop&q=85",
+    "Group vs Tailor made": "https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=2200&auto=format&fit=crop&q=85",
   };
 
-  const currentHero =
-    heroContent[selectedPackage?.category ?? activePackage] || heroContent["All Packages"];
+  const heroCategory = heroImages[selectedPackage?.category ?? activePackage]
+    ? (selectedPackage?.category ?? activePackage)
+    : "All Packages";
+  const heroKey = CATEGORY_KEYS[heroCategory];
+  const currentHero = {
+    image: heroImages[heroCategory],
+    tag: t(`hero.${heroKey}.tag`),
+    title: t(`hero.${heroKey}.title`),
+    subtitle: t(`hero.${heroKey}.subtitle`),
+    description: t(`hero.${heroKey}.description`),
+  };
 
   const navigate = (href: string) => {
     router.push(href, { scroll: false });
@@ -177,7 +151,7 @@ function TourPageContent() {
             href="#package-section"
             className="inline-flex items-center gap-2 bg-[#B28236] hover:bg-[#966B2A] text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors shadow-md"
           >
-            <span>EXPLORE PACKAGES</span>
+            <span>{t("explore")}</span>
             <span>→</span>
           </a>
         </div>
@@ -201,7 +175,7 @@ function TourPageContent() {
                 <div className={isActive ? "text-emerald-400" : "text-emerald-800"}>
                   {pkg.icon && <pkg.icon className="text-sm" />}
                 </div>
-                <span>{pkg.name}</span>
+                <span>{categoryName(pkg.name)}</span>
               </button>
             );
           })}
@@ -211,9 +185,9 @@ function TourPageContent() {
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800 flex items-center justify-between gap-4">
-            <span>Could not load the packages: {error}</span>
+            <span>{t("error", { error })}</span>
             <button onClick={loadPublished} className="font-semibold underline cursor-pointer">
-              Try again
+              {t("tryAgain")}
             </button>
           </div>
         </div>
@@ -221,7 +195,7 @@ function TourPageContent() {
 
       {loading && packages.length === 0 ? (
         <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center text-sm text-neutral-500">
-          Loading packages…
+          {t("loading")}
         </p>
       ) : selectedPackage ? (
         <TourDetail
@@ -233,7 +207,7 @@ function TourPageContent() {
         <GroupVsTailorMade />
       ) : (
         <AllPackages
-          title={activePackage === "All Packages" ? undefined : `${activePackage} Packages`}
+          title={activePackage === "All Packages" ? undefined : t("categoryPackages", { category: categoryName(activePackage) })}
           packages={
             activePackage === "All Packages"
               ? packages

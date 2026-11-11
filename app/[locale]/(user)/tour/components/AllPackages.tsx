@@ -16,7 +16,7 @@ import {
   Star,
   CheckCircle2,
 } from "lucide-react";
-import { daysLabel } from "@/lib/helpers";
+import { useTranslations } from "next-intl";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
 
@@ -26,7 +26,9 @@ interface AllPackagesProps {
   onSelectPackage: (id: string) => void;
 }
 
-export default function AllPackages({ title = "Our Safari Packages", packages, onSelectPackage }: AllPackagesProps) {
+export default function AllPackages({ title, packages, onSelectPackage }: AllPackagesProps) {
+  const t = useTranslations("Packages");
+  const tc = useTranslations("Common");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -74,10 +76,10 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
           {/* Header Title & Subtitle */}
           <div className="space-y-1 mb-6">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#11241A]">
-              {title}
+              {title ?? t("title")}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600">
-              {packages.length} {packages.length === 1 ? "package" : "packages"} · Choose from our handpicked tours or get a custom itinerary tailored to your dreams.
+              {t("count", { count: packages.length })}
             </p>
           </div>
 
@@ -85,7 +87,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
           <div className="space-y-5">
             {packages.length === 0 && (
               <p className="text-sm text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-2xl p-6 text-center">
-                No packages in this category yet.
+                {t("none")}
               </p>
             )}
             {packages.map((pkg) => (
@@ -137,7 +139,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                   <div className="flex items-center gap-4 pt-3 border-t border-neutral-100 text-[11px] sm:text-xs text-neutral-500 font-medium flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-[#B28236]" />
-                      <span>{daysLabel(pkg)}</span>
+                      <span>{tc("days", { count: pkg.itinerary.length })}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <PawPrint className="w-3.5 h-3.5 text-[#B28236]" />
@@ -157,7 +159,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                     onClick={() => onSelectPackage(pkg.id)}
                     className="w-full sm:w-auto bg-[#B28236] hover:bg-[#966B2A] text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                   >
-                    <span>View Details</span>
+                    <span>{t("viewDetails")}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -176,10 +178,10 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
               </div>
               <div>
                 <h3 className="text-xl font-serif font-bold text-white">
-                  Plan Your Safari
+                  {t("planTitle")}
                 </h3>
                 <p className="text-xs text-neutral-300 mt-0.5">
-                  Get a personalized quote and start your journey today.
+                  {t("planText")}
                 </p>
               </div>
             </div>
@@ -187,19 +189,19 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
             {formSubmitted ? (
               <div className="bg-emerald-900/60 border border-emerald-500/40 rounded-xl p-4 text-center text-xs text-emerald-200 space-y-1">
                 <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
-                <p className="font-semibold text-white">Enquiry Received!</p>
-                <p>Our safari experts will contact you shortly.</p>
+                <p className="font-semibold text-white">{t("received")}</p>
+                <p>{t("thanks")}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3.5">
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
-                    Full Name *
+                    {t("fullName")}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Your full name"
+                    placeholder={t("fullNamePlaceholder")}
                     value={formData.fullName}
                     onChange={(e) =>
                       setFormData({ ...formData, fullName: e.target.value })
@@ -210,7 +212,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
-                    Email *
+                    {t("email")}
                   </label>
                   <input
                     type="email"
@@ -226,7 +228,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
-                    Preferred Date
+                    {t("date")}
                   </label>
                   <input
                     type="date"
@@ -240,7 +242,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
-                    Number of Guests *
+                    {t("guests")}
                   </label>
                   <select
                     value={formData.guests}
@@ -249,16 +251,16 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                     }
                     className="w-full bg-white text-neutral-900 border border-neutral-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#B28236]"
                   >
-                    <option value="1 Guest">1 Guest</option>
-                    <option value="2 Guests">2 Guests</option>
-                    <option value="3-5 Guests">3 - 5 Guests</option>
-                    <option value="6+ Guests">6+ Guests (Group)</option>
+                    <option value="1 Guest">{t("guestOptions.one")}</option>
+                    <option value="2 Guests">{t("guestOptions.two")}</option>
+                    <option value="3-5 Guests">{t("guestOptions.few")}</option>
+                    <option value="6+ Guests">{t("guestOptions.group")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
-                    Preferred Trip Style *
+                    {t("style")}
                   </label>
                   <select
                     value={formData.tripStyle}
@@ -267,12 +269,12 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                     }
                     className="w-full bg-white text-neutral-900 border border-neutral-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#B28236]"
                   >
-                    <option value="">Select trip style</option>
-                    <option value="Gorilla Trekking">Gorilla Trekking</option>
-                    <option value="Wildlife Safari">Wildlife Safari</option>
-                    <option value="Luxury Escape">Luxury Escape</option>
-                    <option value="Cultural Tour">Cultural Tour</option>
-                    <option value="Tailor-Made Custom">Tailor-Made Custom</option>
+                    <option value="">{t("selectStyle")}</option>
+                    <option value="Gorilla Trekking">{t("styles.gorilla")}</option>
+                    <option value="Wildlife Safari">{t("styles.wildlife")}</option>
+                    <option value="Luxury Escape">{t("styles.luxury")}</option>
+                    <option value="Cultural Tour">{t("styles.cultural")}</option>
+                    <option value="Tailor-Made Custom">{t("styles.custom")}</option>
                   </select>
                 </div>
 
@@ -283,7 +285,7 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
                   disabled={sending}
                   className="w-full bg-gradient-to-r from-[#C29B47] to-[#A0782A] hover:from-[#A0782A] hover:to-[#835E1C] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
                 >
-                  <span>{sending ? "SENDING…" : "SEND ENQUIRY"}</span>
+                  <span>{sending ? t("sending") : t("send")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
@@ -296,25 +298,25 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
               <div className="p-4 flex flex-col items-center justify-center space-y-1.5">
                 <UserCheck className="w-5 h-5 text-[#B28236]" />
                 <span className="text-[11px] font-semibold leading-tight text-neutral-200">
-                  Professional Safari Guides
+                  {t("perks.guides")}
                 </span>
               </div>
               <div className="p-4 flex flex-col items-center justify-center space-y-1.5">
                 <ShieldCheck className="w-5 h-5 text-[#B28236]" />
                 <span className="text-[11px] font-semibold leading-tight text-neutral-200">
-                  Safe & Reliable Travel
+                  {t("perks.safe")}
                 </span>
               </div>
               <div className="p-4 flex flex-col items-center justify-center space-y-1.5">
                 <Tag className="w-5 h-5 text-[#B28236]" />
                 <span className="text-[11px] font-semibold leading-tight text-neutral-200">
-                  Best Price Guarantee
+                  {t("perks.price")}
                 </span>
               </div>
               <div className="p-4 flex flex-col items-center justify-center space-y-1.5">
                 <Headphones className="w-5 h-5 text-[#B28236]" />
                 <span className="text-[11px] font-semibold leading-tight text-neutral-200">
-                  24/7 Support
+                  {t("perks.support")}
                 </span>
               </div>
             </div>
@@ -324,23 +326,23 @@ export default function AllPackages({ title = "Our Safari Packages", packages, o
           <div className="relative rounded-2xl overflow-hidden h-56 shadow-md flex items-end p-6 text-white bg-neutral-900">
             <Image
               src="https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=800&auto=format&fit=crop&q=80"
-              alt="Male Lion"
+              alt={t("lionAlt")}
               fill
               className="object-cover filter brightness-[0.7]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
             <div className="relative z-10 space-y-2">
               <span className="text-[10px] font-bold tracking-widest uppercase text-amber-300 block">
-                NATURE | WILDLIFE | CULTURE
+                {t("tags")}
               </span>
               <h4 className="text-xl font-serif font-bold text-white leading-tight">
-                Your Dream Safari Awaits
+                {t("dream")}
               </h4>
               <Link
                 href="/destination"
                 className="w-fit bg-[#B28236] hover:bg-[#966B2A] text-white text-[11px] font-bold tracking-wider uppercase px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <span>EXPLORE DESTINATIONS</span>
+                <span>{t("exploreDestinations")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

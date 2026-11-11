@@ -1,7 +1,8 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import shemaCEO from "@/public/aboutus/shema.jpeg"
 import Image from "next/image"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import { ArrowUpRight } from "lucide-react"
 
 interface ExperienceItem {
@@ -13,30 +14,28 @@ interface ExperienceItem {
 }
 
 export default function Experience() {
+  const t = useTranslations("Home.experience");
   const experiences: ExperienceItem[] = [
     {
       id: "gorilla",
-      title: "Gorilla & Primate Trekking",
-      description:
-        "Face-to-face encounters with mountain gorillas in Volcanoes National Park and chimpanzees in Nyungwe.",
+      title: t("gorilla.title"),
+      description: t("gorilla.description"),
       href: "/booking?destination=Gorilla Trekking",
       image:
         "https://i.pinimg.com/736x/a8/51/a1/a851a155910cf89acc36f7598a83ee84.jpg",
     },
     {
       id: "savannah",
-      title: "Savannah & Big Five",
-      description:
-        "Private game drives and boat safaris among lions, elephants and rhinos in Akagera National Park.",
+      title: t("savannah.title"),
+      description: t("savannah.description"),
       href: "/booking?destination=Wildlife Safari",
       image:
         "https://i.pinimg.com/736x/f5/b0/19/f5b019021de4fdaaa46fc56b4fde7c4f.jpg",
     },
     {
       id: "lodges",
-      title: "Ultra-Luxury Lodges",
-      description:
-        "Hand-picked eco-lodges, lakeside resorts and boutique hotels across Rwanda.",
+      title: t("lodges.title"),
+      description: t("lodges.description"),
       href: "/booking?destination=Luxury Retreats",
       image:
         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
@@ -49,7 +48,7 @@ export default function Experience() {
         {/* Section Heading */}
         <div className="text-center mb-14">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase text-[#d4b47c]">
-            The Acacia Experience
+            {t("heading")}
           </h2>
         </div>
 
@@ -80,7 +79,7 @@ export default function Experience() {
                   {exp.description}
                 </p>
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-[#c5a86d]">
-                  Explore
+                  {t("explore")}
                   <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </span>
               </div>
@@ -94,14 +93,12 @@ export default function Experience() {
             {/* Quote & Author Info */}
             <div className="space-y-3 text-center sm:text-left">
               <p className="italic text-xs sm:text-[13px] leading-relaxed text-[#2a362f] max-w-lg">
-                &ldquo;Every journey we craft is an intimate story of adventure,
-                conservation, and luxury. We don&apos;t just show you East Africa—we
-                invite you to experience its soul.&rdquo;
+                &ldquo;{t("quote")}&rdquo;
               </p>
               <div className="text-[11px] sm:text-xs tracking-wider uppercase font-semibold text-[#18231c]">
                 Shema Alain,{" "}
                 <span className="text-[#8c7447] font-medium">
-                  CEO of ACACIA SAFARIS
+                  {t("ceoRole")}
                 </span>
               </div>
             </div>
@@ -110,7 +107,7 @@ export default function Experience() {
             <div className="shrink-0">
               <Image
                 src={shemaCEO}
-                alt="Shema Alain - CEO"
+                alt={t("ceoAlt")}
                 className="w-16 h-16 sm:w-18 sm:h-18 rounded-lg object-cover shadow-md border border-black/10"
               />
             </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -17,6 +18,12 @@ import { useDestinationsStore } from "@/store/destinationsStore";
 const groups = ["All", ...destinationGroups];
 
 export default function DestinationPage() {
+  const t = useTranslations("Destinations");
+  const tg = useTranslations("Groups2"); // category names (Wildlife, Nature…)
+  const tn = useTranslations("Nav");
+  const tf = useTranslations("Footer");
+  // A category an admin made up has no translation: shown as typed
+  const groupName = (g: string) => (tg.has(g as never) ? tg(g as never) : g);
   const [slide, setSlide] = useState(0);
   const [activeGroup, setActiveGroup] = useState("All");
 
@@ -74,10 +81,10 @@ export default function DestinationPage() {
         <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col">
           {/* Title */}
           <div className="flex-1 flex flex-col items-center justify-center text-center pt-20">
-            <nav className="flex items-center gap-1.5 text-xs text-zinc-300 mb-6" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <nav className="flex items-center gap-1.5 text-xs text-zinc-300 mb-6" aria-label={t("breadcrumb")}>
+              <Link href="/" className="hover:text-white transition-colors">{tn("home")}</Link>
               <ChevronRight size={12} />
-              <span className="text-[#c5a86d]">Destinations</span>
+              <span className="text-[#c5a86d]">{t("title")}</span>
             </nav>
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
@@ -85,7 +92,7 @@ export default function DestinationPage() {
               transition={{ duration: 0.8 }}
               className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-serif uppercase tracking-[0.08em] leading-none"
             >
-              Destinations
+              {t("title")}
             </motion.h1>
             <AnimatePresence mode="wait">
               {current && (
@@ -98,7 +105,7 @@ export default function DestinationPage() {
                 className="mt-6 inline-flex items-center gap-2 text-sm md:text-base text-zinc-200"
               >
                 <MapPin size={16} className="text-[#c5a86d]" />
-                Now showing: <span className="text-white font-medium">{current.name}</span>
+                {t.rich("nowShowing", { name: () => <span className="text-white font-medium">{current.name}</span> })}
               </motion.p>
               )}
             </AnimatePresence>
@@ -140,7 +147,7 @@ export default function DestinationPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
-              Where to <span className="text-[#c5a86d]">go</span>
+              {t("where1")} <span className="text-[#c5a86d]">{t("where2")}</span>
             </h2>
             <div className="flex flex-wrap gap-2">
               {groups.map((g) => {
@@ -156,7 +163,7 @@ export default function DestinationPage() {
                         : "border-[#0a120b]/10 text-[#0a120b]/60 hover:border-[#c5a86d] hover:text-[#0a120b]"
                     }`}
                   >
-                    {g}
+                    {groupName(g)}
                   </button>
                 );
               })}
@@ -165,11 +172,11 @@ export default function DestinationPage() {
 
           {error && (
             <p className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              Could not load destinations: {error}
+              {t("error", { error })}
             </p>
           )}
           {loading && destinations.length === 0 && (
-            <p className="py-12 text-center text-sm text-[#0a120b]/50">Loading destinations…</p>
+            <p className="py-12 text-center text-sm text-[#0a120b]/50">{t("loading")}</p>
           )}
 
           <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -195,7 +202,7 @@ export default function DestinationPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-widest text-[#12231a]">
                       {React.createElement(groupIcon(d.group), { size: 12, className: "text-[#1F5A42]" })}
-                      {d.group}
+                      {groupName(d.group)}
                     </span>
                   </div>
 
@@ -220,13 +227,13 @@ export default function DestinationPage() {
                     <div className="grid grid-cols-2 gap-3 mb-5 text-xs">
                       <div>
                         <p className="flex items-center gap-1.5 text-[#0a120b]/45 mb-0.5">
-                          <CalendarDays size={13} /> Best time
+                          <CalendarDays size={13} /> {t("bestTime")}
                         </p>
                         <p className="font-medium text-[#0a120b]/80">{d.bestTime}</p>
                       </div>
                       <div>
                         <p className="flex items-center gap-1.5 text-[#0a120b]/45 mb-0.5">
-                          <Clock size={13} /> From Kigali
+                          <Clock size={13} /> {t("fromKigali")}
                         </p>
                         <p className="font-medium text-[#0a120b]/80">{d.fromKigali}</p>
                       </div>
@@ -237,14 +244,14 @@ export default function DestinationPage() {
                         href={`/booking?destination=${d.id}`}
                         className="group/btn flex-1 inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-5 py-2.5 rounded-sm transition-all"
                       >
-                        Book Now
+                        {t("bookNow")}
                         <ArrowRight size={15} className="group-hover/btn:translate-x-1 transition-transform" />
                       </Link>
                       <Link
                         href="/contact"
                         className="inline-flex items-center justify-center border border-[#0a120b]/15 hover:border-[#0a120b] text-sm px-5 py-2.5 rounded-sm transition-all"
                       >
-                        Enquire
+                        {t("enquire")}
                       </Link>
                     </div>
                   </div>
@@ -259,21 +266,21 @@ export default function DestinationPage() {
       <section className="px-6 pb-20">
         <div className="max-w-7xl mx-auto rounded-2xl bg-[#12231a] text-white px-8 py-10 md:px-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide">
-            Can&apos;t decide? <span className="text-[#c5a86d]">We&apos;ll help.</span>
+            {t("decide1")} <span className="text-[#c5a86d]">{t("decide2")}</span>
           </h2>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/tour"
               className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all"
             >
-              Tour Packages
+              {tn("tours")}
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/contact"
               className="border border-white/40 hover:border-white text-white text-sm px-7 py-3 rounded-sm transition-all"
             >
-              Contact Us
+              {tf("contactUs")}
             </Link>
           </div>
         </div>

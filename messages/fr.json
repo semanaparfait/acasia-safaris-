@@ -172,5 +172,609 @@
     "fromTeam": "{name} · Acacia Safaris",
     "yourOfferLabel": "Votre offre",
     "ourOfferLabel": "Notre offre"
+  },
+  "Home": {
+    "hero": {
+      "brand": "Acacia Safaris",
+      "title1": "Vivez",
+      "title2": "la nature sauvage",
+      "subtitle": "Des safaris inoubliables au cœur du Rwanda.",
+      "book": "Réserver mon voyage",
+      "explore": "Découvrir les destinations",
+      "pause": "Mettre la vidéo en pause",
+      "play": "Lire la vidéo",
+      "mute": "Couper le son",
+      "unmute": "Activer le son",
+      "scroll": "Défiler",
+      "scrollDown": "Faire défiler vers le bas"
+    },
+    "trust": {
+      "rdb": {
+        "title": "Agréé par le RDB",
+        "text": "Opérateur rwandais enregistré"
+      },
+      "local": {
+        "title": "Experts locaux",
+        "text": "Guides et conseillers rwandais"
+      },
+      "reply": {
+        "title": "Réponse sous 24 h",
+        "text": "Des réponses rapides et personnelles"
+      },
+      "pay": {
+        "title": "Demande sans paiement",
+        "text": "Planifiez d'abord, payez ensuite"
+      }
+    },
+    "experience": {
+      "heading": "L'expérience Acacia",
+      "gorilla": {
+        "title": "Gorilles et primates",
+        "description": "Des rencontres face à face avec les gorilles de montagne au parc national des Volcans et les chimpanzés de Nyungwe."
+      },
+      "savannah": {
+        "title": "Savane et Big Five",
+        "description": "Safaris privés en 4x4 et en bateau parmi les lions, éléphants et rhinocéros du parc national de l'Akagera."
+      },
+      "lodges": {
+        "title": "Lodges d'exception",
+        "description": "Écolodges, resorts au bord du lac et hôtels de charme sélectionnés à travers le Rwanda."
+      },
+      "explore": "Découvrir",
+      "quote": "Chaque voyage que nous créons est une histoire intime d'aventure, de conservation et de luxe. Nous ne vous montrons pas seulement l'Afrique de l'Est, nous vous invitons à en vivre l'âme.",
+      "ceoRole": "PDG d'ACACIA SAFARIS",
+      "ceoAlt": "Shema Alain, PDG"
+    },
+    "popular": {
+      "eyebrow": "Circuits populaires",
+      "title1": "Des aventures",
+      "title2": "clé en main",
+      "viewAll": "Voir tous les circuits",
+      "viewDetails": "Voir le détail",
+      "book": "Réserver"
+    },
+    "about": {
+      "eyebrow": "À propos d'Acacia",
+      "title1": "Une référence",
+      "title2": "du safari",
+      "text": "Acacia Safaris Ltd crée des voyages immersifs qui vous relient à la beauté brute et préservée de la nature africaine.",
+      "features": {
+        "expeditions": "Expéditions privées avec experts",
+        "lodging": "Hébergements de luxe en pleine nature",
+        "culture": "Rencontres culturelles authentiques",
+        "conservation": "Voyages engagés pour la conservation"
+      },
+      "stats": {
+        "visitors": "Visiteurs par an",
+        "satisfaction": "Taux de satisfaction",
+        "awards": "Prix du secteur"
+      },
+      "learnMore": "En savoir plus sur nous",
+      "foundersAlt": "Les fondateurs d'Acacia Safaris à côté de leur véhicule de safari",
+      "meetFounders": "Nos fondateurs",
+      "guideLakeAlt": "Guide Acacia en safari au bord du lac",
+      "guideLodgeAlt": "Guide Acacia dans un lodge de safari"
+    },
+    "why": {
+      "secure": {
+        "title": "Sûr et certifié",
+        "desc": "Agréé par le RDB, avec une assurance voyageur pour une totale tranquillité d'esprit."
+      },
+      "guides": {
+        "title": "Guides locaux experts",
+        "desc": "Des professionnels qui connaissent chaque sentier, chaque parc et chaque histoire du Rwanda."
+      },
+      "tailor": {
+        "title": "Voyages sur mesure",
+        "desc": "Chaque voyage est construit autour de vos dates, de votre style et de votre budget."
+      },
+      "eco": {
+        "title": "Voyage responsable",
+        "desc": "Chaque réservation soutient la conservation et les communautés locales."
+      },
+      "walkAlt": "Voyageurs en randonnée guidée sur des collines verdoyantes",
+      "gorillasAlt": "Gorilles de montagne dans la forêt brumeuse des Virunga",
+      "badgeTop": "Agréé par le RDB",
+      "badgeBottom": "Opérateur local de confiance",
+      "eyebrow": "L'exigence Acacia",
+      "title1": "Pourquoi nos voyageurs",
+      "title2": "choisissent Acacia",
+      "text": "Nous croyons en des safaris aussi raffinés qu'authentiques. Notre exigence de qualité garantit un voyage sûr, authentique et parfaitement adapté.",
+      "cta": "Planifier mon voyage"
+    },
+    "good": {
+      "eyebrow": "Bon à savoir",
+      "title1": "Le Rwanda",
+      "title2": "en toute simplicité",
+      "text": "Les réponses aux questions que les voyageurs nous posent le plus avant de réserver.",
+      "ask": "Posez-nous vos questions",
+      "visa": {
+        "title": "Visa à l'arrivée",
+        "text": "Disponible pour toutes les nationalités, ou en ligne avant le départ."
+      },
+      "season": {
+        "title": "Meilleure période",
+        "text": "Saisons sèches : de juin à septembre et de décembre à février."
+      },
+      "travel": {
+        "title": "Facile à parcourir",
+        "text": "Les gorilles sont à environ 2 h 30 de route de Kigali."
+      },
+      "safe": {
+        "title": "Sûr et accueillant",
+        "text": "L'un des pays les plus sûrs et les plus propres d'Afrique."
+      }
+    },
+    "gallery": {
+      "eyebrow": "Galerie",
+      "title1": "Instants",
+      "title2": "sauvages",
+      "viewAll": "Voir toute la galerie",
+      "open": "{alt}, ouvrir la galerie",
+      "photos": {
+        "gorillas": "Gorilles dans la forêt brumeuse des Virunga",
+        "monkey": "Singe doré",
+        "elephant": "Éléphant dans l'Akagera",
+        "canopy": "Passerelle de la canopée de Nyungwe",
+        "kivu": "Pêcheurs au coucher du soleil sur le lac Kivu"
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Témoignages",
+      "title1": "Ce que disent",
+      "title2": "nos voyageurs"
+    }
+  },
+  "Groups2": {
+    "All": "Tout",
+    "Wildlife": "Faune",
+    "Nature": "Nature",
+    "Culture": "Culture",
+    "Adventure": "Aventure",
+    "Luxury": "Luxe"
+  },
+  "Destinations": {
+    "breadcrumb": "Fil d'Ariane",
+    "title": "Destinations",
+    "nowShowing": "À l'affiche : <name></name>",
+    "where1": "Où",
+    "where2": "aller",
+    "error": "Impossible de charger les destinations : {error}",
+    "loading": "Chargement des destinations…",
+    "bestTime": "Meilleure période",
+    "fromKigali": "Depuis Kigali",
+    "bookNow": "Réserver",
+    "enquire": "Se renseigner",
+    "decide1": "Vous hésitez ?",
+    "decide2": "Nous vous aidons."
+  },
+  "Tours": {
+    "categories": {
+      "all": "Tous les circuits",
+      "gorilla": "Gorilles",
+      "wildlife": "Safari faune",
+      "luxury": "Escapades de luxe",
+      "cultural": "Circuits culturels",
+      "group": "Groupe ou sur mesure"
+    },
+    "hero": {
+      "all": {
+        "tag": "VOYAGES D'EXCEPTION",
+        "title": "Nos circuits safari",
+        "subtitle": "Faune, culture, aventure et luxe",
+        "description": "Des vastes savanes aux trésors cachés de l'Afrique de l'Est, nos circuits safari vous offrent des expériences inoubliables au cœur de la nature."
+      },
+      "gorilla": {
+        "tag": "RENCONTRES AVEC LES PRIMATES",
+        "title": "Safaris gorilles",
+        "subtitle": "Face à face avec les gorilles de montagne dans la brume",
+        "description": "Partez pour une randonnée inoubliable dans les anciennes forêts de bambous des Volcans et de Bwindi, à quelques pas des gorilles de montagne menacés, dans leur sanctuaire sauvage."
+      },
+      "wildlife": {
+        "tag": "SAVANE ET BIG FIVE",
+        "title": "Safaris faune classiques",
+        "subtitle": "La Grande Migration et les grands prédateurs",
+        "description": "Parcourez le Serengeti, le Masai Mara et le cratère du Ngorongoro. Safaris privés en 4x4, traversées de rivières et nature préservée."
+      },
+      "luxury": {
+        "tag": "SANCTUAIRES EXCLUSIFS",
+        "title": "Escapades safari de luxe",
+        "subtitle": "Lodges d'exception et luxe sur mesure en pleine nature",
+        "description": "Piscines privées chauffées, majordome dédié, transferts en hélicoptère et dîners sous les étoiles dans les plus beaux lodges de luxe d'Afrique de l'Est."
+      },
+      "cultural": {
+        "tag": "PATRIMOINE ET COMMUNAUTÉS",
+        "title": "Expériences culturelles",
+        "subtitle": "À la rencontre de traditions vivantes et des communautés locales",
+        "description": "Danses royales des guerriers Intore, ateliers d'artisanat, initiation au café et échanges culturels authentiques avec les communautés d'Afrique de l'Est."
+      },
+      "group": {
+        "tag": "EXPÉDITIONS EN GROUPE OU SUR MESURE",
+        "title": "Petit groupe ou sur mesure",
+        "subtitle": "Votre voyage, exactement comme vous le souhaitez",
+        "description": "Choisissez entre des départs conviviaux en petit groupe à dates fixes, ou un safari privé 100 % sur mesure avec votre propre véhicule et votre guide."
+      }
+    },
+    "explore": "DÉCOUVRIR LES CIRCUITS",
+    "error": "Impossible de charger les circuits : {error}",
+    "tryAgain": "Réessayer",
+    "loading": "Chargement des circuits…",
+    "categoryPackages": "Circuits : {category}"
+  },
+  "Packages": {
+    "title": "Nos circuits safari",
+    "count": "{count, plural, one {# circuit} other {# circuits}} · Choisissez parmi nos circuits sélectionnés ou demandez un itinéraire sur mesure.",
+    "none": "Aucun circuit dans cette catégorie pour l'instant.",
+    "viewDetails": "Voir le détail",
+    "planTitle": "Planifiez votre safari",
+    "planText": "Recevez un devis personnalisé et commencez votre voyage dès aujourd'hui.",
+    "received": "Demande bien reçue !",
+    "thanks": "Nos experts safari vous contacteront très vite.",
+    "fullName": "Nom complet *",
+    "fullNamePlaceholder": "Votre nom complet",
+    "email": "E-mail *",
+    "date": "Date souhaitée",
+    "guests": "Nombre de voyageurs *",
+    "guestOptions": {
+      "one": "1 voyageur",
+      "two": "2 voyageurs",
+      "few": "3 à 5 voyageurs",
+      "group": "6+ voyageurs (groupe)"
+    },
+    "style": "Type de voyage souhaité *",
+    "selectStyle": "Choisir un type de voyage",
+    "styles": {
+      "gorilla": "Gorilles",
+      "wildlife": "Safari faune",
+      "luxury": "Escapade de luxe",
+      "cultural": "Circuit culturel",
+      "custom": "Sur mesure"
+    },
+    "sending": "ENVOI…",
+    "send": "ENVOYER MA DEMANDE",
+    "perks": {
+      "guides": "Guides safari professionnels",
+      "safe": "Voyages sûrs et fiables",
+      "price": "Meilleur prix garanti",
+      "support": "Assistance 24 h/24, 7 j/7"
+    },
+    "lionAlt": "Lion mâle",
+    "tags": "NATURE | FAUNE | CULTURE",
+    "dream": "Le safari de vos rêves vous attend",
+    "exploreDestinations": "DÉCOUVRIR LES DESTINATIONS"
+  },
+  "Detail": {
+    "back": "Retour aux circuits",
+    "day": "Jour",
+    "quoteTitle": "Devis complet de ce circuit",
+    "quoteText": "Prix adultes et enfants, tout ce qui est inclus ou non, et pourquoi c'est un bon rapport qualité-prix.",
+    "requestQuote": "Demander le devis",
+    "readyToGo": "Prêt à partir ?",
+    "bookTitle": "Réserver ce circuit",
+    "bookText": "Choisissez vos dates et vos voyageurs pour voir votre prix. Le prix ne vous convient pas ? Faites-nous une offre.",
+    "bookNow": "Réserver",
+    "inquireTitle": "Se renseigner sur cet itinéraire",
+    "inquireText": "Recevez un devis personnalisé et un itinéraire détaillé.",
+    "received": "Demande reçue ! Nous vous répondons sous 24 h.",
+    "name": "Nom *",
+    "namePlaceholder": "Votre nom complet",
+    "email": "E-mail *",
+    "dates": "Dates du voyage *",
+    "datesPlaceholder": "Choisir les dates",
+    "guests": "Voyageurs *",
+    "guestOptions": {
+      "2 Guests": "2 voyageurs",
+      "1 Guest": "1 voyageur",
+      "3-4 Guests": "3-4 voyageurs",
+      "5+ Guests": "5+ voyageurs"
+    },
+    "style": "Type de voyage souhaité *",
+    "styles": {
+      "Luxury Safari": "Safari de luxe",
+      "Mid-range Comfort": "Confort intermédiaire",
+      "Classic Adventure": "Aventure classique"
+    },
+    "sending": "Envoi…",
+    "request": "Demander un itinéraire",
+    "perks": "Petits plus inclus",
+    "route": "Itinéraire du circuit",
+    "inclusions": "Inclus",
+    "exclusions": "Non inclus"
+  },
+  "Quote": {
+    "whatsapp": "Bonjour Acacia Safaris ! Je souhaite recevoir le devis pour « {title} ».\n\nDevis : {url}",
+    "eyebrow": "Votre devis",
+    "intro": "Le document complet : prix adultes et enfants, ce qui est inclus et ce qui ne l'est pas. Comment souhaitez-vous le recevoir ?",
+    "download": {
+      "title": "Télécharger le PDF",
+      "text": "Enregistrez-le maintenant sur votre appareil"
+    },
+    "wa": {
+      "title": "Le recevoir sur WhatsApp",
+      "text": "Ouvre une discussion avec notre équipe et le lien"
+    },
+    "email": {
+      "title": "L'envoyer par e-mail",
+      "text": "Nous l'envoyons dans votre boîte de réception"
+    },
+    "allOptions": "Toutes les options",
+    "name": "Votre nom complet",
+    "emailLabel": "Votre e-mail",
+    "sending": "Envoi…",
+    "send": "Envoyer mon devis",
+    "sent": "Devis envoyé !",
+    "checkInbox": "Consultez votre boîte de réception <email></email>, ainsi que vos spams si vous ne le voyez pas.",
+    "book": "Réserver ce circuit",
+    "later": "Plus tard",
+    "free": "Gratuit et sans engagement"
+  },
+  "Compare": {
+    "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
+    "available": "Disponible",
+    "days": {
+      "1": {
+        "title": "Arrivée et briefing safari",
+        "desc": "Accueil VIP, attribution du véhicule et dîner de bienvenue."
+      },
+      "2": {
+        "title": "Safari vers la réserve nationale",
+        "desc": "Safaris du matin et de l'après-midi en Land Cruiser 4x4 aménagé."
+      },
+      "3": {
+        "title": "Journée sur la piste des grands félins",
+        "desc": "Pistage au lever du soleil des lions, guépards et léopards avec un guide expert."
+      },
+      "4": {
+        "title": "Bord du cratère et village culturel",
+        "desc": "Vues panoramiques depuis le cratère, puis spectacle de danse culturelle authentique."
+      },
+      "5": {
+        "title": "Primates ou croisière sur le lac",
+        "desc": "Randonnée guidée en forêt ou croisière panoramique sur le lac Ihema."
+      },
+      "6": {
+        "title": "Dîner en brousse au coucher du soleil",
+        "desc": "Safari en fin d'après-midi terminé par un dîner gastronomique en brousse."
+      },
+      "7": {
+        "title": "Marché artisanal et transfert à l'aéroport",
+        "desc": "Dernier café du matin, marché artisanal et dépôt à l'aéroport."
+      }
+    },
+    "title": "Safaris en groupe ou sur mesure",
+    "intro": "Que vous aimiez partager l'aventure avec d'autres voyageurs ou préfériez un itinéraire privé entièrement construit selon votre rythme et vos envies, trouvez la formule qui vous convient.",
+    "group": "SAFARIS EN GROUPE",
+    "vehicleAlt": "Land Cruiser 4x4 de safari",
+    "groupAlt": "Groupe de voyageurs en safari",
+    "highlights": "Points forts :",
+    "groupPoints": {
+      "cost": "Tarifs partagés avantageux",
+      "social": "Ambiance conviviale",
+      "fixed": "Itinéraires fixes planifiés",
+      "singles": "Idéal pour voyageurs seuls et couples",
+      "small": "Petits groupes (6 maximum par véhicule)"
+    },
+    "upcoming": "Prochains départs",
+    "season": "2026/2027",
+    "exploreGroup": "VOIR LES DÉPARTS EN GROUPE",
+    "tailor": "SAFARIS SUR MESURE",
+    "coupleAlt": "Couple en safari privé",
+    "guideAlt": "Guide privé avec des voyageurs",
+    "privileges": "Privilèges sur mesure :",
+    "tailorPoints": {
+      "custom": "Itinéraire 100 % personnalisable",
+      "flexible": "Dates de voyage flexibles",
+      "private": "Guide privé et véhicule 4x4",
+      "lodges": "Sélection de lodges exclusifs",
+      "families": "Parfait pour les familles et les voyages de noces",
+      "pace": "Rythme et régime alimentaire sur mesure"
+    },
+    "concierge": "Conciergerie privée",
+    "conciergeText": "Gardez la main sur vos heures de réveil, vos repas, le choix des lodges et des activités spéciales comme les vols en hélicoptère ou les safaris photo privés.",
+    "startPlanning": "COMMENCER MON ITINÉRAIRE SUR MESURE",
+    "matrix": "Comparatif détaillé",
+    "matrixText": "Une comparaison point par point pour choisir votre façon de voyager.",
+    "table": {
+      "feature": "Critère",
+      "groupCol": "Safaris en groupe (partagés)",
+      "tailorCol": "Safaris sur mesure (privés)",
+      "vehicle": {
+        "label": "Véhicule et guide",
+        "group": "Land Cruiser 4x4 partagé (6 voyageurs maximum)",
+        "tailor": "Véhicule 100 % privé et guide dédié"
+      },
+      "dates": {
+        "label": "Dates de départ",
+        "group": "Dates de départ fixes",
+        "tailor": "100 % flexible : départ n'importe quel jour de l'année"
+      },
+      "lodging": {
+        "label": "Hébergement",
+        "group": "Lodges de charme et écocamps présélectionnés",
+        "tailor": "Au choix : luxe, intermédiaire ou villas privées"
+      },
+      "pace": {
+        "label": "Rythme et programme",
+        "group": "Itinéraire structuré partagé avec le groupe",
+        "tailor": "100 % sur mesure : levez-vous et explorez à votre rythme"
+      },
+      "price": {
+        "label": "Prix et valeur",
+        "group": "Rapport qualité-prix maximal (véhicule et guide partagés)",
+        "tailor": "Prix sur mesure selon les lodges choisis"
+      }
+    },
+    "previewTag": "Aperçu d'un itinéraire de 7 jours",
+    "previewTitle": "À quoi ressemble une expédition de 7 jours",
+    "groupFormat": "Formule groupe",
+    "tailorFormat": "Formule sur mesure",
+    "setDeparture": "Départ en groupe à date fixe",
+    "privateGuide": "Guide privé dédié",
+    "quoteTag": "OBTENIR UN DEVIS SAFARI SUR MESURE",
+    "quoteTitle": "Prêt à planifier votre expédition en Afrique de l'Est ?",
+    "quoteText": "Dites-nous si vous souhaitez rejoindre un prochain départ en petit groupe ou créer un safari privé 100 % sur mesure. Notre équipe vous envoie votre itinéraire sous 24 heures.",
+    "submitted": "Demande envoyée avec succès !",
+    "submittedText": "Nos spécialistes du safari vous contacteront avec une proposition sur mesure.",
+    "name": "Nom complet *",
+    "namePlaceholder": "Votre nom complet",
+    "email": "E-mail *",
+    "option": "Formule *",
+    "options": {
+      "custom": "Safari privé sur mesure",
+      "group": "Départ en petit groupe",
+      "unsure": "Je ne sais pas encore, j'ai besoin de conseils"
+    },
+    "send": "ENVOYER MA DEMANDE",
+    "sending": "ENVOI…"
+  },
+  "About": {
+    "heroAlt": "Paysage volcanique d'Afrique de l'Est dans la brume",
+    "eyebrow": "À PROPOS",
+    "title1": "ANCRÉS EN AFRIQUE DE L'EST,",
+    "title2": "PORTÉS PAR LA CONSERVATION.",
+    "subtitle": "Nous créons des safaris de luxe exceptionnels tout en protégeant les espaces sauvages que nous appelons chez nous.",
+    "foundersAlt": "SHEMA Alain et ISHIMWE Yassel à côté du véhicule Acacia Safaris",
+    "ceo": "PDG et fondateur",
+    "md": "Directeur général et fondateur",
+    "storyTag": "NOTRE HISTOIRE",
+    "storyTitle1": "Notre histoire et",
+    "storyTitle2": "notre expertise locale",
+    "story1": "Fondée par <b>SHEMA Alain</b> et <b>ISHIMWE Yassel</b>, ACACIA SAFARIS est née d'une vision commune : faire découvrir aux voyageurs la beauté brute et préservée de l'Afrique de l'Est.",
+    "story2": "Rwandais de naissance, nous avons bâti notre entreprise sur une connaissance intime du terrain, pour que chaque voyage soit vécu, et pas seulement visité.",
+    "story3": "Notre bureau de Kigali et notre équipe sur le terrain gèrent eux-mêmes chaque détail logistique, avec une expertise et un accès locaux inégalés.",
+    "foundersTag": "NOS FONDATEURS",
+    "foundersTitle1": "Deux visionnaires.",
+    "foundersTitle2": "Une mission.",
+    "foundersText": "Passionnés par l'Afrique de l'Est et forts d'une solide expérience dans le tourisme, la conservation et le développement communautaire, SHEMA Alain et ISHIMWE Yassel dirigent ACACIA SAFARIS avec passion, intégrité et une vision durable à long terme.",
+    "quoteShema": "Le tourisme est plus qu'un voyage : c'est une force puissante pour la conservation, les communautés et un changement durable.",
+    "quoteYassel": "Notre objectif est de créer des expériences qui profitent aux habitants, à la faune et aux générations futures.",
+    "whyTag": "POURQUOI VOYAGER AVEC NOUS",
+    "whyTitle": "Plus qu'un voyage : un lien plus profond.",
+    "why": {
+      "local": {
+        "title": "Expertise locale",
+        "desc": "Une connaissance authentique et un accès privilégié à travers l'Afrique de l'Est."
+      },
+      "tailored": {
+        "title": "Voyages sur mesure",
+        "desc": "Des itinéraires adaptés à vos envies et à votre style."
+      },
+      "responsible": {
+        "title": "Voyage responsable",
+        "desc": "Au service de la conservation, des communautés et des économies locales."
+      },
+      "seamless": {
+        "title": "Service sans faille",
+        "desc": "De la préparation au retour, nous nous occupons de chaque détail avec soin."
+      },
+      "small": {
+        "title": "Petits groupes",
+        "desc": "Plus personnel, plus marquant."
+      },
+      "authentic": {
+        "title": "Rencontres authentiques",
+        "desc": "De vraies personnes, une vraie culture, la vraie Afrique de l'Est."
+      }
+    },
+    "journeyTag": "NOTRE PARCOURS",
+    "journeyTitle": "Grandir à travers l'Afrique de l'Est.",
+    "journeyText": "Du développement de nos activités au Rwanda aux voyages multi-destinations sans couture, notre parcours reste guidé par un tourisme responsable et des voyages qui ont du sens.",
+    "timeline": {
+      "expansion": {
+        "title": "Expansion stratégique",
+        "text": "Acacia Safaris a renforcé sa présence en Afrique de l'Est en développant des voyages spécialisés au Rwanda, axés sur l'écotourisme et l'observation des primates."
+      },
+      "crossBorder": {
+        "title": "Voyages transfrontaliers",
+        "text": "De nouveaux circuits de plusieurs jours relient l'Ouganda et le Rwanda, pour combiner facilement gorilles et safaris faune de la région."
+      },
+      "portfolio": {
+        "title": "Une offre rwandaise élargie",
+        "text": "Nos itinéraires au Rwanda couvrent désormais les parcs nationaux des Volcans, de Nyungwe et de l'Akagera : gorilles, singes dorés, chimpanzés, canopée et safaris Big Five."
+      },
+      "growth": {
+        "title": "Croissance et impact continus",
+        "text": "Aujourd'hui, Acacia Safaris propose des voyages sur mesure au Rwanda et en Afrique de l'Est, avec une attention croissante au tourisme durable, aux vacances en famille, à l'ornithologie et aux aventures multi-destinations."
+      }
+    },
+    "todayTag": "AUJOURD'HUI",
+    "todayTitle": "Voyager plus loin. Voyager de façon responsable.",
+    "todayText": "Nous continuons à créer des expériences authentiques qui relient les voyageurs à la faune, aux paysages, aux communautés et aux cultures d'Afrique de l'Est, pour un avenir plus durable des destinations que nous aimons.",
+    "ctaAlt": "Éléphants en Afrique de l'Est",
+    "ctaTitle": "Votre histoire en Afrique de l'Est commence ici",
+    "ctaText": "Laissez-nous créer un safari sur mesure, personnel, riche de sens et inoubliable.",
+    "ctaButton": "Demander un safari sur mesure"
+  },
+  "Team": {
+    "tag": "NOTRE ÉQUIPE",
+    "title": "L'équipe derrière ACACIA SAFARIS",
+    "hint": "Cliquez sur une personne pour découvrir son histoire et la contacter.",
+    "view": "Voir le profil",
+    "close": "Fermer",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "speaks": "Langues parlées",
+    "follow": "Suivre",
+    "onNetwork": "{name} sur {network}"
+  },
+  "Contact": {
+    "cards": {
+      "call": {
+        "label": "Appelez-nous",
+        "note": "Lun – sam, 8 h – 18 h (heure de Kigali)"
+      },
+      "email": {
+        "label": "Écrivez-nous",
+        "note": "Réponse sous 24 heures"
+      },
+      "whatsapp": {
+        "label": "WhatsApp",
+        "value": "Discuter avec un conseiller",
+        "note": "Le moyen le plus rapide de nous joindre"
+      },
+      "visit": {
+        "label": "Rendez-nous visite",
+        "value": "Kigali, Rwanda",
+        "note": "Sur rendez-vous"
+      }
+    },
+    "heroAlt": "Deux personnes se serrant la main",
+    "title1": "Contactez",
+    "title2": "notre équipe",
+    "intro": "Une question, un commentaire ou besoin d'aide pour une réservation ? Écrivez-nous, notre équipe vous répondra dans les meilleurs délais.",
+    "infoTag": "Nos coordonnées",
+    "infoTitle1": "Nous sommes là",
+    "infoTitle2": "pour vous aider",
+    "infoText": "Remplissez le formulaire et notre équipe vous répond sous 24 heures. Vous préférez parler ? Appelez-nous ou écrivez-nous directement.",
+    "location": "Kigali, Rwanda",
+    "social": "Réseau social",
+    "thanks": "Merci",
+    "thanksName": "Merci, {name}",
+    "received": "Votre message a bien été reçu. Notre équipe vous répondra sous 24 heures.",
+    "another": "Envoyer un autre message",
+    "formTag": "Envoyer un message",
+    "formTitle": "Écrivez-nous",
+    "name": "Nom complet *",
+    "email": "Adresse e-mail *",
+    "phone": "Téléphone / WhatsApp",
+    "subject": "Objet",
+    "selectSubject": "Choisir un objet",
+    "subjects": {
+      "general": "Question générale",
+      "booking": "Réservation existante",
+      "partnership": "Partenariat",
+      "feedback": "Avis",
+      "other": "Autre"
+    },
+    "message": "Votre message *",
+    "messagePlaceholder": "Comment pouvons-nous vous aider ?",
+    "privacy": "Nous respectons votre vie privée. Vos coordonnées servent uniquement à vous répondre.",
+    "sending": "Envoi…",
+    "send": "Envoyer le message",
+    "findUs": "Nous trouver",
+    "office": "Notre bureau à Kigali",
+    "mapTitle": "Emplacement du bureau Acacia Safaris",
+    "officeText": "Kigali, Rwanda. Visites sur rendez-vous. Appelez-nous avant de passer.",
+    "directions": "Itinéraire"
   }
 }

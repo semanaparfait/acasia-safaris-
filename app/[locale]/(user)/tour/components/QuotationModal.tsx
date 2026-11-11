@@ -19,6 +19,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 import type { TourPackage } from "@/lib/types";
 import { usePackagesStore } from "@/store/packagesStore";
+import { useTranslations } from "next-intl";
 
 const WHATSAPP_NUMBER = "250798635578";
 
@@ -79,6 +80,8 @@ export default function QuotationModal({
   onRequested: () => void; // the visitor chose how to get the quotation
   onBook: () => void; // opens "Book this package"
 }) {
+  const t = useTranslations("Quote");
+  const tc = useTranslations("Common");
   const emailQuotation = usePackagesStore((s) => s.emailQuotation);
   const [view, setView] = useState<"options" | "email" | "sent">("options");
   const [form, setForm] = useState({ name: "", email: "" });
@@ -109,7 +112,7 @@ export default function QuotationModal({
 
   const fileName = `${tour.title} - Quotation.pdf`;
   const downloadHref = `${tour.quotation}?download=${encodeURIComponent(fileName)}`;
-  const whatsappText = `Hello Acacia Safaris! I would like the quotation for "${tour.title}".\n\nQuotation: ${tour.quotation}`;
+  const whatsappText = t("whatsapp", { title: tour.title, url: tour.quotation });
   const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappText)}`;
 
   const received = () => {
@@ -164,7 +167,7 @@ export default function QuotationModal({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={tc("close")}
                 className="absolute z-10 top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X size={16} />
@@ -174,7 +177,7 @@ export default function QuotationModal({
                   <FileText size={21} />
                 </span>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-1.5">
-                  Your quotation
+                  {t("eyebrow")}
                 </p>
                 <h2 id="quotation-title" className="font-serif text-xl leading-snug pr-6">
                   {tour.title}
@@ -186,30 +189,30 @@ export default function QuotationModal({
               {view === "options" && (
                 <>
                   <p className="text-sm text-[#0a120b]/60 leading-relaxed mb-4">
-                    The full document: prices for adults and children, what is included and what is not. How would you like to receive it?
+                    {t("intro")}
                   </p>
                   <div className="space-y-2.5">
                     <Option
                       icon={<Download size={20} />}
                       iconClass="bg-[#12231a] text-[#c5a86d]"
-                      title="Download PDF"
-                      text="Save it to your device now"
+                      title={t("download.title")}
+                      text={t("download.text")}
                       href={downloadHref}
                       onClick={received}
                     />
                     <Option
                       icon={<FaWhatsapp size={22} />}
                       iconClass="bg-[#25D366]/15 text-[#128C4B]"
-                      title="Get it on WhatsApp"
-                      text="Opens a chat with our team and the link"
+                      title={t("wa.title")}
+                      text={t("wa.text")}
                       href={whatsappHref}
                       onClick={received}
                     />
                     <Option
                       icon={<Mail size={20} />}
                       iconClass="bg-[#c5a86d]/20 text-[#94752f]"
-                      title="Send to my email"
-                      text="We will send it to your inbox"
+                      title={t("email.title")}
+                      text={t("email.text")}
                       onClick={() => setView("email")}
                     />
                   </div>
@@ -226,22 +229,22 @@ export default function QuotationModal({
                     }}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-[#0a120b]/50 hover:text-[#0a120b] cursor-pointer"
                   >
-                    <ArrowLeft size={14} /> All options
+                    <ArrowLeft size={14} /> {t("allOptions")}
                   </button>
                   <input
                     required
                     autoFocus
-                    aria-label="Your full name"
+                    aria-label={t("name")}
                     maxLength={100}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Your full name"
+                    placeholder={t("name")}
                     className={inputClass}
                   />
                   <input
                     required
                     type="email"
-                    aria-label="Your email"
+                    aria-label={t("emailLabel")}
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="you@example.com"
@@ -254,7 +257,7 @@ export default function QuotationModal({
                     className="group w-full inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-semibold text-sm px-6 py-3.5 rounded-lg shadow-md transition-all disabled:opacity-60 cursor-pointer"
                   >
                     {sending ? <Loader2 size={16} className="animate-spin" /> : null}
-                    {sending ? "Sending…" : "Send my quotation"}
+                    {sending ? t("sending") : t("send")}
                     {!sending && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
                   </button>
                 </form>
@@ -265,9 +268,9 @@ export default function QuotationModal({
                   <span className="w-14 h-14 rounded-full bg-[#1F5A42]/10 text-[#1F5A42] flex items-center justify-center mx-auto mb-3">
                     <CheckCircle2 size={28} />
                   </span>
-                  <p className="font-serif text-lg mb-1">Quotation sent!</p>
+                  <p className="font-serif text-lg mb-1">{t("sent")}</p>
                   <p className="text-sm text-[#0a120b]/55 mb-5">
-                    Check your inbox at <span className="font-medium text-[#0a120b]">{form.email}</span>, and your spam folder if you do not see it.
+                    {t.rich("checkInbox", { email: () => <span className="font-medium text-[#0a120b]">{form.email}</span> })}
                   </p>
                   <div className="flex flex-col sm:flex-row justify-center gap-2.5">
                     <button
@@ -275,21 +278,21 @@ export default function QuotationModal({
                       onClick={onBook}
                       className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-semibold text-sm px-6 py-2.5 rounded-lg shadow-md transition-all cursor-pointer"
                     >
-                      Book this package <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                      {t("book")} <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                     <button
                       type="button"
                       onClick={onClose}
                       className="text-sm font-medium border border-[#0a120b]/15 hover:border-[#0a120b] px-6 py-2.5 rounded-lg transition-all cursor-pointer"
                     >
-                      Later
+                      {t("later")}
                     </button>
                   </div>
                 </div>
               )}
 
               <p className="flex items-center justify-center gap-1.5 text-[11px] text-[#0a120b]/40 mt-5">
-                <ShieldCheck size={13} /> Free, with no obligation to book
+                <ShieldCheck size={13} /> {t("free")}
               </p>
             </div>
           </motion.div>
