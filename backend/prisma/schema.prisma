@@ -174,9 +174,15 @@ model Booking {
 
   // Ticket: made when the booking is confirmed. Its QR code is in the confirmation email
   // and on the booking page; the team scans it in Admin > Check-in on the day.
-  ticketCode  String?          @unique // e.g. "AC7K2M9QXP"
+  ticketCode  String?   @unique // e.g. "AC7K2M9QXP"
   checkedInAt DateTime? // when the QR code was scanned
-  messages    BookingMessage[]
+
+  // Automatic emails (backend/src/reminders): when each was sent, so it is sent only once
+  tripReminderAt    DateTime? // 7 days before the trip, with the QR code
+  balanceReminderAt DateTime? // the remaining 50% (sent again a week later while still unpaid)
+  reviewRequestAt   DateTime? // after the trip: "How was it?"
+  reviewedAt        DateTime? // the traveler left a review from their booking page
+  messages          BookingMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

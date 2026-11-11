@@ -24,6 +24,7 @@ import { ratesOf } from '../packages/quotation.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import {
+  TripReviewDto,
   BookingDestinationDto,
   BookingMessageDto,
   CreateBookingDto,
@@ -61,6 +62,7 @@ const publicSelect = {
   createdAt: true,
   ticketCode: true, // only once confirmed: shown as a QR code on the booking page
   checkedInAt: true,
+  reviewedAt: true, // after the trip: the review form is shown until it is sent
   package: {
     select: {
       id: true,
@@ -108,6 +110,15 @@ const newTicketCode = () =>
 
 // What the QR code holds. The scanner in Admin > Check-in reads it (or the bare code).
 export const ticketQrText = (code: string) => `ACACIA:${code}`;
+
+// The ticket QR code image (PNG), for emails and the booking page
+export const ticketQrPng = (code: string) =>
+  toBuffer(ticketQrText(code), {
+    width: 480,
+    margin: 1,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#12231a', light: '#ffffff' },
+  });
 export const ticketCodeFrom = (text: string) =>
   text
     .trim()
@@ -125,7 +136,7 @@ const day = (d: Date, year = false, lang: Lang = 'en') =>
   });
 
 // The visitor's booking page, in their language: /my-booking/… (English), /fr/my-booking/…
-const bookingPath = (token: string, locale?: string | null) => {
+export const bookingPath = (token: string, locale?: string | null) => {
   const lang = asLang(locale);
   return `${lang === 'en' ? '' : `/${lang}`}/my-booking/${token}`;
 };
@@ -486,6 +497,51 @@ export class BookingsService {
   }
 
   // The visitor accepts the team's price, or books at the current price
+  // After the trip: the visitor reviews it from their booking page. It arrives in
+  // Admin > Reviews as "Pending", for the team to publish. Only once per booking.
+  async customerReview(token: string, dto: TripReviewDto) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { accessToken: token },
+      include: {
+        package: { select: { title: true } },
+        destinations: { select: { title: true } },
+      },
+      omit: { accessToken: false },
+    });
+    if (!booking) throw new NotFoundException('This booking link is not valid');
+    checkLinkIsValid(booking.endDate);
+    if (
+      booking.status === 'Cancelled' ||
+      booking.startDate.getTime() > Date.now()
+    ) {
+      throw new BadRequestException(
+        'You can leave a review once your trip has started',
+      );
+    }
+    if (booking.reviewedAt) {
+      throw new BadRequestException('Thank you, we already have your review');
+    }
+    await this.prisma.$transaction([
+      this.prisma.review.create({
+        data: {
+          name: booking.customer,
+          country: booking.country,
+          rating: dto.rating,
+          text: dto.text.trim(),
+          packageTitle:
+            booking.package?.title ??
+            (booking.destinations.map((d) => d.title).join(' · ') || null),
+          status: 'Pending',
+        },
+      }),
+      this.prisma.booking.update({
+        where: { id: booking.id },
+        data: { reviewedAt: new Date() },
+      }),
+    ]);
+    return this.findByToken(token);
+  }
+
   async customerAccept(token: string) {
     const booking = await this.findBookingByToken(token);
     const price =
@@ -727,12 +783,7 @@ export class BookingsService {
   }
 
   private qrPng(ticketCode: string) {
-    return toBuffer(ticketQrText(ticketCode), {
-      width: 480,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#12231a', light: '#ffffff' },
-    });
+    return ticketQrPng(ticketCode);
   }
 
   // Pushes the new state of a booking to every open admin panel and to the

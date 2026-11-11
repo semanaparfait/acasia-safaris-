@@ -171,7 +171,16 @@
     "you": "Wewe",
     "fromTeam": "{name} · Acacia Safaris",
     "yourOfferLabel": "Pendekezo lako",
-    "ourOfferLabel": "Pendekezo letu"
+    "ourOfferLabel": "Pendekezo letu",
+    "reviewTitle": "Safari yako ilikuwaje?",
+    "reviewText": "Tuandikie maneno machache kuhusu uzoefu wako. Inasaidia wasafiri wengine kuchagua safari yao.",
+    "reviewStars": "{count, plural, one {Nyota #} other {Nyota #}}",
+    "reviewPlaceholder": "Ulipenda nini? Mwongozaji wako, malazi, sokwe…",
+    "reviewSend": "Tuma maoni yangu",
+    "reviewSending": "Inatuma…",
+    "reviewThanks": "Asante kwa maoni yako!",
+    "reviewThanksText": "Timu yetu itayachapisha kwenye tovuti hivi karibuni.",
+    "reviewNeedStars": "Tafadhali chagua alama na uandike maneno machache."
   },
   "Home": {
     "hero": {

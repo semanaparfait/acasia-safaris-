@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
@@ -14,6 +15,7 @@ import { MessagesModule } from './messages/messages.module';
 import { PackagesModule } from './packages/packages.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RatesModule } from './rates/rates.module';
+import { RemindersModule } from './reminders/reminders.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { RolesModule } from './roles/roles.module';
 import { StorageModule } from './storage/storage.module';
@@ -23,6 +25,7 @@ import { WorkersModule } from './workers/workers.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
+    ScheduleModule.forRoot(), // daily jobs (reminders)
     // Request limits per visitor: 120 per minute everywhere, much less on login,
     // password reset and the website forms (see common/limits.ts)
     ThrottlerModule.forRoot({
@@ -44,6 +47,7 @@ import { WorkersModule } from './workers/workers.module';
     ReviewsModule,
     GalleryModule,
     RatesModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

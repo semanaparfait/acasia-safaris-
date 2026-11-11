@@ -54,6 +54,34 @@ const en = {
     heading: 'You have a new message',
     wrote: (name: string) => `${name} wrote:`,
   },
+  tripSoon: {
+    subject: (title: string) => `Your trip is coming: ${title}`,
+    heading: 'Your safari starts in 7 days',
+    intro: (title: string, dates: string) =>
+      `We can't wait to welcome you on ${title} (${dates}). Here is everything to have ready.`,
+    qr: 'Your QR code ticket is attached and on your booking page. Show it on the first day, printed or on your phone.',
+    bring:
+      'Remember: a passport or ID for every traveler, comfortable shoes, a rain jacket, sun protection and your camera.',
+    questions:
+      'Any last questions? Write to us from your booking page and we will answer quickly.',
+  },
+  balance: {
+    subject: (amount: string) => `Reminder: remaining balance of ${amount}`,
+    heading: 'Your remaining balance',
+    intro: (title: string, date: string) =>
+      `Thank you for your deposit for ${title}. Your trip starts on ${date}.`,
+    due: (amount: string) =>
+      `The remaining ${amount} is due before your trip starts. Our team will send you the payment details, or you can ask for them from your booking page.`,
+    paid: 'Already paid? Thank you, you can ignore this email.',
+  },
+  review: {
+    subject: 'How was your safari?',
+    heading: 'How was your trip?',
+    intro: (title: string) =>
+      `We hope you loved ${title}. Thank you for travelling with Acacia Safaris.`,
+    ask: 'Would you share a few words about your experience? It takes one minute and helps other travelers choose their trip.',
+    button: 'Leave a review',
+  },
   confirm: {
     subject: (title: string, dates: string) => `Confirmed: ${title} · ${dates}`,
     preheader: (title: string) =>
@@ -156,6 +184,34 @@ const fr: EmailTexts = {
     heading: 'Vous avez un nouveau message',
     wrote: (name) => `${name} a écrit :`,
   },
+  tripSoon: {
+    subject: (title) => `Votre voyage approche : ${title}`,
+    heading: 'Votre safari commence dans 7 jours',
+    intro: (title, dates) =>
+      `Nous avons hâte de vous accueillir pour ${title} (${dates}). Voici tout ce qu'il faut préparer.`,
+    qr: 'Votre billet QR code est joint à cet e-mail et sur la page de votre réservation. Présentez-le le premier jour, imprimé ou sur votre téléphone.',
+    bring:
+      "N'oubliez pas : un passeport ou une pièce d'identité pour chaque voyageur, de bonnes chaussures, une veste de pluie, une protection solaire et votre appareil photo.",
+    questions:
+      'Une dernière question ? Écrivez-nous depuis la page de votre réservation, nous vous répondrons rapidement.',
+  },
+  balance: {
+    subject: (amount) => `Rappel : solde restant de ${amount}`,
+    heading: 'Votre solde restant',
+    intro: (title, date) =>
+      `Merci pour votre acompte pour ${title}. Votre voyage commence le ${date}.`,
+    due: (amount) =>
+      `Le solde de ${amount} est à régler avant le début du voyage. Notre équipe vous enverra les détails du paiement, ou vous pouvez les demander depuis la page de votre réservation.`,
+    paid: 'Déjà payé ? Merci, vous pouvez ignorer cet e-mail.',
+  },
+  review: {
+    subject: 'Comment s’est passé votre safari ?',
+    heading: 'Comment s’est passé votre voyage ?',
+    intro: (title) =>
+      `Nous espérons que vous avez adoré ${title}. Merci d'avoir voyagé avec Acacia Safaris.`,
+    ask: 'Pourriez-vous partager quelques mots sur votre expérience ? Cela prend une minute et aide d’autres voyageurs à choisir leur voyage.',
+    button: 'Laisser un avis',
+  },
   confirm: {
     subject: (title, dates) => `Confirmé : ${title} · ${dates}`,
     preheader: (title) =>
@@ -254,6 +310,34 @@ const sw: EmailTexts = {
     subject: 'Ujumbe mpya kuhusu safari yako',
     heading: 'Una ujumbe mpya',
     wrote: (name) => `${name} ameandika:`,
+  },
+  tripSoon: {
+    subject: (title) => `Safari yako inakaribia: ${title}`,
+    heading: 'Safari yako inaanza baada ya siku 7',
+    intro: (title, dates) =>
+      `Tunasubiri kwa hamu kukukaribisha kwenye ${title} (${dates}). Haya ndiyo ya kuandaa.`,
+    qr: 'Tiketi yako ya QR code imeambatishwa na iko kwenye ukurasa wa safari yako. Ionyeshe siku ya kwanza, ikiwa imechapishwa au kwenye simu yako.',
+    bring:
+      'Kumbuka: pasipoti au kitambulisho kwa kila msafiri, viatu vizuri, koti la mvua, kinga ya jua na kamera yako.',
+    questions:
+      'Una swali la mwisho? Tuandikie kupitia ukurasa wa safari yako na tutajibu haraka.',
+  },
+  balance: {
+    subject: (amount) => `Ukumbusho: salio la ${amount}`,
+    heading: 'Salio lako lililobaki',
+    intro: (title, date) =>
+      `Asante kwa amana yako ya ${title}. Safari yako inaanza ${date}.`,
+    due: (amount) =>
+      `Salio la ${amount} linapaswa kulipwa kabla safari haijaanza. Timu yetu itakutumia maelezo ya malipo, au unaweza kuyaomba kupitia ukurasa wa safari yako.`,
+    paid: 'Umeshalipa? Asante, unaweza kupuuza barua pepe hii.',
+  },
+  review: {
+    subject: 'Safari yako ilikuwaje?',
+    heading: 'Safari yako ilikuwaje?',
+    intro: (title) =>
+      `Tunatumaini ulifurahia ${title}. Asante kwa kusafiri na Acacia Safaris.`,
+    ask: 'Je, ungependa kutuandikia maneno machache kuhusu uzoefu wako? Inachukua dakika moja na inasaidia wasafiri wengine kuchagua safari yao.',
+    button: 'Andika maoni',
   },
   confirm: {
     subject: (title, dates) => `Imethibitishwa: ${title} · ${dates}`,

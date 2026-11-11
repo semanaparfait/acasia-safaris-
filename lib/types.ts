@@ -160,6 +160,7 @@ export type Booking = {
   // Ticket: made when the booking is confirmed (QR code in the email and on the booking page)
   ticketCode?: string | null;
   checkedInAt?: string | null; // when the QR code was scanned in Admin > Check-in
+  reviewedAt?: string | null; // the traveler reviewed the trip from their booking page
 };
 
 // Travelers in one price group of a package, e.g. 2 adults at $1,450

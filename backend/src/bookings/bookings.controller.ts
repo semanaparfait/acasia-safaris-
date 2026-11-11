@@ -18,6 +18,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { BookingsService } from './bookings.service';
 import {
+  TripReviewDto,
   BookingMessageDto,
   CreateBookingDto,
   UpdateBookingDto,
@@ -78,6 +79,15 @@ export class BookingsController {
   }
 
   // POST /api/bookings/track/<token>/accept   -> accepts the team's price (or the current one)
+  // POST /api/bookings/track/<token>/review   body: { "rating": 5, "text": "..." }
+  // After the trip; goes to Admin > Reviews as Pending
+  @Post('track/:token/review')
+  @FormLimit()
+  @HttpCode(200)
+  customerReview(@Param('token') token: string, @Body() dto: TripReviewDto) {
+    return this.bookingsService.customerReview(token, dto);
+  }
+
   @Post('track/:token/accept')
   @ChatLimit()
   @HttpCode(200)

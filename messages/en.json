@@ -171,7 +171,16 @@
     "you": "You",
     "fromTeam": "{name} · Acacia Safaris",
     "yourOfferLabel": "Your offer",
-    "ourOfferLabel": "Our offer"
+    "ourOfferLabel": "Our offer",
+    "reviewTitle": "How was your trip?",
+    "reviewText": "Share a few words about your experience. It helps other travelers choose their trip.",
+    "reviewStars": "{count, plural, one {# star} other {# stars}}",
+    "reviewPlaceholder": "What did you love? Your guide, the lodges, the gorillas…",
+    "reviewSend": "Send my review",
+    "reviewSending": "Sending…",
+    "reviewThanks": "Thank you for your review!",
+    "reviewThanksText": "Our team will publish it on the website soon.",
+    "reviewNeedStars": "Please choose a rating and write a few words."
   },
   "Home": {
     "hero": {

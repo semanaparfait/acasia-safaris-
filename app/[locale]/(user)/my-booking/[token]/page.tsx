@@ -18,6 +18,7 @@ import {
   Send,
   ShieldCheck,
   Users,
+  Star,
 } from "lucide-react";
 import { API_URL, api } from "@/lib/api";
 import { moment, tripDate, tripRange } from "@/lib/dates";
@@ -39,6 +40,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
   const { token } = use(params);
   const t = useTranslations("MyBooking");
   const locale = useLocale();
+  const [openedAt] = useState(() => Date.now()); // the review form shows once the trip has started
   const [booking, setBooking] = useState<PublicBooking | null>(null);
   const [notFound, setNotFound] = useState(false);
 
@@ -111,6 +113,9 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
           {booking.ticketCode && <TicketCard booking={booking} token={token} />}
           <PriceCard booking={booking} token={token} onChange={setBooking} />
           <TripCard booking={booking} />
+          {booking.status !== "Cancelled" && new Date(booking.startDate).getTime() <= openedAt && (
+            <ReviewCard booking={booking} token={token} onChange={setBooking} />
+          )}
         </div>
         <div className="lg:col-span-2 lg:order-1">
           <Conversation booking={booking} token={token} onChange={setBooking} />
@@ -271,6 +276,81 @@ function TicketCard({ booking, token }: { booking: PublicBooking; token: string 
           <CalendarDays size={13} /> {t("addCalendar")}
         </a>
       </div>
+    </div>
+  );
+}
+
+// ---------- Review (after the trip; the "How was it?" email links here: #review) ----------
+
+function ReviewCard({ booking, token, onChange }: { booking: PublicBooking; token: string; onChange: (b: PublicBooking) => void }) {
+  const t = useTranslations("MyBooking");
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rating || !text.trim()) return setError(t("reviewNeedStars"));
+    setSending(true);
+    setError("");
+    try {
+      onChange(await api<PublicBooking>(`/bookings/track/${token}/review`, { method: "POST", body: { rating, text: text.trim() } }));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div id="review" className="scroll-mt-28 rounded-2xl bg-white border border-[#c5a86d]/40 shadow-sm p-5">
+      {booking.reviewedAt ? (
+        <div className="text-center py-2">
+          <span className="w-11 h-11 rounded-full bg-[#c5a86d]/15 text-[#8e7345] flex items-center justify-center mx-auto mb-3">
+            <Star size={20} className="fill-current" />
+          </span>
+          <p className="font-serif text-lg text-[#12231a]">{t("reviewThanks")}</p>
+          <p className="text-xs text-[#0a120b]/55 mt-1">{t("reviewThanksText")}</p>
+        </div>
+      ) : (
+        <form onSubmit={send} className="space-y-3">
+          <p className="font-serif text-lg text-[#12231a]">{t("reviewTitle")}</p>
+          <p className="text-xs text-[#0a120b]/55 leading-relaxed">{t("reviewText")}</p>
+          <div className="flex gap-1" onMouseLeave={() => setHover(0)}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-label={t("reviewStars", { count: n })}
+                aria-pressed={rating === n}
+                onClick={() => setRating(n)}
+                onMouseEnter={() => setHover(n)}
+                className="p-0.5 cursor-pointer"
+              >
+                <Star size={26} className={n <= (hover || rating) ? "fill-[#c5a86d] text-[#c5a86d]" : "text-[#0a120b]/20"} />
+              </button>
+            ))}
+          </div>
+          <textarea
+            rows={4}
+            maxLength={2000}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={t("reviewPlaceholder")}
+            className="w-full resize-none bg-[#f7f5f0] border border-[#0a120b]/10 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all"
+          />
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={sending}
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-semibold text-sm px-5 py-3 rounded-lg shadow-md transition-all disabled:opacity-60 cursor-pointer"
+          >
+            {sending ? <Loader2 size={16} className="animate-spin" /> : <Star size={16} />} {sending ? t("reviewSending") : t("reviewSend")}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

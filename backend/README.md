@@ -260,3 +260,15 @@ Real keys and passwords go only in `backend/.env` (ignored by git). `.env.exampl
 - **Booking links** (`/my-booking/<token>`) stop working 90 days after the trip ends (`src/bookings/link.ts`).
 - **Security headers:** `helmet` on the API, and headers for every website page in `next.config.ts`.
 
+## Automatic emails to travelers (src/reminders)
+
+Every morning at 8:00 (Kigali time), in each traveler's language, each sent only once per booking:
+- **7 days before the trip:** "Your trip is coming", with the QR code ticket
+  (not for bookings made in the last week: they just got the confirmation with the ticket).
+- **The remaining 50%:** from 14 days before the trip when payment is "Deposit"; again a week later while still unpaid.
+  Set the payment to "Paid" in Admin > Bookings and the reminders stop.
+- **After the trip:** "How was it?" (trips that ended in the last 14 days). The booking becomes Completed, and the
+  email links to a review form on the booking page. Reviews arrive in Admin > Reviews as Pending.
+
+To send what is due right now (e.g. to test): `POST /api/reminders/run` (admin).
+

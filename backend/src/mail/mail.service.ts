@@ -161,10 +161,19 @@ export class MailService {
         text: [
           EMAIL_TEXTS[email.lang].hello(email.name),
           ...email.paragraphs,
-          `${EMAIL_TEXTS[email.lang].openBooking}: ${email.link}`,
+          `${email.button ?? EMAIL_TEXTS[email.lang].openBooking}: ${email.link}`,
           'Acacia Safaris',
         ].join('\n\n'),
         html: bookingHtml(email),
+        attachments: email.qrPng
+          ? [
+              {
+                filename: `Ticket ${email.ticketCode ?? ''}.png`,
+                content: email.qrPng,
+                cid: 'ticket-qr',
+              },
+            ]
+          : undefined,
       });
     } catch (error) {
       this.logger.error(`Booking email failed: ${error}`);
@@ -234,9 +243,21 @@ export type BookingEmail = {
   heading: string;
   paragraphs: string[];
   link: string; // the visitor's booking page
+  button?: string; // the button's text ("Open my booking" when not given)
+  qrPng?: Buffer; // the ticket QR code, shown in the email and attached
+  ticketCode?: string;
 };
 
-function bookingHtml({ lang, name, heading, paragraphs, link }: BookingEmail) {
+function bookingHtml({
+  lang,
+  name,
+  heading,
+  paragraphs,
+  link,
+  button,
+  qrPng,
+  ticketCode,
+}: BookingEmail) {
   const T = EMAIL_TEXTS[lang];
   const body = paragraphs
     .map((p) => `<p style="margin:0 0 14px">${escapeHtml(p)}</p>`)
@@ -251,7 +272,15 @@ function bookingHtml({ lang, name, heading, paragraphs, link }: BookingEmail) {
     <div style="padding:28px 32px;font-size:15px;line-height:1.6">
       <p style="margin:0 0 14px">${escapeHtml(T.hello(name))}</p>
       ${body}
-      <p style="margin:24px 0"><a href="${escapeHtml(link)}" style="background:#c5a86d;color:#0e1d16;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:6px;display:inline-block">${escapeHtml(T.openBooking)}</a></p>
+      ${
+        qrPng
+          ? `<div style="margin:22px 0;text-align:center;border:2px dashed #c5a86d;border-radius:12px;padding:18px;background:#fbf8f1">
+        <img src="cid:ticket-qr" alt="QR" width="170" height="170" style="display:block;margin:0 auto;width:170px;height:170px">
+        ${ticketCode ? `<p style="margin:10px 0 0;font-family:Courier New,monospace;font-size:20px;letter-spacing:5px;font-weight:bold;color:#12231a">${escapeHtml(ticketCode)}</p>` : ''}
+      </div>`
+          : ''
+      }
+      <p style="margin:24px 0"><a href="${escapeHtml(link)}" style="background:#c5a86d;color:#0e1d16;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:6px;display:inline-block">${escapeHtml(button ?? T.openBooking)}</a></p>
       <p style="margin:0;color:#0a120b99;font-size:13px">${escapeHtml(T.keepEmail)}</p>
     </div>
   </div>

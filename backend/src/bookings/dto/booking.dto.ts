@@ -138,6 +138,19 @@ export class CreateBookingDto {
 
 // A message on a booking, from the visitor (booking page) or the team (admin).
 // With "offer", it also proposes a new total price.
+// After the trip, from the visitor's booking page: stars and a few words
+export class TripReviewDto {
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(2000)
+  text: string;
+}
+
 export class BookingMessageDto {
   @IsOptional()
   @IsString()
