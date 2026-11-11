@@ -151,21 +151,22 @@ export default function SettingsPage() {
   );
 }
 
-// The logged-in admin edits their own name, email, phone and photo
+// The logged-in admin edits their own name, personal email, phone and photo.
+// The company email (the login) is made from the first name and is only shown.
 function AccountForm() {
   const me = useAuthStore((s) => s.worker);
   const updateAccount = useAuthStore((s) => s.updateAccount);
   const [form, setForm] = useState({
     name: me?.name ?? "",
-    email: me?.email ?? "",
+    personalEmail: me?.personalEmail ?? "",
     phone: me?.phone ?? "",
     photo: me?.photo ?? "",
   });
   const [currentPassword, setCurrentPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const emailChanged = form.email.trim().toLowerCase() !== me?.email;
-  const valid = form.name.trim() && form.email.trim() && form.phone.trim() && (!emailChanged || currentPassword);
+  const emailChanged = form.personalEmail.trim().toLowerCase() !== (me?.personalEmail ?? "");
+  const valid = form.name.trim() && form.personalEmail.trim() && form.phone.trim() && (!emailChanged || currentPassword);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +174,7 @@ function AccountForm() {
     try {
       await updateAccount({
         name: form.name.trim(),
-        email: form.email.trim(),
+        personalEmail: form.personalEmail.trim(),
         phone: form.phone.trim(),
         photo: form.photo,
         currentPassword: emailChanged ? currentPassword : undefined,
@@ -201,12 +202,16 @@ function AccountForm() {
             <input className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           </div>
           <div>
-            <label className={labelClass}>Email (your login)</label>
-            <input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <label className={labelClass}>Company email (your login)</label>
+            <input className={`${inputClass} bg-[#0a120b]/3 text-[#0a120b]/60`} value={me?.email ?? ""} readOnly tabIndex={-1} />
+          </div>
+          <div>
+            <label className={labelClass}>Personal email (gets the forgot-password code)</label>
+            <input type="email" className={inputClass} value={form.personalEmail} onChange={(e) => setForm({ ...form, personalEmail: e.target.value })} placeholder="name@gmail.com" />
           </div>
           {emailChanged && (
             <div>
-              <label className={labelClass}>Current password (to change your email)</label>
+              <label className={labelClass}>Current password (to change your personal email)</label>
               <input type="password" autoComplete="current-password" className={inputClass} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
             </div>
           )}

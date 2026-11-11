@@ -35,7 +35,7 @@ export default function WorkersPage() {
   const filtered = workers.filter(
     (w) =>
       (role === "All" || w.role === role) &&
-      [w.name, w.email, w.phone, ...w.languages].some((f) => f.toLowerCase().includes(query.toLowerCase()))
+      [w.name, w.email, w.personalEmail ?? "", w.phone, ...w.languages].some((f) => f.toLowerCase().includes(query.toLowerCase()))
   );
 
   const remove = async () => {

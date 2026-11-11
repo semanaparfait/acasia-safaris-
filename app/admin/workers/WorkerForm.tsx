@@ -9,7 +9,7 @@ import { ArrowLeft, ShieldCheck, UserRound, Contact, Briefcase, StickyNote } fro
 import type { Worker, WorkerStatus } from "@/lib/types";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
-import { LanguagePicker, WorkerPhoto, statuses, useRoles } from "./parts";
+import { LanguagePicker, WorkerPhoto, companyEmailFor, statuses, useRoles } from "./parts";
 
 export default function WorkerForm({
   initial,
@@ -38,7 +38,19 @@ export default function WorkerForm({
   // An admin must have a password: a new one, or the one they already have
   const needsPassword = form.isAdmin && !initial.hasPassword;
   const passwordOk = password === "" ? !needsPassword : password.length >= 8;
-  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.email) && form.phone.trim() && passwordOk;
+  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.personalEmail ?? "") && form.phone.trim() && passwordOk;
+
+  // The company email is made by the server from the first name. It only changes
+  // when the first name changes (the main admin's login comes from .env and stays).
+  const firstNameEmail = companyEmailFor(form.name);
+  const keepsEmail =
+    !isNew && (isMainAdmin || initial.email.replace(/\d*@/, "@") === firstNameEmail);
+  const companyEmail = keepsEmail ? initial.email : form.name.trim() ? firstNameEmail : "";
+  const companyEmailHint = keepsEmail
+    ? "Made from the first name."
+    : isNew
+      ? "Made from the first name. A number is added if it is taken."
+      : `Will change from ${initial.email} when you save.`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,8 +98,14 @@ export default function WorkerForm({
           <Section icon={Contact} title="Contact">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>Email *</label>
-                <input type="email" className={inputClass} value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="name@acaciasafaris.rw" />
+                <label className={labelClass}>Company email (login)</label>
+                <input className={`${inputClass} bg-[#0a120b]/3 text-[#0a120b]/60`} value={companyEmail} readOnly tabIndex={-1} />
+                <p className="text-xs text-[#0a120b]/50 mt-1">{companyEmailHint}</p>
+              </div>
+              <div>
+                <label className={labelClass}>Personal email *</label>
+                <input type="email" className={inputClass} value={form.personalEmail ?? ""} onChange={(e) => set("personalEmail", e.target.value)} placeholder="name@gmail.com" />
+                <p className="text-xs text-[#0a120b]/50 mt-1">Receives the code when they forget their password.</p>
               </div>
               <div>
                 <label className={labelClass}>Phone *</label>
@@ -138,7 +156,7 @@ export default function WorkerForm({
                   {isMainAdmin
                     ? "This is the main admin: they always keep admin access and cannot be deleted."
                     : canManageAdmins
-                      ? "Can log in to this admin panel with their email and a password."
+                      ? "Can log in to this admin panel with their company email and a password."
                       : "Only the main admin can give or remove admin access."}
                 </p>
                 {!isMainAdmin && canManageAdmins && (

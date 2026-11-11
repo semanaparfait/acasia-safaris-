@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -17,6 +16,27 @@ type Actor = Omit<Worker, 'passwordHash' | 'tokenVersion'>;
 
 // The form sends "2026-10-31", but the database needs a full date
 const toDate = (date?: string) => (date ? new Date(date) : undefined);
+
+export const COMPANY_DOMAIN = 'acaciasafaris.com';
+
+// "Jean Bosco Habimana" -> "jean", "Éric" -> "eric"
+export const firstNameOf = (name: string) =>
+  (name.trim().split(/\s+/)[0] ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '') || 'worker';
+
+// True when the email is already the company email for this first name ("jean@", "jean2@", ...)
+const matchesFirstName = (email: string, name: string) => {
+  const [local = '', domain] = email.split('@');
+  const first = firstNameOf(name);
+  return (
+    domain === COMPANY_DOMAIN &&
+    local.startsWith(first) &&
+    /^\d*$/.test(local.slice(first.length))
+  );
+};
 
 // Rules for admins:
 //  - The main admin (isOwner) cannot be deleted and always keeps admin access.
@@ -54,8 +74,7 @@ export class WorkersService {
   }
 
   async create(dto: WorkerDto, actor: Actor) {
-    const email = dto.email.toLowerCase().trim();
-    await this.checkEmailIsFree(email);
+    const email = await this.companyEmail(dto.name);
     await this.roles.checkExists(dto.role);
 
     if (dto.isAdmin) {
@@ -70,6 +89,7 @@ export class WorkersService {
       data: {
         ...data,
         email,
+        personalEmail: dto.personalEmail.toLowerCase().trim(),
         joined: toDate(dto.joined),
         passwordHash: password ? await hash(password, 10) : null,
       },
@@ -79,9 +99,14 @@ export class WorkersService {
 
   async update(id: string, dto: WorkerDto, actor: Actor) {
     const current = await this.findOne(id);
-    const email = dto.email.toLowerCase().trim();
-    await this.checkEmailIsFree(email, id);
     await this.roles.checkExists(dto.role);
+
+    // A new first name gives a new company email (and login). Older emails that do not
+    // follow the rule yet are changed too. The main admin's login comes from .env, so it stays.
+    const email =
+      current.isOwner || matchesFirstName(current.email, dto.name)
+        ? current.email
+        : await this.companyEmail(dto.name, id);
 
     if (current.isOwner) {
       // Only the main admin edits their own account, and they always stay an active admin
@@ -110,6 +135,7 @@ export class WorkersService {
       data: {
         ...data,
         email,
+        personalEmail: dto.personalEmail.toLowerCase().trim(),
         joined: toDate(dto.joined),
         // Only change the password when a new one is sent
         ...(password ? { passwordHash: await hash(password, 10) } : {}),
@@ -130,13 +156,16 @@ export class WorkersService {
     return { deleted: true };
   }
 
-  // Two workers cannot share an email (email is @unique in the schema)
-  private async checkEmailIsFree(email: string, exceptId?: string) {
-    const existing = await this.prisma.worker.findUnique({ where: { email } });
-    if (existing && existing.id !== exceptId) {
-      throw new ConflictException(
-        `A worker with email ${email} already exists`,
-      );
+  // first name + @acaciasafaris.com. Two workers cannot share an email (it is @unique),
+  // so a second "Jean" gets jean2@, then jean3@ ...
+  private async companyEmail(name: string, exceptId?: string) {
+    const first = firstNameOf(name);
+    for (let n = 1; ; n++) {
+      const email = `${first}${n === 1 ? '' : n}@${COMPANY_DOMAIN}`;
+      const existing = await this.prisma.worker.findUnique({
+        where: { email },
+      });
+      if (!existing || existing.id === exceptId) return email;
     }
   }
 

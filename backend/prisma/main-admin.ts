@@ -1,5 +1,6 @@
 // Inserts (or updates) the main admin from backend/.env:
-//   OWNER_NAME, OWNER_EMAIL, OWNER_PASSWORD, OWNER_PHONE
+//   OWNER_NAME, OWNER_EMAIL, OWNER_PASSWORD, OWNER_PHONE, OWNER_PERSONAL_EMAIL
+// OWNER_EMAIL is the company email (the login). OWNER_PERSONAL_EMAIL gets the forgot-password code.
 // Run with:  npm run admin:main
 // Only touches the main admin, no other data.
 import 'dotenv/config';
@@ -15,6 +16,7 @@ async function main() {
   const email = process.env.OWNER_EMAIL?.toLowerCase().trim();
   const password = process.env.OWNER_PASSWORD ?? '';
   const phone = process.env.OWNER_PHONE?.trim() ?? '';
+  const personalEmail = process.env.OWNER_PERSONAL_EMAIL?.toLowerCase().trim();
 
   if (!email || !password) {
     throw new Error('Set OWNER_EMAIL and OWNER_PASSWORD in backend/.env first');
@@ -31,6 +33,7 @@ async function main() {
     passwordHash,
     ...(name ? { name } : {}),
     ...(phone ? { phone } : {}),
+    ...(personalEmail ? { personalEmail } : {}),
   };
 
   await prisma.worker.upsert({

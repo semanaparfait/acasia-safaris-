@@ -15,8 +15,11 @@ export class WorkerDto {
   @IsString()
   name: string;
 
+  // The company email (the login) is not sent: the server makes it from the first name,
+  // e.g. "Jean Bosco Habimana" -> "jean@acaciasafaris.com".
+  // This is the worker's own email, where the forgot-password code is sent.
   @IsEmail()
-  email: string;
+  personalEmail: string;
 
   @IsString()
   phone: string;

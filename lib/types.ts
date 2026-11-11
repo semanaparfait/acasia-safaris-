@@ -73,7 +73,8 @@ export type WorkerStatus = "Active" | "On leave" | "Inactive";
 export type Worker = {
   id: string;
   name: string;
-  email: string;
+  email: string; // company email, made from the first name (e.g. jean@acaciasafaris.com). Used to log in
+  personalEmail?: string | null; // the worker's own email: the forgot-password code is sent here
   phone: string;
   role: string; // name of a Role
   languages: string[];
@@ -87,7 +88,11 @@ export type Worker = {
 };
 
 // What the admin form sends. "password" is only sent when setting a new one.
-export type WorkerInput = Omit<Worker, "id" | "hasPassword" | "isOwner"> & { password?: string };
+// The company email is not sent: the server makes it from the first name.
+export type WorkerInput = Omit<Worker, "id" | "hasPassword" | "isOwner" | "email" | "personalEmail"> & {
+  personalEmail: string;
+  password?: string;
+};
 
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 export type PaymentStatus = "Unpaid" | "Deposit" | "Paid" | "Refunded";

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -57,7 +58,7 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div>
-              <label className={labelClass} htmlFor="email">Email</label>
+              <label className={labelClass} htmlFor="email">Company email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#0a120b]/35" />
                 <input
@@ -67,13 +68,16 @@ export default function LoginPage() {
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@acaciasafaris.rw"
+                  placeholder="firstname@acaciasafaris.com"
                   className={`${inputClass} pl-9`}
                 />
               </div>
             </div>
             <div>
-              <label className={labelClass} htmlFor="password">Password</label>
+              <div className="flex items-center justify-between">
+                <label className={labelClass} htmlFor="password">Password</label>
+                <Link href="/admin/forgot-password" className="text-xs text-[#2E7D5B] hover:underline mb-1.5">Forgot password?</Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#0a120b]/35" />
                 <input

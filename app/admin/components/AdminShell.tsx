@@ -18,7 +18,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [menuOpen, setMenuOpen] = useState(false);
 
   const token = useAuthStore((s) => s.token);
-  const isLoginPage = pathname === "/admin/login";
+  // Pages that work without a login (sign in, forgot password)
+  const isLoginPage = pathname === "/admin/login" || pathname === "/admin/forgot-password";
 
   // The saved login is read from localStorage in the browser only, so wait
   // until we run in the browser before deciding to redirect.

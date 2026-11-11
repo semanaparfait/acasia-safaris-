@@ -76,7 +76,8 @@ export default function WorkerDetailsPage() {
         <div className="lg:col-span-2 space-y-5">
           <InfoCard icon={Mail} title="Contact">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <ContactLink icon={Mail} label="Email" value={w.email} href={`mailto:${w.email}`} />
+              <ContactLink icon={Mail} label="Company email (login)" value={w.email} href={`mailto:${w.email}`} />
+              <ContactLink icon={Mail} label="Personal email" value={w.personalEmail || "—"} href={w.personalEmail ? `mailto:${w.personalEmail}` : undefined} />
               <ContactLink icon={Phone} label="Phone" value={w.phone || "—"} href={w.phone ? `tel:${w.phone.replace(/\s/g, "")}` : undefined} />
             </div>
           </InfoCard>

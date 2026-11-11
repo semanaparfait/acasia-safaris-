@@ -11,11 +11,24 @@ import { Avatar, Badge, Button, inputClass } from "../components/ui";
 
 export const statuses: WorkerStatus[] = ["Active", "On leave", "Inactive"];
 
+// The company email the server makes from the first name (same rule as the backend).
+// "Jean Bosco Habimana" -> "jean@acaciasafaris.com". A second "Jean" gets jean2@ (set by the server).
+export const COMPANY_DOMAIN = "acaciasafaris.com";
+export function companyEmailFor(name: string) {
+  const first = (name.trim().split(/\s+/)[0] ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  return `${first || "worker"}@${COMPANY_DOMAIN}`;
+}
+
 // A new worker that is not saved yet (id "")
 export const blankWorker: Worker = {
   id: "",
   name: "",
   email: "",
+  personalEmail: "",
   phone: "",
   role: "Tour Guide",
   languages: [],
@@ -31,7 +44,7 @@ export const blankWorker: Worker = {
 export function toInput(w: Worker, password = ""): WorkerInput {
   return {
     name: w.name,
-    email: w.email,
+    personalEmail: (w.personalEmail ?? "").trim(),
     phone: w.phone,
     role: w.role,
     languages: w.languages.map((l) => l.trim()).filter(Boolean),

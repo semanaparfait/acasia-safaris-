@@ -21,7 +21,14 @@ The website (Next.js, in the folder above) reads `NEXT_PUBLIC_API_URL` from its 
 ## Admin login
 
 Admins are **workers with "Admin access"** (their second role). They log in at `/admin/login`
-with their email and password.
+with their company email and password.
+
+Every worker has two emails:
+- **Company email** (the login): made by the server from the first name, e.g. "Jean Bosco Habimana"
+  → `jean@acaciasafaris.com` (a second Jean gets `jean2@`). It changes when the first name changes.
+- **Personal email**: their own address. "Forgot password?" on the login page emails a 6 digit
+  code there (needs the SMTP settings from "Quotation emails"). The code works for 15 minutes and
+  5 tries; then they choose a new password and every other device is logged out.
 
 There is one **main admin**. They cannot be deleted, always keep admin access, and are the only
 one who can give or remove admin access (and set other admins' passwords). To create them, fill
@@ -149,9 +156,12 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | --- | --- | --- |
 | POST | `/api/auth/login` | `{ email, password }` → `{ token, worker }` (active admins only) |
 | GET | `/api/auth/me` | 🔒 the logged-in worker |
-| PATCH | `/api/auth/me` | 🔒 edit your own account: `{ name?, email?, phone?, photo?, currentPassword? }`. `currentPassword` is needed to change the email |
+| PATCH | `/api/auth/me` | 🔒 edit your own account: `{ name?, personalEmail?, phone?, photo?, currentPassword? }`. `currentPassword` is needed to change the personal email |
 | PATCH | `/api/auth/me/password` | 🔒 `{ currentPassword, newPassword }` → `{ token, worker }`. Other devices are logged out |
 | POST | `/api/auth/logout` | 🔒 ends the login on every device (the token stops working) |
+| POST | `/api/auth/forgot-password` | `{ email }` (company email) → emails a 6 digit code to the personal email. Same answer for every email; one email per minute |
+| POST | `/api/auth/verify-reset-code` | `{ email, code }` → `{ valid: true }`, or 400 if wrong / expired (5 tries) |
+| POST | `/api/auth/reset-password` | `{ email, code, newPassword }` → `{ token, worker }`. Uses up the code, logs out other devices |
 | GET | `/api/packages` | website: published packages |
 | GET | `/api/packages/all` | 🔒 drafts included |
 | GET | `/api/packages/:id` | website (ids are UUIDs) |
@@ -160,7 +170,7 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | POST | `/api/packages/:id/quotation/email` | website: `{ name, email }` sends the quotation by email |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |
-| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
+| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 send `personalEmail`, not `email` (the company email is made from the first name). `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
 | GET / POST / PUT / DELETE | `/api/roles[/:id]` | 🔒 `{ name, description }`. Renaming updates workers; a role in use cannot be deleted |
 | POST | `/api/bookings` | website: `{ customer, email, phone?, country, startDate, travelers, children?, notes? }` plus `packageId` (end date and price are calculated by the server) or `destinations: [{ title, travelStyle, accommodation, budget }]` + `endDate` (the admin sets the price later) |
 | GET / PATCH / DELETE | `/api/bookings[/:id]` | 🔒 PATCH body: `{ status?, payment?, amount?, notes? }` |

@@ -9,9 +9,19 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    // Never return password hashes, unless a query asks for them explicitly with
-    //   omit: { passwordHash: false }   (only the login does that)
-    super({ omit: { worker: { passwordHash: true, tokenVersion: true } } });
+    // Never return password hashes or reset codes, unless a query asks for them explicitly with
+    //   omit: { passwordHash: false }   (only the login and password reset do that)
+    super({
+      omit: {
+        worker: {
+          passwordHash: true,
+          tokenVersion: true,
+          resetCodeHash: true,
+          resetCodeExpires: true,
+          resetAttempts: true,
+        },
+      },
+    });
   }
 
   async onModuleInit() {

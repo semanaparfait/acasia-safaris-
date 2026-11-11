@@ -1,9 +1,10 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash } from 'bcryptjs';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { AuthService } from './auth.service';
+import { AuthService, maskEmail } from './auth.service';
 
 const row = (changes = {}) => ({
   id: 'w1',
@@ -26,12 +27,14 @@ const setup = () => {
     signAsync: jest.fn().mockResolvedValue('new-token'),
   };
   const storage = { deleteByUrl: jest.fn() };
+  const mail = { sendResetCode: jest.fn() };
   const service = new AuthService(
     { worker } as unknown as PrismaService,
     jwt as unknown as JwtService,
     storage as unknown as StorageService,
+    mail as unknown as MailService,
   );
-  return { service, worker, jwt, storage };
+  return { service, worker, jwt, storage, mail };
 };
 
 describe('AuthService', () => {
@@ -72,14 +75,14 @@ describe('AuthService', () => {
     });
   });
 
-  it('needs the current password to change the email', async () => {
+  it('needs the current password to change the personal email', async () => {
     const { service, worker } = setup();
     worker.findUniqueOrThrow
       .mockResolvedValueOnce(row())
       .mockResolvedValueOnce({ passwordHash: await hash('secret123', 4) });
 
     await expect(
-      service.updateAccount('w1', { email: 'new@b.co' }),
+      service.updateAccount('w1', { personalEmail: 'new@b.co' }),
     ).rejects.toThrow(BadRequestException);
     expect(worker.update).not.toHaveBeenCalled();
   });
@@ -92,7 +95,7 @@ describe('AuthService', () => {
     await service.updateAccount('w1', { name: 'New Name' });
     expect(worker.update).toHaveBeenCalledWith({
       where: { id: 'w1' },
-      data: { name: 'New Name', email: undefined, photo: undefined },
+      data: { name: 'New Name', personalEmail: undefined, photo: undefined },
     });
     expect(storage.deleteByUrl).not.toHaveBeenCalled();
   });
@@ -135,5 +138,121 @@ describe('AuthService', () => {
     expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'w1', v: 4 });
     expect(result.token).toBe('new-token');
     expect(result.worker).not.toHaveProperty('tokenVersion');
+  });
+
+  describe('forgot password', () => {
+    const admin = (changes = {}) =>
+      row({ name: 'Jean', personalEmail: 'jean@gmail.com', ...changes });
+
+    it('emails a 6 digit code to the personal email', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(admin({ resetCodeExpires: null }));
+
+      await service.forgotPassword('Jean@AcaciaSafaris.com');
+      expect(worker.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { email: 'jean@acaciasafaris.com' },
+        }),
+      );
+      const [{ to, code }] = mail.sendResetCode.mock.calls[0] as [
+        { to: string; code: string },
+      ];
+      expect(to).toBe('jean@gmail.com');
+      expect(code).toMatch(/^\d{6}$/);
+    });
+
+    it('says when no account uses the company email', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.forgotPassword('nobody@acaciasafaris.com'),
+      ).rejects.toThrow('No account uses this company email');
+      expect(mail.sendResetCode).not.toHaveBeenCalled();
+    });
+
+    it('returns the personal email partly hidden', async () => {
+      const { service, worker } = setup();
+      worker.findUnique.mockResolvedValue(
+        admin({
+          personalEmail: 'shemaparfait@gmail.com',
+          resetCodeExpires: null,
+        }),
+      );
+
+      const result = await service.forgotPassword('semana@acaciasafaris.com');
+      expect(result.sentTo).toBe('sh********it@gmail.com');
+    });
+
+    it('hides short email names too', () => {
+      expect(maskEmail('abc@gmail.com')).toBe('a**@gmail.com');
+      expect(maskEmail('a@gmail.com')).toBe('a*@gmail.com');
+    });
+
+    it('does not send a second email within a minute', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(
+        admin({ resetCodeExpires: new Date(Date.now() + 15 * 60_000 - 5000) }),
+      );
+
+      await service.forgotPassword('jean@acaciasafaris.com');
+      expect(mail.sendResetCode).not.toHaveBeenCalled();
+    });
+
+    it('counts a wrong code', async () => {
+      const { service, worker } = setup();
+      worker.findUnique.mockResolvedValue(
+        admin({
+          resetCodeHash: await hash('123456', 4),
+          resetCodeExpires: new Date(Date.now() + 60_000),
+          resetAttempts: 0,
+        }),
+      );
+      worker.update.mockResolvedValue({ resetAttempts: 1 });
+
+      await expect(
+        service.verifyResetCode('jean@acaciasafaris.com', '000000'),
+      ).rejects.toThrow('Wrong code. 4 tries left.');
+    });
+
+    it('refuses an expired code', async () => {
+      const { service, worker } = setup();
+      worker.findUnique.mockResolvedValue(
+        admin({
+          resetCodeHash: await hash('123456', 4),
+          resetCodeExpires: new Date(Date.now() - 1000),
+          resetAttempts: 0,
+        }),
+      );
+
+      await expect(
+        service.verifyResetCode('jean@acaciasafaris.com', '123456'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('sets the new password, uses up the code and logs in', async () => {
+      const { service, worker, jwt } = setup();
+      worker.findUnique.mockResolvedValue(
+        admin({
+          resetCodeHash: await hash('123456', 4),
+          resetCodeExpires: new Date(Date.now() + 60_000),
+          resetAttempts: 2,
+        }),
+      );
+      worker.update.mockResolvedValue(row({ tokenVersion: 4 }));
+
+      const result = await service.resetPassword(
+        'jean@acaciasafaris.com',
+        '123456',
+        'brandnew123',
+      );
+      const [{ data }] = worker.update.mock.calls[0] as [
+        { data: Record<string, unknown> },
+      ];
+      expect(data.resetCodeHash).toBeNull();
+      expect(data.tokenVersion).toEqual({ increment: 1 });
+      expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'w1', v: 4 });
+      expect(result.token).toBe('new-token');
+    });
   });
 });

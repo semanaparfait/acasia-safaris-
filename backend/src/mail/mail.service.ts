@@ -77,6 +77,62 @@ export class MailService {
       throw failed;
     }
   }
+
+  // Forgot password: sends the 6 digit code to the worker's personal email.
+  // Throws ServiceUnavailableException if the email could not be sent.
+  async sendResetCode(email: ResetCodeEmail) {
+    const failed = new ServiceUnavailableException(
+      'We could not send the code by email right now. Please try again later.',
+    );
+    if (!this.transport) {
+      this.logger.warn('Email is not configured: reset code not sent');
+      throw failed;
+    }
+
+    try {
+      await this.transport.sendMail({
+        from: this.from,
+        to: email.to,
+        subject: `Your Acacia Safaris password reset code: ${email.code}`,
+        text: `Hello ${email.name},
+
+Your password reset code is ${email.code}. It works for ${email.minutes} minutes.
+
+If you did not ask for it, you can ignore this email: your password stays the same.
+
+Acacia Safaris`,
+        html: resetCodeHtml(email),
+      });
+    } catch (error) {
+      this.logger.error(`Reset code email failed: ${error}`);
+      throw failed;
+    }
+  }
+}
+
+export type ResetCodeEmail = {
+  to: string;
+  name: string;
+  code: string;
+  minutes: number; // how long the code works
+};
+
+function resetCodeHtml({ name, code, minutes }: ResetCodeEmail) {
+  return `
+<div style="background:#f7f5f0;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#0a120b">
+  <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden">
+    <div style="background:#12231a;padding:28px 32px">
+      <p style="margin:0;color:#c5a86d;font-size:11px;letter-spacing:3px;text-transform:uppercase">Acacia Safaris</p>
+      <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;font-weight:normal">Reset your password</h1>
+    </div>
+    <div style="padding:28px 32px;font-size:15px;line-height:1.6">
+      <p style="margin:0 0 14px">Hello ${escapeHtml(name)},</p>
+      <p style="margin:0 0 14px">Use this code to reset the password of your Acacia Safaris admin account:</p>
+      <p style="margin:24px 0;font-size:32px;font-weight:bold;letter-spacing:10px;color:#12231a">${escapeHtml(code)}</p>
+      <p style="margin:0;color:#0a120b99;font-size:13px">The code works for ${minutes} minutes. If you did not ask for it, you can ignore this email: your password stays the same.</p>
+    </div>
+  </div>
+</div>`;
 }
 
 function quotationHtml(name: string, packageTitle: string, pdfUrl: string) {

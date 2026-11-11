@@ -15,7 +15,7 @@ datasource db {
 // ---------- Tour packages ----------
 
 model Package {
-  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   category    String // "Gorilla Trekking", "Wildlife Safari", ...
   badge       String?
@@ -34,15 +34,15 @@ model Package {
   fairPrice       String[] @default([]) // reasons for "Why this price is fair", e.g. "Title: explanation"
   whyChoose       String[] @default([]) // reasons for "Why people choose this trip", written the same way
 
-  active      Boolean        @default(true) // false = draft, hidden from the website
-  route       String[] // stops in travel order
-  inclusions  String[]
-  exclusions  String[]
-  perks       String[]
-  itinerary   ItineraryDay[] // the number of days = the package duration
-  bookings    Booking[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  active     Boolean        @default(true) // false = draft, hidden from the website
+  route      String[] // stops in travel order
+  inclusions String[]
+  exclusions String[]
+  perks      String[]
+  itinerary  ItineraryDay[] // the number of days = the package duration
+  bookings   Booking[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 }
 
 model ItineraryDay {
@@ -83,21 +83,29 @@ model Destination {
 // ---------- Workers (staff) ----------
 
 model Worker {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  email     String   @unique
-  phone     String
-  role      String // name of a Role, e.g. "Tour Guide"
-  languages String[]
-  status    String   @default("Active") // "Active", "On leave", "Inactive"
-  joined    DateTime @default(now())
-  notes     String?
-  photo     String? // image URL (uploaded to the "workers" bucket)
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  // Company email: made from the first name, e.g. "jean@acaciasafaris.com". Used to log in.
+  email         String   @unique
+  // The worker's own email (e.g. Gmail). The forgot-password code is sent here.
+  personalEmail String?
+  phone         String
+  role          String // name of a Role, e.g. "Tour Guide"
+  languages     String[]
+  status        String   @default("Active") // "Active", "On leave", "Inactive"
+  joined        DateTime @default(now())
+  notes         String?
+  photo         String? // image URL (uploaded to the "workers" bucket)
 
   // Second role: workers with isAdmin can log in to the admin panel with email + password
   isAdmin      Boolean @default(false)
   passwordHash String? // bcrypt hash, never sent to the browser
   tokenVersion Int     @default(0) // raised on logout and password change: older login tokens stop working
+
+  // Forgot password: a 6 digit code emailed to personalEmail (only its bcrypt hash is stored)
+  resetCodeHash    String?
+  resetCodeExpires DateTime?
+  resetAttempts    Int       @default(0) // wrong codes typed; the code stops working after 5
 
   // The main admin (only one): cannot be deleted, always keeps admin access,
   // and is the only one who can give or remove admin access. Set from .env by the seed.
