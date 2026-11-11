@@ -13,9 +13,9 @@ import {
   Binoculars,
 } from "lucide-react";
 import founders from "@/public/aboutus/founders.png";
+import TeamSection from "../components/TeamSection";
 import shema from "@/public/aboutus/shema.jpeg";
 import yassel from "@/public/aboutus/yassel.jpeg";
-import semana from "@/public/aboutus/semana.jpeg";
 
 export default function AboutPage() {
   return (
@@ -277,82 +277,9 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 8. MEET THE TEAM BEHIND ACACIA SAFARIS */}
+      {/* 8. MEET THE TEAM BEHIND ACACIA SAFARIS (workers marked "Show on website" in Admin > Workers) */}
 
-      <section className="py-20 px-6 bg-[#faf8f5]">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-baseline justify-between mb-10 gap-4">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8e7345] block mb-1">
-                OUR TEAM
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-serif text-[#1c2e22]">
-                Meet the People Behind ACACIA SAFARIS
-              </h2>
-            </div>
-            <Link
-              href="/team"
-              className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-[#1c2e22] hover:text-[#8e7345] transition-colors"
-            >
-              Our Full Team <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-            {[
-              {
-                name: "SHEMA Alain",
-                role: "CEO & Founder",
-                img: shema,
-              },
-              {
-                name: "ISHIMWE Yassel",
-                role: "MD & Founder",
-                img: yassel,
-              },
-              {
-                name: " SEMANA Shema Parfait",
-                role: "IT & Technology Lead",
-                img: semana,
-              },
-              {
-                name: "Operations Manager",
-                role: "Trip Coordination",
-                img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
-              },
-              {
-                name: "Community Liaison",
-                role: "Local Partnerships",
-                img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80",
-              },
-              {
-                name: "Head Chef",
-                role: "Culinary Excellence",
-                img: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=400&q=80",
-              },
-            ].map((member, idx) => (
-              <div key={idx} className="space-y-2 text-center">
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-zinc-200 border border-[#e5ded0]">
-                  <Image
-                    src={member.img}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-xs font-serif font-bold text-[#1c2e22]">
-                    {member.name}
-                  </h3>
-                  <p className="text-[10px] text-[#8e7345] uppercase tracking-wider font-medium">
-                    {member.role}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TeamSection />
 
       {/* 9. OUR JOURNEY (TIMELINE) */}
 

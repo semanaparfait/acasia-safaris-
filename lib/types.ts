@@ -70,6 +70,9 @@ export type Role = {
 export type RoleInput = { name: string; description: string };
 export type WorkerStatus = "Active" | "On leave" | "Inactive";
 
+export type SocialNetwork = "youtube" | "instagram" | "x" | "tiktok" | "snapchat" | "facebook";
+export type Socials = Partial<Record<SocialNetwork, string>>; // full links, only the ones used
+
 export type Worker = {
   id: string;
   name: string;
@@ -80,8 +83,13 @@ export type Worker = {
   languages: string[];
   status: WorkerStatus;
   joined: string;
-  notes?: string | null;
+  notes?: string | null; // private, admins only
   photo?: string | null;
+  // About us page
+  showOnWebsite?: boolean;
+  companyRole?: string | null; // title on the website, e.g. "CEO & Founder"
+  bio?: string | null; // shown to visitors
+  socials?: Socials;
   isAdmin: boolean; // second role: can log in to the admin panel
   isOwner?: boolean; // the main admin: cannot be deleted, manages the other admins
   hasPassword?: boolean; // the password itself is never sent to the browser
@@ -92,6 +100,19 @@ export type Worker = {
 export type WorkerInput = Omit<Worker, "id" | "hasPassword" | "isOwner" | "email" | "personalEmail"> & {
   personalEmail: string;
   password?: string;
+};
+
+// A worker as visitors see them on the About us page (GET /api/team)
+export type TeamMember = {
+  id: string;
+  name: string;
+  companyRole: string | null;
+  photo: string | null;
+  bio: string | null;
+  personalEmail: string | null;
+  phone: string;
+  languages: string[];
+  socials: Socials;
 };
 
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";

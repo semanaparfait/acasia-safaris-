@@ -170,7 +170,8 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | POST | `/api/packages/:id/quotation/email` | website: `{ name, email }` sends the quotation by email |
 | GET | `/api/destinations[/:id]` | website |
 | POST / PUT / DELETE | `/api/destinations[/:id]` | 🔒 |
-| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 send `personalEmail`, not `email` (the company email is made from the first name). `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
+| GET | `/api/team` | website: workers with `showOnWebsite` (and Active) for the About us page: name, companyRole, photo, bio, personalEmail, phone, languages, socials |
+| GET / POST / PUT / DELETE | `/api/workers[/:id]` | 🔒 send `personalEmail`, not `email` (the company email is made from the first name). About us fields: `showOnWebsite`, `companyRole` (needed when shown), `bio`, `socials: { youtube?, instagram?, x?, tiktok?, snapchat?, facebook? }` (full links). `role` must be a role name from `/api/roles`; body may include `isAdmin` and `password` (min 8 chars, only to set a new one) |
 | GET / POST / PUT / DELETE | `/api/roles[/:id]` | 🔒 `{ name, description }`. Renaming updates workers; a role in use cannot be deleted |
 | POST | `/api/bookings` | website: `{ customer, email, phone?, country, startDate, travelers, children?, notes? }` plus `packageId` (end date and price are calculated by the server) or `destinations: [{ title, travelStyle, accommodation, budget }]` + `endDate` (the admin sets the price later) |
 | GET / PATCH / DELETE | `/api/bookings[/:id]` | 🔒 PATCH body: `{ status?, payment?, amount?, notes? }` |

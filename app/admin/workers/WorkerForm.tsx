@@ -5,8 +5,9 @@
 //   /admin/workers/5/edit     -> edit worker 5
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, UserRound, Contact, Briefcase, StickyNote } from "lucide-react";
+import { ArrowLeft, ShieldCheck, UserRound, Contact, Briefcase, StickyNote, Globe } from "lucide-react";
 import type { Worker, WorkerStatus } from "@/lib/types";
+import { SOCIAL_NETWORKS } from "@/lib/socials";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
 import { LanguagePicker, WorkerPhoto, companyEmailFor, statuses, useRoles } from "./parts";
@@ -38,7 +39,8 @@ export default function WorkerForm({
   // An admin must have a password: a new one, or the one they already have
   const needsPassword = form.isAdmin && !initial.hasPassword;
   const passwordOk = password === "" ? !needsPassword : password.length >= 8;
-  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.personalEmail ?? "") && form.phone.trim() && passwordOk;
+  const websiteOk = !form.showOnWebsite || Boolean(form.companyRole?.trim()); // shown on the website = needs a company role
+  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.personalEmail ?? "") && form.phone.trim() && passwordOk && websiteOk;
 
   // The company email is made by the server from the first name. It only changes
   // when the first name changes (the main admin's login comes from .env and stays).
@@ -118,8 +120,46 @@ export default function WorkerForm({
             </div>
           </Section>
 
-          <Section icon={StickyNote} title="Notes">
-            <textarea rows={4} className={inputClass} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} placeholder="Specialties, vehicle, certifications…" />
+          {/* What visitors see on the About us page */}
+          <Section icon={Globe} title="About us page">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-xs text-[#0a120b]/55">
+                  Show this worker in &quot;Meet the team&quot; on the website. Visitors can see their photo, company role, bio,
+                  personal email, phone, languages and social links.
+                </p>
+                <Toggle checked={Boolean(form.showOnWebsite)} onChange={(v) => set("showOnWebsite", v)} label="Show on website" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Company role{form.showOnWebsite ? " *" : ""}</label>
+                  <input className={inputClass} value={form.companyRole ?? ""} maxLength={80} onChange={(e) => set("companyRole", e.target.value)} placeholder="e.g. CEO & Founder" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Bio</label>
+                  <textarea rows={4} maxLength={1000} className={inputClass} value={form.bio ?? ""} onChange={(e) => set("bio", e.target.value)} placeholder="A few lines about them for visitors: experience, what they love about safaris…" />
+                  <p className="text-xs text-[#0a120b]/40 mt-1 text-right">{(form.bio ?? "").length}/1000</p>
+                </div>
+                {SOCIAL_NETWORKS.map(({ key, label, icon: Icon, placeholder }) => (
+                  <div key={key}>
+                    <label className={labelClass}>{label}</label>
+                    <div className="relative">
+                      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#0a120b]/40" />
+                      <input
+                        className={`${inputClass} pl-9`}
+                        value={form.socials?.[key] ?? ""}
+                        onChange={(e) => set("socials", { ...form.socials, [key]: e.target.value })}
+                        placeholder={placeholder}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Section>
+
+          <Section icon={StickyNote} title="Private notes">
+            <textarea rows={4} className={inputClass} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} placeholder="Specialties, vehicle, certifications… (only admins see this)" />
           </Section>
         </div>
 

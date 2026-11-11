@@ -105,4 +105,32 @@ describe('WorkersService', () => {
     ];
     expect(data.email).toBe('new2@acaciasafaris.com');
   });
+
+  it('needs a company role to show a worker on the website', async () => {
+    const { service } = setup();
+    await expect(
+      service.create({ ...dto, showOnWebsite: true, companyRole: ' ' }, owner),
+    ).rejects.toThrow('Add a company role');
+  });
+
+  it('keeps only the social links that are filled in', async () => {
+    const { service, worker } = setup();
+    await service.create(
+      {
+        ...dto,
+        showOnWebsite: true,
+        companyRole: 'CEO & Founder',
+        bio: '  ',
+        socials: { instagram: 'https://instagram.com/acacia', x: '' },
+      },
+      owner,
+    );
+
+    const [{ data }] = worker.create.mock.calls[0] as [
+      { data: { socials: object; bio: unknown; companyRole: string } },
+    ];
+    expect(data.socials).toEqual({ instagram: 'https://instagram.com/acacia' });
+    expect(data.bio).toBeNull();
+    expect(data.companyRole).toBe('CEO & Founder');
+  });
 });

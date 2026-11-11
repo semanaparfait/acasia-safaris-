@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { Crown, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import type { Worker, WorkerInput, WorkerStatus } from "@/lib/types";
+import { toLink } from "@/lib/socials";
 import { useAuthStore } from "@/store/authStore";
 import { useRolesStore } from "@/store/rolesStore";
 import { useWorkersStore } from "@/store/workersStore";
@@ -36,6 +37,10 @@ export const blankWorker: Worker = {
   joined: new Date().toISOString().slice(0, 10),
   notes: "",
   photo: "",
+  showOnWebsite: false,
+  companyRole: "",
+  bio: "",
+  socials: {},
   isAdmin: false,
 };
 
@@ -52,6 +57,13 @@ export function toInput(w: Worker, password = ""): WorkerInput {
     joined: w.joined,
     notes: w.notes || undefined,
     photo: w.photo || undefined,
+    showOnWebsite: Boolean(w.showOnWebsite),
+    companyRole: w.companyRole?.trim() || undefined,
+    bio: w.bio?.trim() || undefined,
+    // Empty links are left out; "instagram.com/x" becomes a full link
+    socials: Object.fromEntries(
+      Object.entries(w.socials ?? {}).map(([k, v]) => [k, toLink(v ?? "")]).filter(([, v]) => v),
+    ),
     isAdmin: w.isAdmin,
     password: password || undefined,
   };

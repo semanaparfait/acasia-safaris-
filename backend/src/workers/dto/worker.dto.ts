@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -6,10 +7,42 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  IsUrl,
+  MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 
 export const WORKER_STATUSES = ['Active', 'On leave', 'Inactive'];
+
+export const SOCIAL_NETWORKS = [
+  'youtube',
+  'instagram',
+  'x',
+  'tiktok',
+  'snapchat',
+  'facebook',
+] as const;
+
+// Links to the worker's profiles. Leave one out (or "") when they do not use it.
+export class SocialsDto {
+  @IsOptional()
+  @IsUrl({}, { message: 'YouTube must be a link' })
+  youtube?: string;
+  @IsOptional()
+  @IsUrl({}, { message: 'Instagram must be a link' })
+  instagram?: string;
+  @IsOptional() @IsUrl({}, { message: 'X must be a link' }) x?: string;
+  @IsOptional()
+  @IsUrl({}, { message: 'TikTok must be a link' })
+  tiktok?: string;
+  @IsOptional()
+  @IsUrl({}, { message: 'Snapchat must be a link' })
+  snapchat?: string;
+  @IsOptional()
+  @IsUrl({}, { message: 'Facebook must be a link' })
+  facebook?: string;
+}
 
 export class WorkerDto {
   @IsString()
@@ -44,6 +77,28 @@ export class WorkerDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  // About us page: shown there when true (needs a companyRole)
+  @IsOptional()
+  @IsBoolean()
+  showOnWebsite?: boolean;
+
+  // Title on the website, e.g. "CEO & Founder"
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  companyRole?: string;
+
+  // Short text for visitors
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  bio?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SocialsDto)
+  socials?: SocialsDto;
 
   // URL returned by POST /api/uploads/workers
   @IsOptional()

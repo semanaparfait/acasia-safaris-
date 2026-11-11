@@ -9,7 +9,7 @@ import { hash } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RolesService } from '../roles/roles.service';
 import { StorageService } from '../storage/storage.service';
-import { WorkerDto } from './dto/worker.dto';
+import { SOCIAL_NETWORKS, WorkerDto } from './dto/worker.dto';
 
 // The admin who is making the request (from AdminGuard)
 type Actor = Omit<Worker, 'passwordHash' | 'tokenVersion'>;
@@ -38,6 +38,28 @@ const matchesFirstName = (email: string, name: string) => {
   );
 };
 
+// The About us fields, cleaned: empty text becomes null and only filled-in social links are kept.
+// A worker shown on the website needs a company role ("CEO & Founder", ...).
+function websiteFields(dto: WorkerDto) {
+  const companyRole = dto.companyRole?.trim() || null;
+  if (dto.showOnWebsite && !companyRole) {
+    throw new BadRequestException(
+      'Add a company role to show this worker on the About us page',
+    );
+  }
+  const socials: Record<string, string> = {};
+  for (const network of SOCIAL_NETWORKS) {
+    const link = dto.socials?.[network]?.trim();
+    if (link) socials[network] = link;
+  }
+  return {
+    showOnWebsite: dto.showOnWebsite ?? false,
+    companyRole,
+    bio: dto.bio?.trim() || null,
+    socials,
+  };
+}
+
 // Rules for admins:
 //  - The main admin (isOwner) cannot be deleted and always keeps admin access.
 //  - Only the main admin can give or remove admin access and set admins' passwords.
@@ -61,6 +83,25 @@ export class WorkersService {
       ...worker,
       hasPassword: Boolean(passwordHash),
     }));
+  }
+
+  // About us page (public): only what visitors may see, founders and longest-serving first
+  team() {
+    return this.prisma.worker.findMany({
+      where: { showOnWebsite: true, status: 'Active' },
+      orderBy: [{ joined: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        companyRole: true,
+        photo: true,
+        bio: true,
+        personalEmail: true,
+        phone: true,
+        languages: true,
+        socials: true,
+      },
+    });
   }
 
   async findOne(id: string) {
@@ -88,6 +129,7 @@ export class WorkersService {
     const worker = await this.prisma.worker.create({
       data: {
         ...data,
+        ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
         joined: toDate(dto.joined),
@@ -134,6 +176,7 @@ export class WorkersService {
       where: { id },
       data: {
         ...data,
+        ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
         joined: toDate(dto.joined),

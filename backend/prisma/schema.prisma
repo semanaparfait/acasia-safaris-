@@ -95,6 +95,12 @@ model Worker {
   status        String   @default("Active") // "Active", "On leave", "Inactive"
   joined        DateTime @default(now())
   notes         String?
+
+  // About us page. Shown there when showOnWebsite is on (and the worker is Active).
+  showOnWebsite Boolean @default(false)
+  companyRole   String? // title on the website, e.g. "CEO & Founder" (role above is the internal job)
+  bio           String? // short text for visitors (notes stay private)
+  socials       Json    @default("{}") // links: { youtube, instagram, x, tiktok, snapchat, facebook }
   photo         String? // image URL (uploaded to the "workers" bucket)
 
   // Second role: workers with isAdmin can log in to the admin panel with email + password
