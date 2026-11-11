@@ -1,30 +1,64 @@
 import React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { LEGAL_UPDATED, type LegalBlock, type LegalDoc } from "./legalContent";
 
-export interface LegalSection {
-  title: string;
-  body: React.ReactNode;
+const EMAIL = "info@acaciasafaris.com";
+
+// "Informations collectées" -> "informations-collectees" (for the links of the table of contents)
+const slug = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
+
+// A paragraph with the email address as a link
+function Paragraph({ text }: { text: string }) {
+  const parts = text.split(EMAIL);
+  return (
+    <p>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <a href={`mailto:${EMAIL}`} className="text-[#1F5A42] underline underline-offset-2">
+              {EMAIL}
+            </a>
+          )}
+        </React.Fragment>
+      ))}
+    </p>
+  );
 }
 
-interface LegalPageProps {
-  label: string;
-  title: string;
-  updated: string;
-  intro: string;
-  sections: LegalSection[];
+function Block({ block }: { block: LegalBlock }) {
+  if (typeof block === "string") return <Paragraph text={block} />;
+  return (
+    <ul>
+      {block.list.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
 }
 
-const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+// The Privacy Policy and Terms of Service page, in the visitor's language (content: legalContent.ts)
+export default function LegalPage({ doc }: { doc: LegalDoc }) {
+  const t = useTranslations("Legal");
+  const locale = useLocale();
+  const updated = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
+    new Date(LEGAL_UPDATED),
+  );
 
-export default function LegalPage({ label, title, updated, intro, sections }: LegalPageProps) {
   return (
     <div className="bg-white font-sans text-[#0a120b] selection:bg-[#c5a86d] selection:text-black">
       {/* Header */}
       <section className="bg-[#12231a] text-white px-6 pt-40 pb-20">
         <div className="max-w-6xl mx-auto">
-
-          <h1 className="text-4xl md:text-5xl font-serif uppercase tracking-wide mb-4">{title}</h1>
-          <p className="text-sm text-zinc-400">Last updated: {updated}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-3">{t("label")}</p>
+          <h1 className="text-4xl md:text-5xl font-serif uppercase tracking-wide mb-4">{doc.title}</h1>
+          <p className="text-sm text-zinc-400">{t("updated", { date: updated })}</p>
         </div>
       </section>
 
@@ -33,11 +67,9 @@ export default function LegalPage({ label, title, updated, intro, sections }: Le
           {/* Table of contents */}
           <aside className="hidden lg:block">
             <nav className="sticky top-28">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">
-                On this page
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">{t("onThisPage")}</p>
               <ul className="space-y-2.5 text-sm border-l border-[#0a120b]/10">
-                {sections.map((s, i) => (
+                {doc.sections.map((s, i) => (
                   <li key={s.title}>
                     <a
                       href={`#${slug(s.title)}`}
@@ -53,16 +85,21 @@ export default function LegalPage({ label, title, updated, intro, sections }: Le
 
           {/* Content */}
           <article className="lg:col-span-3 max-w-3xl">
-            <p className="text-base text-[#0a120b]/70 leading-relaxed mb-12">{intro}</p>
+            {locale !== "en" && (
+              <p className="mb-6 rounded-lg bg-[#f7f5f0] px-4 py-3 text-xs text-[#0a120b]/60">{t("englishPrevails")}</p>
+            )}
+            <p className="text-base text-[#0a120b]/70 leading-relaxed mb-12">{doc.intro}</p>
             <div className="space-y-12">
-              {sections.map((s, i) => (
+              {doc.sections.map((s, i) => (
                 <section key={s.title} id={slug(s.title)} className="scroll-mt-28">
                   <h2 className="text-xl md:text-2xl font-serif uppercase tracking-wide mb-4">
                     <span className="text-[#c5a86d] mr-2">{String(i + 1).padStart(2, "0")}</span>
                     {s.title}
                   </h2>
                   <div className="text-sm md:text-[15px] text-[#0a120b]/65 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5">
-                    {s.body}
+                    {s.body.map((block, j) => (
+                      <Block key={j} block={block} />
+                    ))}
                   </div>
                 </section>
               ))}
@@ -70,14 +107,14 @@ export default function LegalPage({ label, title, updated, intro, sections }: Le
 
             <div className="mt-16 p-6 md:p-8 rounded-xl bg-[#f7f5f0] border border-[#0a120b]/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="font-serif text-lg uppercase tracking-wide">Questions?</p>
-                <p className="text-sm text-[#0a120b]/60">Our team is happy to help with anything on this page.</p>
+                <p className="font-serif text-lg uppercase tracking-wide">{t("questions")}</p>
+                <p className="text-sm text-[#0a120b]/60">{t("help")}</p>
               </div>
               <Link
                 href="/contact"
                 className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md transition-all text-center"
               >
-                Contact Us
+                {t("contact")}
               </Link>
             </div>
           </article>

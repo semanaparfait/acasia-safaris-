@@ -2,7 +2,7 @@
 
 import React, { use, useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
@@ -56,51 +56,17 @@ const finalValue = (picked: string, typed: string) =>
 // A destination of the trip with its own choices
 type Stop = { key: string; title: string; options: TripOptions };
 
-const steps = [
-  { title: "Destinations", short: "Where" },
-  { title: "Trip Details", short: "When & how" },
-  { title: "Your Details", short: "Who" },
-];
+// Texts of these lists: messages Planner.steps / perks / process / faqs
+const steps = ["1", "2", "3"] as const;
 
 const perks = [
-  { icon: Clock, text: "Reply within 24 hours" },
-  { icon: ShieldCheck, text: "No payment to send a request" },
-];
+  { icon: Clock, key: "reply" },
+  { icon: ShieldCheck, key: "noPay" },
+] as const;
 
-const process = [
-  {
-    title: "Send your request",
-    desc: "Pick your destinations and tell us how you like to travel.",
-  },
-  {
-    title: "Talk to an expert",
-    desc: "A local specialist contacts you to fine-tune the details.",
-  },
-  {
-    title: "Get your itinerary",
-    desc: "Receive a personal plan with lodges, activities and price.",
-  },
-  { title: "Confirm & go", desc: "Book securely and get ready for Rwanda." },
-];
+const process = ["1", "2", "3", "4"] as const;
 
-const faqs = [
-  {
-    q: "Do I need a visa for Rwanda?",
-    a: "Visitors from all countries can get a visa on arrival, or apply for an e-Visa online before travelling.",
-  },
-  {
-    q: "What is the best time to visit?",
-    a: "The dry seasons (June – September and December – February) are best for gorilla trekking and safaris, but Rwanda can be visited all year.",
-  },
-  {
-    q: "Is gorilla trekking safe?",
-    a: "Yes. Treks are led by experienced rangers and guides who know the gorilla families and the mountains very well.",
-  },
-  {
-    q: "Can I customise my trip?",
-    a: "Absolutely. Every part of your journey, from lodges to activities and dietary needs, is tailored to you.",
-  },
-];
+const faqs = ["1", "2", "3", "4"] as const;
 
 const inputClass =
   "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all";
@@ -150,6 +116,8 @@ function ChoiceGroup({
     placeholder: string;
   };
 }) {
+  const t = useTranslations("Planner");
+  const choiceText = useChoiceText();
   const choices = other ? [...new Set([...options, OTHER])] : options;
   return (
     <div>
@@ -158,7 +126,7 @@ function ChoiceGroup({
         {choices.map((c) => (
           <Chip
             key={c}
-            label={c}
+            label={choiceText(c)}
             active={value === c}
             onClick={() => onChange(value === c ? "" : c)}
           />
@@ -166,7 +134,7 @@ function ChoiceGroup({
       </div>
       {other && value === OTHER && (
         <input
-          aria-label={`${label}: other`}
+          aria-label={t("otherAria", { label })}
           value={other.value}
           onChange={(e) => other.onChange(e.target.value)}
           placeholder={other.placeholder}
@@ -175,6 +143,13 @@ function ChoiceGroup({
       )}
     </div>
   );
+}
+
+// Standard choices are translated; ones set for a destination in the admin stay as typed.
+// The value sent to the team stays in English.
+function useChoiceText() {
+  const t = useTranslations("Planner");
+  return (c: string) => (t.has(`choices.${c}` as never) ? t(`choices.${c}` as "choices.Other") : c);
 }
 
 function Counter({
@@ -188,6 +163,7 @@ function Counter({
   min: number;
   onChange: (v: number) => void;
 }) {
+  const t = useTranslations("Planner");
   return (
     <div className="flex items-center justify-between rounded-md bg-[#f7f5f0] border border-[#0a120b]/10 px-4 py-2.5">
       <span className="text-sm text-[#0a120b]/70">{label}</span>
@@ -196,7 +172,7 @@ function Counter({
           type="button"
           onClick={() => onChange(Math.max(min, value - 1))}
           disabled={value <= min}
-          aria-label={`Fewer ${label.toLowerCase()}`}
+          aria-label={t("fewer", { label })}
           className="w-8 h-8 rounded-full border border-[#0a120b]/15 flex items-center justify-center hover:border-[#0a120b] disabled:opacity-30 transition-all"
         >
           <Minus size={14} />
@@ -205,7 +181,7 @@ function Counter({
         <button
           type="button"
           onClick={() => onChange(value + 1)}
-          aria-label={`More ${label.toLowerCase()}`}
+          aria-label={t("more", { label })}
           className="w-8 h-8 rounded-full border border-[#0a120b]/15 flex items-center justify-center hover:border-[#0a120b] transition-all"
         >
           <Plus size={14} />
@@ -225,6 +201,8 @@ export default function BookingPage({
   const loadDestinations = useDestinationsStore((s) => s.load);
   const createBooking = useBookingsStore((s) => s.createBooking);
   const locale = useLocale();
+  const t = useTranslations("Planner");
+  const choiceText = useChoiceText();
 
   useEffect(() => {
     loadDestinations();
@@ -310,34 +288,34 @@ export default function BookingPage({
   // What is still missing on a step ("" = the step is complete)
   const stepProblem = (i: number) => {
     if (i === 0) {
-      return hasDestination ? "" : "Please choose at least one destination.";
+      return hasDestination ? "" : t("errors.destination");
     }
     if (i === 1) {
       if (!dates.from || !dates.to) {
-        return "Please choose your arrival and departure dates.";
+        return t("errors.dates");
       }
       for (const { key, title } of stops) {
         const c = choiceFor(key);
         if (!finalValue(c.style, c.otherStyle)) {
-          return `Please choose a travel style for ${title}.`;
+          return t("errors.style", { title });
         }
         if (!finalValue(c.accommodation, c.otherAccommodation)) {
-          return `Please choose accommodation for ${title}.`;
+          return t("errors.accommodation", { title });
         }
-        if (!c.budget) return `Please choose a budget for ${title}.`;
+        if (!c.budget) return t("errors.budget", { title });
       }
       return "";
     }
-    if (!details.name.trim()) return "Please enter your full name.";
+    if (!details.name.trim()) return t("errors.name");
     if (!/^\S+@\S+\.\S+$/.test(details.email.trim())) {
-      return "Please enter a valid email address.";
+      return t("errors.email");
     }
     if (!details.phone || !isValidPhoneNumber(details.phone)) {
-      return "Please enter a valid phone or WhatsApp number.";
+      return t("errors.phone");
     }
-    if (!details.fromRwanda) return "Please tell us if you are from Rwanda.";
+    if (!details.fromRwanda) return t("errors.fromRwanda");
     if (details.fromRwanda === "No" && !details.country.trim()) {
-      return "Please type the country you are from.";
+      return t("errors.country");
     }
     return "";
   };
@@ -419,11 +397,14 @@ export default function BookingPage({
     }
   };
 
+  // Dates in the visitor's language ("1 déc. – 7 déc. 2026")
+  const short = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
+  const long = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
   const dateText = dates.from
     ? dates.to
-      ? `${format(dates.from, "MMM d")} – ${format(dates.to, "MMM d, yyyy")}`
-      : format(dates.from, "MMM d, yyyy")
-    : "Flexible";
+      ? `${short.format(dates.from)} – ${long.format(dates.to)}`
+      : long.format(dates.from)
+    : t("flexible");
 
   return (
     <div className="bg-white font-sans text-[#0a120b] selection:bg-[#c5a86d] selection:text-black">
@@ -432,7 +413,7 @@ export default function BookingPage({
         <div className="absolute inset-0 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80"
-            alt="Traveller with a suitcase watching a plane take off"
+            alt={t("heroAlt")}
             className="w-full h-full object-cover object-center brightness-[0.85]"
           />
           <div className="absolute inset-0 bg-black/50" />
@@ -447,19 +428,19 @@ export default function BookingPage({
           >
             <nav
               className="flex items-center justify-center gap-1.5 text-xs text-zinc-300 mb-6"
-              aria-label="Breadcrumb"
+              aria-label={t("breadcrumb")}
             >
               <Link href="/" className="hover:text-white transition-colors">
-                Home
+                {t("home")}
               </Link>
               <ChevronRight size={12} />
-              <span className="text-[#c5a86d]">Booking</span>
+              <span className="text-[#c5a86d]">{t("booking")}</span>
             </nav>
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-serif uppercase tracking-[0.06em] leading-none mb-5">
-              Book Your <span className="text-[#c5a86d]">Trip</span>
+              {t("title1")} <span className="text-[#c5a86d]">{t("title2")}</span>
             </h1>
             <p className="text-sm md:text-base text-zinc-300 font-light max-w-md mx-auto mb-10">
-              Choose your destination, dates and guests to get started.
+              {t("subtitle")}
             </p>
           </motion.div>
 
@@ -473,14 +454,14 @@ export default function BookingPage({
           >
             <label className="relative rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors cursor-pointer">
               <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
-                <MapPin size={12} className="text-[#c5a86d]" /> Destination
+                <MapPin size={12} className="text-[#c5a86d]" /> {t("barDestination")}
               </span>
               <select
                 value={heroValue}
                 onChange={(e) => setHeroDestination(e.target.value)}
                 className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
               >
-                <option value="">Where to?</option>
+                <option value="">{t("whereTo")}</option>
                 {destinations.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.title}
@@ -490,7 +471,7 @@ export default function BookingPage({
             </label>
             <div className="rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors md:border-l border-[#0a120b]/10">
               <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
-                <CalendarDays size={12} className="text-[#c5a86d]" /> Dates
+                <CalendarDays size={12} className="text-[#c5a86d]" /> {t("barDates")}
               </span>
               <div className="[&>div>button]:border-0 [&>div>button]:py-0.5 [&>div>button]:font-sans [&>div>button]:text-sm [&>div>button]:font-medium">
                 <DateRangePicker
@@ -498,13 +479,13 @@ export default function BookingPage({
                   onSelect={(range) =>
                     setDates({ from: range?.from, to: range?.to })
                   }
-                  placeholder="Add dates"
+                  placeholder={t("addDates")}
                 />
               </div>
             </div>
             <label className="rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors md:border-l border-[#0a120b]/10 cursor-pointer">
               <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
-                <Users size={12} className="text-[#c5a86d]" /> Guests
+                <Users size={12} className="text-[#c5a86d]" /> {t("barGuests")}
               </span>
               <select
                 value={adults}
@@ -513,7 +494,7 @@ export default function BookingPage({
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
-                    {n} adult{n > 1 ? "s" : ""}
+                    {t("adults", { count: n })}
                   </option>
                 ))}
               </select>
@@ -522,7 +503,7 @@ export default function BookingPage({
               type="submit"
               className="group inline-flex items-center justify-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-4 rounded-xl transition-all"
             >
-              Book Now
+              {t("bookNow")}
               <ArrowRight
                 size={16}
                 className="group-hover:translate-x-1 transition-transform"
@@ -533,10 +514,10 @@ export default function BookingPage({
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-6">
             {perks.map((p) => (
               <span
-                key={p.text}
+                key={p.key}
                 className="flex items-center gap-2 text-xs md:text-sm text-zinc-200"
               >
-                <p.icon size={15} className="text-[#c5a86d]" /> {p.text}
+                <p.icon size={15} className="text-[#c5a86d]" /> {t(`perks.${p.key}`)}
               </span>
             ))}
           </div>
@@ -561,14 +542,10 @@ export default function BookingPage({
                   <CheckCircle2 size={36} />
                 </div>
                 <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide mb-3">
-                  Request sent
-                  {details.name ? `, ${details.name.split(" ")[0]}` : ""}!
+                  {details.name ? t("sentName", { name: details.name.split(" ")[0] }) : t("sent")}
                 </h2>
                 <p className="text-sm text-[#0a120b]/60 max-w-md mx-auto leading-relaxed mb-8">
-                  Thank you for choosing acacia Safaris. One of our travel
-                  experts will send your personalised itinerary and price
-                  within 24 hours. Follow it and talk with us on your booking
-                  page (we also emailed you the link).
+                  {t("sentText")}
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
                   {bookingLink && (
@@ -576,20 +553,20 @@ export default function BookingPage({
                       href={bookingLink}
                       className="bg-[#12231a] hover:bg-[#1F5A42] text-white font-medium text-sm px-7 py-3 rounded-sm transition-all"
                     >
-                      Follow my booking
+                      {t("follow")}
                     </Link>
                   )}
                   <Link
                     href="/destination"
                     className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm transition-all"
                   >
-                    Explore Destinations
+                    {t("exploreDestinations")}
                   </Link>
                   <Link
                     href="/"
                     className="border border-[#0a120b]/20 hover:border-[#0a120b] text-sm px-7 py-3 rounded-sm transition-all"
                   >
-                    Back to Home
+                    {t("backHome")}
                   </Link>
                 </div>
               </motion.div>
@@ -599,7 +576,7 @@ export default function BookingPage({
                 <div className="px-6 md:px-10 pt-8">
                   <div className="flex items-center">
                     {steps.map((s, i) => (
-                      <React.Fragment key={s.title}>
+                      <React.Fragment key={s}>
                         <button
                           type="button"
                           onClick={() => i !== step && goTo(i)}
@@ -618,12 +595,12 @@ export default function BookingPage({
                           </span>
                           <span className="hidden sm:block">
                             <span className="block text-[10px] uppercase tracking-widest text-[#0a120b]/40">
-                              {s.short}
+                              {t(`steps.${s}.short`)}
                             </span>
                             <span
                               className={`block text-sm font-medium ${i === step ? "text-[#0a120b]" : "text-[#0a120b]/55"}`}
                             >
-                              {s.title}
+                              {t(`steps.${s}.title`)}
                             </span>
                           </span>
                         </button>
@@ -655,10 +632,10 @@ export default function BookingPage({
                       {step === 0 && (
                         <div>
                           <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
-                            Where would you like to go?
+                            {t("whereGo")}
                           </h2>
                           <p className="text-sm text-[#0a120b]/55 mb-6">
-                            Pick as many as you like.
+                            {t("pickMany")}
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {destinations.map((d) => {
@@ -706,7 +683,7 @@ export default function BookingPage({
                           </div>
                           <div className="mt-5">
                             <label htmlFor="other" className={labelClass}>
-                              Somewhere else?
+                              {t("elsewhere")}
                             </label>
                             <input
                               id="other"
@@ -714,7 +691,7 @@ export default function BookingPage({
                               onChange={(e) =>
                                 setOtherDestination(e.target.value)
                               }
-                              placeholder="e.g. Gishwati forest, Kigali city tour…"
+                              placeholder={t("elsewherePlaceholder")}
                               className={inputClass}
                             />
                           </div>
@@ -726,11 +703,10 @@ export default function BookingPage({
                         <div className="space-y-7">
                           <div>
                             <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
-                              Tell us about your trip
+                              {t("aboutTrip")}
                             </h2>
                             <p className="text-sm text-[#0a120b]/55">
-                              Choose your dates, then a travel style,
-                              accommodation and budget for each destination.
+                              {t("aboutTripText")}
                             </p>
                           </div>
                           <div>
@@ -741,19 +717,19 @@ export default function BookingPage({
                                 onSelect={(range) =>
                                   setDates({ from: range?.from, to: range?.to })
                                 }
-                                placeholder="Select your travel dates"
+                                placeholder={t("selectDates")}
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Counter
-                              label="Adults"
+                              label={t("adultsLabel")}
                               value={adults}
                               min={1}
                               onChange={setAdults}
                             />
                             <Counter
-                              label="Children"
+                              label={t("childrenLabel")}
                               value={children}
                               min={0}
                               onChange={setChildren}
@@ -770,7 +746,7 @@ export default function BookingPage({
                                   {title}
                                 </h3>
                                 <ChoiceGroup
-                                  label="Travel style"
+                                  label={t("style")}
                                   options={options.travelStyles}
                                   value={c.style}
                                   onChange={(style) =>
@@ -780,11 +756,11 @@ export default function BookingPage({
                                     value: c.otherStyle,
                                     onChange: (otherStyle) =>
                                       setChoice(key, { otherStyle }),
-                                    placeholder: "Tell us your travel style",
+                                    placeholder: t("stylePlaceholder"),
                                   }}
                                 />
                                 <ChoiceGroup
-                                  label="Accommodation"
+                                  label={t("accommodation")}
                                   options={options.accommodations}
                                   value={c.accommodation}
                                   onChange={(accommodation) =>
@@ -794,12 +770,11 @@ export default function BookingPage({
                                     value: c.otherAccommodation,
                                     onChange: (otherAccommodation) =>
                                       setChoice(key, { otherAccommodation }),
-                                    placeholder:
-                                      "Tell us where you would like to stay",
+                                    placeholder: t("accommodationPlaceholder"),
                                   }}
                                 />
                                 <ChoiceGroup
-                                  label="Budget"
+                                  label={t("budget")}
                                   options={options.budgets}
                                   value={c.budget}
                                   onChange={(budget) =>
@@ -817,16 +792,16 @@ export default function BookingPage({
                         <div className="space-y-5">
                           <div>
                             <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wide mb-1">
-                              Almost there!
+                              {t("almost")}
                             </h2>
                             <p className="text-sm text-[#0a120b]/55">
-                              Where should we send your itinerary?
+                              {t("sendWhere")}
                             </p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label htmlFor="name" className={labelClass}>
-                                Full name *
+                                {t("fullName")}
                               </label>
                               <input
                                 id="name"
@@ -844,7 +819,7 @@ export default function BookingPage({
                             </div>
                             <div>
                               <label htmlFor="email" className={labelClass}>
-                                Email *
+                                {t("email")}
                               </label>
                               <input
                                 id="email"
@@ -863,7 +838,7 @@ export default function BookingPage({
                             </div>
                             <div>
                               <label htmlFor="phone" className={labelClass}>
-                                Phone / WhatsApp *
+                                {t("phone")}
                               </label>
                               <PhoneField
                                 id="phone"
@@ -875,13 +850,13 @@ export default function BookingPage({
                             </div>
                             <div>
                               <p className={labelClass}>
-                                Are you from Rwanda? *
+                                {t("fromRwanda")}
                               </p>
                               <div className="flex gap-2">
                                 {["Yes", "No"].map((answer) => (
                                   <Chip
                                     key={answer}
-                                    label={answer}
+                                    label={choiceText(answer)}
                                     active={details.fromRwanda === answer}
                                     onClick={() =>
                                       setDetails({
@@ -896,7 +871,7 @@ export default function BookingPage({
                             {details.fromRwanda === "No" && (
                               <div>
                                 <label htmlFor="country" className={labelClass}>
-                                  Which country are you from? *
+                                  {t("whichCountry")}
                                 </label>
                                 <input
                                   id="country"
@@ -908,7 +883,7 @@ export default function BookingPage({
                                       country: e.target.value,
                                     })
                                   }
-                                  placeholder="e.g. United States"
+                                  placeholder={t("countryPlaceholder")}
                                   className={inputClass}
                                 />
                               </div>
@@ -916,7 +891,7 @@ export default function BookingPage({
                           </div>
                           <div>
                             <label htmlFor="notes" className={labelClass}>
-                              Anything else?
+                              {t("anythingElse")}
                             </label>
                             <textarea
                               id="notes"
@@ -928,7 +903,7 @@ export default function BookingPage({
                                   notes: e.target.value,
                                 })
                               }
-                              placeholder="Special occasions, dietary needs, accessibility…"
+                              placeholder={t("notesPlaceholder")}
                               className={`${inputClass} resize-none`}
                             />
                           </div>
@@ -949,11 +924,11 @@ export default function BookingPage({
                         onClick={() => goTo(step - 1)}
                         className="group inline-flex items-center gap-2 border-2 border-[#12231a] text-[#12231a] hover:bg-[#12231a] hover:text-white font-medium text-sm px-6 py-3 rounded-sm transition-all"
                       >
-                        <ArrowLeft size={16} /> Back
+                        <ArrowLeft size={16} /> {t("back")}
                       </button>
                     ) : (
                       <span className="text-xs text-[#0a120b]/45">
-                        Step 1 of {steps.length}
+                        {t("stepOf", { step: 1, total: steps.length })}
                       </span>
                     )}
                     <button
@@ -962,10 +937,10 @@ export default function BookingPage({
                       className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-8 py-3.5 rounded-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60"
                     >
                       {step < steps.length - 1
-                        ? "Continue"
+                        ? t("continue")
                         : sending
-                          ? "Sending…"
-                          : "Send My Request"}
+                          ? t("sending")
+                          : t("send")}
                       <ArrowRight
                         size={16}
                         className="group-hover:translate-x-1 transition-transform"
@@ -981,7 +956,7 @@ export default function BookingPage({
           <aside className="lg:sticky lg:top-28 space-y-6">
             <div className="rounded-2xl bg-[#12231a] text-white p-6 shadow-xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-4">
-                Your trip
+                {t("yourTrip")}
               </p>
 
               {chosen.length > 0 || otherDestination ? (
@@ -1002,7 +977,7 @@ export default function BookingPage({
                       {!submitted && (
                         <button
                           onClick={() => toggle(d)}
-                          aria-label={`Remove ${d.title}`}
+                          aria-label={t("remove", { title: d.title })}
                           className="text-zinc-500 hover:text-white"
                         >
                           <X size={14} />
@@ -1022,32 +997,31 @@ export default function BookingPage({
               ) : (
                 <div className="rounded-lg border border-dashed border-white/20 p-5 text-center text-sm text-zinc-400 mb-5">
                   <MapPin size={20} className="mx-auto mb-2 text-[#c5a86d]" />
-                  No destinations yet
+                  {t("noDestinations")}
                 </div>
               )}
 
               <dl className="space-y-3 text-sm border-t border-white/10 pt-4">
                 <div className="flex justify-between gap-4">
                   <dt className="flex items-center gap-2 text-zinc-400">
-                    <CalendarDays size={14} /> Dates
+                    <CalendarDays size={14} /> {t("dates")}
                   </dt>
                   <dd className="text-right">{dateText}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="flex items-center gap-2 text-zinc-400">
-                    <Users size={14} /> Travelers
+                    <Users size={14} /> {t("travelers")}
                   </dt>
                   <dd>
-                    {adults} adult{adults > 1 ? "s" : ""}
-                    {children > 0 &&
-                      `, ${children} child${children > 1 ? "ren" : ""}`}
+                    {t("adults", { count: adults })}
+                    {children > 0 && `, ${t("children", { count: children })}`}
                   </dd>
                 </div>
                 {stops.map(({ key, title }) => {
                   const c = choiceFor(key);
                   const summary = [
-                    finalValue(c.style, c.otherStyle),
-                    finalValue(c.accommodation, c.otherAccommodation),
+                    choiceText(finalValue(c.style, c.otherStyle)),
+                    choiceText(finalValue(c.accommodation, c.otherAccommodation)),
                     c.budget,
                   ]
                     .filter(Boolean)
@@ -1073,10 +1047,10 @@ export default function BookingPage({
                 </span>
                 <div>
                   <p className="font-serif uppercase tracking-wide">
-                    Need help?
+                    {t("needHelp")}
                   </p>
                   <p className="text-xs text-[#0a120b]/50">
-                    Talk to a travel expert
+                    {t("talkExpert")}
                   </p>
                 </div>
               </div>
@@ -1086,7 +1060,7 @@ export default function BookingPage({
                 rel="noopener noreferrer"
                 className="mt-2 w-full inline-flex items-center justify-center gap-2 border border-[#0a120b]/15 hover:border-[#1F5A42] hover:text-[#1F5A42] text-sm px-5 py-2.5 rounded-sm transition-all"
               >
-                <MessageCircle size={16} /> Chat on WhatsApp
+                <MessageCircle size={16} /> {t("chatWhatsapp")}
               </a>
             </div>
           </aside>
@@ -1098,16 +1072,16 @@ export default function BookingPage({
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-              Simple & easy
+              {t("simple")}
             </span>
             <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
-              How it works
+              {t("howItWorks")}
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {process.map((p, i) => (
               <motion.div
-                key={p.title}
+                key={p}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1118,10 +1092,10 @@ export default function BookingPage({
                   0{i + 1}
                 </span>
                 <h3 className="font-serif text-lg uppercase tracking-wide mt-2 mb-2">
-                  {p.title}
+                  {t(`process.${p}.title`)}
                 </h3>
                 <p className="text-sm text-[#0a120b]/55 leading-relaxed">
-                  {p.desc}
+                  {t(`process.${p}.desc`)}
                 </p>
               </motion.div>
             ))}
@@ -1134,24 +1108,24 @@ export default function BookingPage({
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-              Good to know
+              {t("goodToKnow")}
             </span>
             <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
-              Questions
+              {t("questions")}
             </h2>
           </div>
           <div className="divide-y divide-[#0a120b]/10 border-y border-[#0a120b]/10">
             {faqs.map((faq, i) => {
               const open = openFaq === i;
               return (
-                <div key={faq.q}>
+                <div key={faq}>
                   <button
                     onClick={() => setOpenFaq(open ? null : i)}
                     aria-expanded={open}
                     className="w-full flex items-center justify-between gap-6 py-5 text-left group"
                   >
                     <span className="font-serif text-lg group-hover:text-[#1F5A42] transition-colors">
-                      {faq.q}
+                      {t(`faqs.${faq}.q`)}
                     </span>
                     <span
                       className={`shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${
@@ -1173,7 +1147,7 @@ export default function BookingPage({
                         className="overflow-hidden"
                       >
                         <p className="pb-5 pr-12 text-sm text-[#0a120b]/60 leading-relaxed">
-                          {faq.a}
+                          {t(`faqs.${faq}.a`)}
                         </p>
                       </motion.div>
                     )}

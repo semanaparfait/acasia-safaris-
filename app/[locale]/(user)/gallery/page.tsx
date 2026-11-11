@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,20 +22,17 @@ const categories = ["All", "Wildlife", "Landscapes", "Culture", "People"];
 
 const highlights = [
   {
-    title: "The Gorilla Trek",
-    desc: "Intimate moments with the endangered mountain gorillas in the misty bamboo forests.",
+    key: "gorilla",
     img: "https://i.pinimg.com/736x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg",
     category: "Wildlife",
   },
   {
-    title: "Golden Hour at Kivu",
-    desc: "Serene sunsets and the gentle ripples of Rwanda's most stunning lake.",
+    key: "kivu",
     img: "https://i.pinimg.com/736x/51/a9/a8/51a9a84199c37fc7ade67a32a8b6df39.jpg",
     category: "Landscapes",
   },
   {
-    title: "Spirit of the Culture",
-    desc: "The vibrant energy, rich traditions and profound resilience of the Rwandan people.",
+    key: "culture",
     img: "https://i.pinimg.com/736x/80/8d/91/808d91821c1f5c2342c222215223cbc6.jpg",
     category: "Culture",
   },
@@ -43,6 +41,9 @@ const highlights = [
 const VIDEO_ID = "Ov8JhHzPUKo";
 
 export default function GalleryPage() {
+  const t = useTranslations("Gallery");
+  // Categories an admin made up have no translation: shown as typed
+  const categoryName = (c: string) => (t.has(`categories.${c}` as never) ? t(`categories.${c}` as "categories.All") : c);
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [playVideo, setPlayVideo] = useState(false);
@@ -135,7 +136,7 @@ export default function GalleryPage() {
               </span>
               <button
                 onClick={closeLightbox}
-                aria-label="Close"
+                aria-label={t("close")}
                 className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center hover:bg-white hover:text-[#0e1d16] transition-all"
               >
                 <X size={20} />
@@ -149,7 +150,7 @@ export default function GalleryPage() {
                   e.stopPropagation();
                   showPrev();
                 }}
-                aria-label="Previous photo"
+                aria-label={t("previous")}
                 className="absolute left-3 md:left-8 z-10 w-12 h-12 rounded-full bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all"
               >
                 <ChevronLeft size={22} />
@@ -174,7 +175,7 @@ export default function GalleryPage() {
                   e.stopPropagation();
                   showNext();
                 }}
-                aria-label="Next photo"
+                aria-label={t("next")}
                 className="absolute right-3 md:right-8 z-10 w-12 h-12 rounded-full bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all"
               >
                 <ChevronRight size={22} />
@@ -186,7 +187,7 @@ export default function GalleryPage() {
               <h3 className="text-2xl font-serif uppercase tracking-wide">{current.title}</h3>
               <p className="mt-2 inline-flex items-center gap-2 text-xs text-zinc-400">
                 <span className="px-2.5 py-1 rounded-full bg-[#c5a86d]/15 text-[#c5a86d] uppercase tracking-widest text-[10px]">
-                  {current.category}
+                  {categoryName(current.category)}
                 </span>
                 <MapPin size={12} /> {current.location}
               </p>
@@ -200,7 +201,7 @@ export default function GalleryPage() {
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1504173010664-32509aeebb62?auto=format&fit=crop&w=2000&q=80"
-            alt="Two lionesses watching from the grass"
+            alt={t("heroAlt")}
             className="w-full h-full object-cover object-[70%_center] brightness-[0.9]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
@@ -216,13 +217,11 @@ export default function GalleryPage() {
           >
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal uppercase tracking-wide leading-[1.08] mb-6">
-              Moments From <br />
-              <span className="text-[#c5a86d]">The Wild</span>
+              {t("title1")} <br />
+              <span className="text-[#c5a86d]">{t("title2")}</span>
             </h1>
             <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed max-w-xl mb-8">
-              Gorillas in the mist, golden sunsets over Lake Kivu and the warm smiles
-              of the people we meet along the way. Take a look at the moments our guests
-              and guides have captured.
+              {t("intro")}
             </p>
             <button
               onClick={() =>
@@ -230,7 +229,7 @@ export default function GalleryPage() {
               }
               className="group inline-flex items-center gap-2 bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md hover:shadow-lg transition-all duration-300"
             >
-              Browse Photos
+              {t("browse")}
               <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
             </button>
           </motion.div>
@@ -254,7 +253,7 @@ export default function GalleryPage() {
                       : "text-[#0a120b]/65 hover:bg-[#f7f5f0] hover:text-[#0a120b]"
                   }`}
                 >
-                  {category}
+                  {categoryName(category)}
                   <span
                     className={`text-[10px] min-w-5 h-5 px-1.5 rounded-full flex items-center justify-center ${
                       active ? "bg-[#c5a86d] text-[#0e1d16]" : "bg-[#0a120b]/5 text-[#0a120b]/50"
@@ -275,15 +274,15 @@ export default function GalleryPage() {
           <div className="flex items-end justify-between gap-4 mb-10">
             <div>
               <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-                Curated Collection
+                {t("curated")}
               </span>
               <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide">
-                {activeCategory === "All" ? "Through Our Lens" : activeCategory}
+                {activeCategory === "All" ? t("throughLens") : categoryName(activeCategory)}
               </h2>
             </div>
             <p className="hidden sm:flex items-center gap-2 text-sm text-[#0a120b]/50">
               <Images size={16} />
-              {filteredImages.length} photos
+              {t("photos", { count: filteredImages.length })}
             </p>
           </div>
 
@@ -309,7 +308,7 @@ export default function GalleryPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
 
                   <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-widest text-[#12231a]">
-                    {img.category}
+                    {categoryName(img.category)}
                   </span>
                   <span className="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#c5a86d] text-[#0e1d16] flex items-center justify-center opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     <Maximize2 size={15} />
@@ -339,15 +338,13 @@ export default function GalleryPage() {
             transition={{ duration: 0.7 }}
           >
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">
-              Featured Film
+              {t("filmTag")}
             </span>
             <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide leading-tight mb-6">
-              Feel the rhythm <br /> of the wild
+              {t("filmTitle1")} <br /> {t("filmTitle2")}
             </h2>
             <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed mb-8 max-w-md">
-              There is a heartbeat in Rwanda. It echoes through the canopies of Nyungwe,
-              pulses through the streets of Kigali and settles quietly in the mist of the
-              Virungas. Press play and feel it for yourself.
+              {t("filmText")}
             </p>
 
             <button
@@ -359,7 +356,7 @@ export default function GalleryPage() {
               </span>
 
               <span className="border-b border-white/40 pb-1 transition-colors duration-300 group-hover:border-[#c5a86d]">
-                Watch the film
+                {t("watch")}
               </span>
             </button>
 
@@ -376,19 +373,19 @@ export default function GalleryPage() {
               <iframe
                 className="w-full h-full"
                 src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
-                title="Visit Rwanda"
+                title={t("filmTitleAttr")}
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
               />
             ) : (
               <button
                 onClick={() => setPlayVideo(true)}
-                aria-label="Play film"
+                aria-label={t("playFilm")}
                 className="group absolute inset-0 w-full h-full"
               >
                 <img
                   src={`https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`}
-                  alt="Visit Rwanda film"
+                  alt={t("filmAlt")}
                   className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -408,17 +405,17 @@ export default function GalleryPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-3">
-              Collections
+              {t("collections")}
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
-              Visual Stories
+              {t("visualStories")}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {highlights.map((story, i) => (
               <motion.button
-                key={story.title}
+                key={story.key}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -428,15 +425,15 @@ export default function GalleryPage() {
               >
                 <img
                   src={story.img}
-                  alt={story.title}
+                  alt={t(`stories.${story.key}.title` as "stories.gorilla.title")}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
                 <div className="relative z-10 text-white">
-                  <h3 className="text-xl sm:text-2xl font-serif mb-2 leading-snug">{story.title}</h3>
-                  <p className="text-sm text-zinc-300 leading-relaxed mb-4">{story.desc}</p>
+                  <h3 className="text-xl sm:text-2xl font-serif mb-2 leading-snug">{t(`stories.${story.key}.title` as "stories.gorilla.title")}</h3>
+                  <p className="text-sm text-zinc-300 leading-relaxed mb-4">{t(`stories.${story.key}.desc` as "stories.gorilla.desc")}</p>
                   <span className="inline-flex items-center gap-2 text-xs font-medium text-[#c5a86d] uppercase tracking-widest">
-                    View {story.category}
+                    {t("view", { category: categoryName(story.category) })}
                     <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
@@ -457,27 +454,26 @@ export default function GalleryPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a1811] via-[#0a1811]/85 to-transparent" />
           <div className="relative z-10 px-8 py-16 md:px-16 md:py-20 max-w-2xl">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">
-              Your turn
+              {t("yourTurn")}
             </span>
             <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-wide leading-tight mb-5">
-              Step into the picture
+              {t("stepIn")}
             </h2>
             <p className="text-sm md:text-base text-zinc-300 font-light leading-relaxed mb-8 max-w-lg">
-              Don&apos;t just look at these moments, live them. Let us create an
-              unforgettable African adventure for you.
+              {t("stepText")}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
                 href="/tour"
                 className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md hover:shadow-lg transition-all duration-300"
               >
-                Explore Tours
+                {t("exploreTours")}
               </Link>
               <Link
                 href="/contact"
                 className="border border-white/40 hover:border-white bg-white/5 hover:bg-white/10 backdrop-blur-sm text-white text-sm px-7 py-3 rounded-sm transition-all duration-300"
               >
-                Contact Us
+                {t("contactUs")}
               </Link>
             </div>
           </div>

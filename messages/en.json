@@ -776,5 +776,215 @@
     "mapTitle": "Acacia Safaris office location",
     "officeText": "Kigali, Rwanda. Visits by appointment. Give us a call before you drop by.",
     "directions": "Get Directions"
+  },
+  "Gallery": {
+    "categories": {
+      "All": "All",
+      "Wildlife": "Wildlife",
+      "Landscapes": "Landscapes",
+      "Culture": "Culture",
+      "People": "People"
+    },
+    "stories": {
+      "gorilla": {
+        "title": "The Gorilla Trek",
+        "desc": "Intimate moments with the endangered mountain gorillas in the misty bamboo forests."
+      },
+      "kivu": {
+        "title": "Golden Hour at Kivu",
+        "desc": "Serene sunsets and the gentle ripples of Rwanda's most stunning lake."
+      },
+      "culture": {
+        "title": "Spirit of the Culture",
+        "desc": "The vibrant energy, rich traditions and profound resilience of the Rwandan people."
+      }
+    },
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "heroAlt": "Two lionesses watching from the grass",
+    "title1": "Moments From",
+    "title2": "The Wild",
+    "intro": "Gorillas in the mist, golden sunsets over Lake Kivu and the warm smiles of the people we meet along the way. Take a look at the moments our guests and guides have captured.",
+    "browse": "Browse Photos",
+    "curated": "Curated Collection",
+    "throughLens": "Through Our Lens",
+    "photos": "{count, plural, one {# photo} other {# photos}}",
+    "filmTag": "Featured Film",
+    "filmTitle1": "Feel the rhythm",
+    "filmTitle2": "of the wild",
+    "filmText": "There is a heartbeat in Rwanda. It echoes through the canopies of Nyungwe, pulses through the streets of Kigali and settles quietly in the mist of the Virungas. Press play and feel it for yourself.",
+    "watch": "Watch the film",
+    "filmTitleAttr": "Visit Rwanda",
+    "playFilm": "Play film",
+    "filmAlt": "Visit Rwanda film",
+    "collections": "Collections",
+    "visualStories": "Visual Stories",
+    "view": "View {category}",
+    "yourTurn": "Your turn",
+    "stepIn": "Step into the picture",
+    "stepText": "Don't just look at these moments, live them. Let us create an unforgettable African adventure for you.",
+    "exploreTours": "Explore Tours",
+    "contactUs": "Contact Us"
+  },
+  "Planner": {
+    "steps": {
+      "1": {
+        "title": "Destinations",
+        "short": "Where"
+      },
+      "2": {
+        "title": "Trip Details",
+        "short": "When & how"
+      },
+      "3": {
+        "title": "Your Details",
+        "short": "Who"
+      }
+    },
+    "perks": {
+      "reply": "Reply within 24 hours",
+      "noPay": "No payment to send a request"
+    },
+    "process": {
+      "1": {
+        "title": "Send your request",
+        "desc": "Pick your destinations and tell us how you like to travel."
+      },
+      "2": {
+        "title": "Talk to an expert",
+        "desc": "A local specialist contacts you to fine-tune the details."
+      },
+      "3": {
+        "title": "Get your itinerary",
+        "desc": "Receive a personal plan with lodges, activities and price."
+      },
+      "4": {
+        "title": "Confirm & go",
+        "desc": "Book securely and get ready for Rwanda."
+      }
+    },
+    "faqs": {
+      "1": {
+        "q": "Do I need a visa for Rwanda?",
+        "a": "Visitors from all countries can get a visa on arrival, or apply for an e-Visa online before travelling."
+      },
+      "2": {
+        "q": "What is the best time to visit?",
+        "a": "The dry seasons (June – September and December – February) are best for gorilla trekking and safaris, but Rwanda can be visited all year."
+      },
+      "3": {
+        "q": "Is gorilla trekking safe?",
+        "a": "Yes. Treks are led by experienced rangers and guides who know the gorilla families and the mountains very well."
+      },
+      "4": {
+        "q": "Can I customise my trip?",
+        "a": "Absolutely. Every part of your journey, from lodges to activities and dietary needs, is tailored to you."
+      }
+    },
+    "choices": {
+      "Other": "Other",
+      "Adventure": "Adventure",
+      "Cultural": "Cultural",
+      "Photography": "Photography",
+      "Honeymoon": "Honeymoon",
+      "Family Trip": "Family Trip",
+      "Luxury Lodges": "Luxury Lodges",
+      "Boutique Hotels": "Boutique Hotels",
+      "Mid-range Hotels": "Mid-range Hotels",
+      "Eco Lodges": "Eco Lodges",
+      "Camping": "Camping",
+      "Yes": "Yes",
+      "No": "No"
+    },
+    "otherAria": "{label}: other",
+    "fewer": "Fewer: {label}",
+    "more": "More: {label}",
+    "errors": {
+      "destination": "Please choose at least one destination.",
+      "dates": "Please choose your arrival and departure dates.",
+      "style": "Please choose a travel style for {title}.",
+      "accommodation": "Please choose accommodation for {title}.",
+      "budget": "Please choose a budget for {title}.",
+      "name": "Please enter your full name.",
+      "email": "Please enter a valid email address.",
+      "phone": "Please enter a valid phone or WhatsApp number.",
+      "fromRwanda": "Please tell us if you are from Rwanda.",
+      "country": "Please type the country you are from."
+    },
+    "flexible": "Flexible",
+    "heroAlt": "Traveller with a suitcase watching a plane take off",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "booking": "Booking",
+    "title1": "Book Your",
+    "title2": "Trip",
+    "subtitle": "Choose your destination, dates and guests to get started.",
+    "barDestination": "Destination",
+    "whereTo": "Where to?",
+    "barDates": "Dates",
+    "addDates": "Add dates",
+    "barGuests": "Guests",
+    "adults": "{count, plural, one {# adult} other {# adults}}",
+    "children": "{count, plural, one {# child} other {# children}}",
+    "bookNow": "Book Now",
+    "sent": "Request sent!",
+    "sentName": "Request sent, {name}!",
+    "sentText": "Thank you for choosing Acacia Safaris. One of our travel experts will send your personalised itinerary and price within 24 hours. Follow it and talk with us on your booking page (we also emailed you the link).",
+    "follow": "Follow my booking",
+    "exploreDestinations": "Explore Destinations",
+    "backHome": "Back to Home",
+    "whereGo": "Where would you like to go?",
+    "pickMany": "Pick as many as you like.",
+    "elsewhere": "Somewhere else?",
+    "elsewherePlaceholder": "e.g. Gishwati forest, Kigali city tour…",
+    "aboutTrip": "Tell us about your trip",
+    "aboutTripText": "Choose your dates, then a travel style, accommodation and budget for each destination.",
+    "selectDates": "Select your travel dates",
+    "adultsLabel": "Adults",
+    "childrenLabel": "Children",
+    "style": "Travel style",
+    "stylePlaceholder": "Tell us your travel style",
+    "accommodation": "Accommodation",
+    "accommodationPlaceholder": "Tell us where you would like to stay",
+    "budget": "Budget",
+    "almost": "Almost there!",
+    "sendWhere": "Where should we send your itinerary?",
+    "fullName": "Full name *",
+    "email": "Email *",
+    "phone": "Phone / WhatsApp *",
+    "fromRwanda": "Are you from Rwanda? *",
+    "whichCountry": "Which country are you from? *",
+    "countryPlaceholder": "e.g. United States",
+    "anythingElse": "Anything else?",
+    "notesPlaceholder": "Special occasions, dietary needs, accessibility…",
+    "back": "Back",
+    "stepOf": "Step {step} of {total}",
+    "continue": "Continue",
+    "sending": "Sending…",
+    "send": "Send My Request",
+    "yourTrip": "Your trip",
+    "remove": "Remove {title}",
+    "noDestinations": "No destinations yet",
+    "dates": "Dates",
+    "travelers": "Travelers",
+    "needHelp": "Need help?",
+    "talkExpert": "Talk to a travel expert",
+    "chatWhatsapp": "Chat on WhatsApp",
+    "simple": "Simple & easy",
+    "howItWorks": "How it works",
+    "goodToKnow": "Good to know",
+    "questions": "Questions"
+  },
+  "Legal": {
+    "label": "Legal",
+    "updated": "Last updated: {date}",
+    "onThisPage": "On this page",
+    "questions": "Questions?",
+    "help": "Our team is happy to help with anything on this page.",
+    "contact": "Contact Us",
+    "englishPrevails": "",
+    "privacyMeta": "Privacy Policy | Acacia Safaris",
+    "termsMeta": "Terms of Service | Acacia Safaris"
   }
 }

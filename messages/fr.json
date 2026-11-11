@@ -776,5 +776,215 @@
     "mapTitle": "Emplacement du bureau Acacia Safaris",
     "officeText": "Kigali, Rwanda. Visites sur rendez-vous. Appelez-nous avant de passer.",
     "directions": "Itinéraire"
+  },
+  "Gallery": {
+    "categories": {
+      "All": "Tout",
+      "Wildlife": "Faune",
+      "Landscapes": "Paysages",
+      "Culture": "Culture",
+      "People": "Portraits"
+    },
+    "stories": {
+      "gorilla": {
+        "title": "La rencontre des gorilles",
+        "desc": "Des moments intimes avec les gorilles de montagne menacés, dans les forêts de bambous brumeuses."
+      },
+      "kivu": {
+        "title": "Heure dorée sur le Kivu",
+        "desc": "Couchers de soleil paisibles et douces vagues sur le plus beau lac du Rwanda."
+      },
+      "culture": {
+        "title": "L'âme de la culture",
+        "desc": "L'énergie vibrante, les riches traditions et la profonde résilience du peuple rwandais."
+      }
+    },
+    "close": "Fermer",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "heroAlt": "Deux lionnes aux aguets dans les herbes",
+    "title1": "Instants",
+    "title2": "sauvages",
+    "intro": "Des gorilles dans la brume, des couchers de soleil dorés sur le lac Kivu et les sourires chaleureux des personnes rencontrées en chemin. Découvrez les moments capturés par nos voyageurs et nos guides.",
+    "browse": "Voir les photos",
+    "curated": "Collection choisie",
+    "throughLens": "À travers notre objectif",
+    "photos": "{count, plural, one {# photo} other {# photos}}",
+    "filmTag": "Film à la une",
+    "filmTitle1": "Ressentez le rythme",
+    "filmTitle2": "de la nature",
+    "filmText": "Le Rwanda a un cœur qui bat. Il résonne sous la canopée de Nyungwe, vibre dans les rues de Kigali et se pose doucement dans la brume des Virunga. Lancez la vidéo et ressentez-le.",
+    "watch": "Voir le film",
+    "filmTitleAttr": "Visit Rwanda",
+    "playFilm": "Lire le film",
+    "filmAlt": "Film Visit Rwanda",
+    "collections": "Collections",
+    "visualStories": "Histoires en images",
+    "view": "Voir : {category}",
+    "yourTurn": "À vous",
+    "stepIn": "Entrez dans l'image",
+    "stepText": "Ne vous contentez pas de regarder ces moments : vivez-les. Laissez-nous créer pour vous une aventure africaine inoubliable.",
+    "exploreTours": "Voir les circuits",
+    "contactUs": "Nous contacter"
+  },
+  "Planner": {
+    "steps": {
+      "1": {
+        "title": "Destinations",
+        "short": "Où"
+      },
+      "2": {
+        "title": "Détails du voyage",
+        "short": "Quand et comment"
+      },
+      "3": {
+        "title": "Vos coordonnées",
+        "short": "Qui"
+      }
+    },
+    "perks": {
+      "reply": "Réponse sous 24 heures",
+      "noPay": "Aucun paiement pour envoyer une demande"
+    },
+    "process": {
+      "1": {
+        "title": "Envoyez votre demande",
+        "desc": "Choisissez vos destinations et dites-nous comment vous aimez voyager."
+      },
+      "2": {
+        "title": "Parlez à un expert",
+        "desc": "Un spécialiste local vous contacte pour affiner les détails."
+      },
+      "3": {
+        "title": "Recevez votre itinéraire",
+        "desc": "Un programme personnel avec lodges, activités et prix."
+      },
+      "4": {
+        "title": "Confirmez et partez",
+        "desc": "Réservez en toute sécurité et préparez-vous pour le Rwanda."
+      }
+    },
+    "faqs": {
+      "1": {
+        "q": "Ai-je besoin d'un visa pour le Rwanda ?",
+        "a": "Les voyageurs de tous les pays peuvent obtenir un visa à l'arrivée, ou demander un e-Visa en ligne avant le départ."
+      },
+      "2": {
+        "q": "Quelle est la meilleure période ?",
+        "a": "Les saisons sèches (de juin à septembre et de décembre à février) sont idéales pour les gorilles et les safaris, mais le Rwanda se visite toute l'année."
+      },
+      "3": {
+        "q": "La rencontre avec les gorilles est-elle sûre ?",
+        "a": "Oui. Les randonnées sont menées par des rangers et des guides expérimentés qui connaissent très bien les familles de gorilles et les montagnes."
+      },
+      "4": {
+        "q": "Puis-je personnaliser mon voyage ?",
+        "a": "Bien sûr. Chaque élément de votre voyage, des lodges aux activités et au régime alimentaire, est adapté à vous."
+      }
+    },
+    "choices": {
+      "Other": "Autre",
+      "Adventure": "Aventure",
+      "Cultural": "Culturel",
+      "Photography": "Photographie",
+      "Honeymoon": "Voyage de noces",
+      "Family Trip": "Voyage en famille",
+      "Luxury Lodges": "Lodges de luxe",
+      "Boutique Hotels": "Hôtels de charme",
+      "Mid-range Hotels": "Hôtels intermédiaires",
+      "Eco Lodges": "Écolodges",
+      "Camping": "Camping",
+      "Yes": "Oui",
+      "No": "Non"
+    },
+    "otherAria": "{label} : autre",
+    "fewer": "Moins : {label}",
+    "more": "Plus : {label}",
+    "errors": {
+      "destination": "Veuillez choisir au moins une destination.",
+      "dates": "Veuillez choisir vos dates d'arrivée et de départ.",
+      "style": "Veuillez choisir un style de voyage pour {title}.",
+      "accommodation": "Veuillez choisir un hébergement pour {title}.",
+      "budget": "Veuillez choisir un budget pour {title}.",
+      "name": "Veuillez saisir votre nom complet.",
+      "email": "Veuillez saisir une adresse e-mail valide.",
+      "phone": "Veuillez saisir un numéro de téléphone ou WhatsApp valide.",
+      "fromRwanda": "Veuillez nous dire si vous venez du Rwanda.",
+      "country": "Veuillez indiquer votre pays."
+    },
+    "flexible": "Flexibles",
+    "heroAlt": "Voyageur avec une valise regardant un avion décoller",
+    "breadcrumb": "Fil d'Ariane",
+    "home": "Accueil",
+    "booking": "Réservation",
+    "title1": "Réservez votre",
+    "title2": "voyage",
+    "subtitle": "Choisissez votre destination, vos dates et le nombre de voyageurs pour commencer.",
+    "barDestination": "Destination",
+    "whereTo": "Où aller ?",
+    "barDates": "Dates",
+    "addDates": "Ajouter des dates",
+    "barGuests": "Voyageurs",
+    "adults": "{count, plural, one {# adulte} other {# adultes}}",
+    "children": "{count, plural, one {# enfant} other {# enfants}}",
+    "bookNow": "Réserver",
+    "sent": "Demande envoyée !",
+    "sentName": "Demande envoyée, {name} !",
+    "sentText": "Merci d'avoir choisi Acacia Safaris. L'un de nos experts vous enverra votre itinéraire personnalisé et le prix sous 24 heures. Suivez-le et échangez avec nous sur la page de votre réservation (nous vous avons aussi envoyé le lien par e-mail).",
+    "follow": "Suivre ma réservation",
+    "exploreDestinations": "Découvrir les destinations",
+    "backHome": "Retour à l'accueil",
+    "whereGo": "Où souhaitez-vous aller ?",
+    "pickMany": "Choisissez-en autant que vous voulez.",
+    "elsewhere": "Ailleurs ?",
+    "elsewherePlaceholder": "ex. forêt de Gishwati, visite de Kigali…",
+    "aboutTrip": "Parlez-nous de votre voyage",
+    "aboutTripText": "Choisissez vos dates, puis un style de voyage, un hébergement et un budget pour chaque destination.",
+    "selectDates": "Choisissez vos dates de voyage",
+    "adultsLabel": "Adultes",
+    "childrenLabel": "Enfants",
+    "style": "Style de voyage",
+    "stylePlaceholder": "Décrivez votre style de voyage",
+    "accommodation": "Hébergement",
+    "accommodationPlaceholder": "Dites-nous où vous aimeriez séjourner",
+    "budget": "Budget",
+    "almost": "Presque terminé !",
+    "sendWhere": "Où devons-nous envoyer votre itinéraire ?",
+    "fullName": "Nom complet *",
+    "email": "E-mail *",
+    "phone": "Téléphone / WhatsApp *",
+    "fromRwanda": "Venez-vous du Rwanda ? *",
+    "whichCountry": "De quel pays venez-vous ? *",
+    "countryPlaceholder": "ex. France",
+    "anythingElse": "Autre chose ?",
+    "notesPlaceholder": "Occasion spéciale, régime alimentaire, accessibilité…",
+    "back": "Retour",
+    "stepOf": "Étape {step} sur {total}",
+    "continue": "Continuer",
+    "sending": "Envoi…",
+    "send": "Envoyer ma demande",
+    "yourTrip": "Votre voyage",
+    "remove": "Retirer {title}",
+    "noDestinations": "Aucune destination pour l'instant",
+    "dates": "Dates",
+    "travelers": "Voyageurs",
+    "needHelp": "Besoin d'aide ?",
+    "talkExpert": "Parlez à un expert voyage",
+    "chatWhatsapp": "Discuter sur WhatsApp",
+    "simple": "Simple et facile",
+    "howItWorks": "Comment ça marche",
+    "goodToKnow": "Bon à savoir",
+    "questions": "Questions"
+  },
+  "Legal": {
+    "label": "Mentions légales",
+    "updated": "Dernière mise à jour : {date}",
+    "onThisPage": "Sur cette page",
+    "questions": "Des questions ?",
+    "help": "Notre équipe se fera un plaisir de vous aider pour tout ce qui concerne cette page.",
+    "contact": "Nous contacter",
+    "englishPrevails": "Cette traduction est fournie pour votre confort. En cas de différence, la version anglaise fait foi.",
+    "privacyMeta": "Politique de confidentialité | Acacia Safaris",
+    "termsMeta": "Conditions d'utilisation | Acacia Safaris"
   }
 }

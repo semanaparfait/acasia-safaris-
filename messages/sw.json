@@ -776,5 +776,215 @@
     "mapTitle": "Mahali ilipo ofisi ya Acacia Safaris",
     "officeText": "Kigali, Rwanda. Kutembelea kwa miadi. Tupigie simu kabla ya kuja.",
     "directions": "Pata Maelekezo"
+  },
+  "Gallery": {
+    "categories": {
+      "All": "Zote",
+      "Wildlife": "Wanyamapori",
+      "Landscapes": "Mandhari",
+      "Culture": "Utamaduni",
+      "People": "Watu"
+    },
+    "stories": {
+      "gorilla": {
+        "title": "Safari ya Sokwe",
+        "desc": "Matukio ya karibu na sokwe wa milimani walio hatarini katika misitu ya mianzi yenye ukungu."
+      },
+      "kivu": {
+        "title": "Machweo Ziwani Kivu",
+        "desc": "Machweo tulivu na mawimbi madogo ya ziwa zuri zaidi la Rwanda."
+      },
+      "culture": {
+        "title": "Roho ya Utamaduni",
+        "desc": "Nguvu, mila tajiri na ustahimilivu mkubwa wa watu wa Rwanda."
+      }
+    },
+    "close": "Funga",
+    "previous": "Picha iliyotangulia",
+    "next": "Picha inayofuata",
+    "heroAlt": "Simba jike wawili wakitazama kutoka nyasini",
+    "title1": "Matukio ya",
+    "title2": "Porini",
+    "intro": "Sokwe ndani ya ukungu, machweo ya dhahabu juu ya Ziwa Kivu na tabasamu za watu tunaokutana nao njiani. Tazama matukio yaliyonaswa na wageni na waongozaji wetu.",
+    "browse": "Tazama Picha",
+    "curated": "Mkusanyiko Maalum",
+    "throughLens": "Kupitia Kamera Yetu",
+    "photos": "{count, plural, one {Picha #} other {Picha #}}",
+    "filmTag": "Filamu Maalum",
+    "filmTitle1": "Hisi mdundo",
+    "filmTitle2": "wa porini",
+    "filmText": "Rwanda ina mapigo ya moyo. Yanasikika chini ya miti ya Nyungwe, yanadunda katika mitaa ya Kigali na kutulia kimya katika ukungu wa Virunga. Bonyeza cheza uyahisi mwenyewe.",
+    "watch": "Tazama filamu",
+    "filmTitleAttr": "Visit Rwanda",
+    "playFilm": "Cheza filamu",
+    "filmAlt": "Filamu ya Visit Rwanda",
+    "collections": "Mikusanyiko",
+    "visualStories": "Hadithi kwa Picha",
+    "view": "Tazama {category}",
+    "yourTurn": "Zamu yako",
+    "stepIn": "Ingia kwenye picha",
+    "stepText": "Usitazame tu matukio haya, yaishi. Turuhusu tukuandalie safari ya Afrika isiyosahaulika.",
+    "exploreTours": "Gundua Safari",
+    "contactUs": "Wasiliana Nasi"
+  },
+  "Planner": {
+    "steps": {
+      "1": {
+        "title": "Vivutio",
+        "short": "Wapi"
+      },
+      "2": {
+        "title": "Maelezo ya Safari",
+        "short": "Lini na vipi"
+      },
+      "3": {
+        "title": "Taarifa Zako",
+        "short": "Nani"
+      }
+    },
+    "perks": {
+      "reply": "Jibu ndani ya saa 24",
+      "noPay": "Hakuna malipo kutuma ombi"
+    },
+    "process": {
+      "1": {
+        "title": "Tuma ombi lako",
+        "desc": "Chagua vivutio vyako na utuambie unavyopenda kusafiri."
+      },
+      "2": {
+        "title": "Ongea na mtaalamu",
+        "desc": "Mtaalamu wa ndani atawasiliana nawe kurekebisha maelezo."
+      },
+      "3": {
+        "title": "Pata ratiba yako",
+        "desc": "Pokea mpango binafsi wenye malazi, shughuli na bei."
+      },
+      "4": {
+        "title": "Thibitisha na uende",
+        "desc": "Weka safari kwa usalama na ujiandae kwa Rwanda."
+      }
+    },
+    "faqs": {
+      "1": {
+        "q": "Je, ninahitaji viza ya Rwanda?",
+        "a": "Wageni kutoka nchi zote wanaweza kupata viza wanapowasili, au kuomba e-Visa mtandaoni kabla ya kusafiri."
+      },
+      "2": {
+        "q": "Wakati gani ni bora kutembelea?",
+        "a": "Misimu ya kiangazi (Juni – Septemba na Desemba – Februari) ni bora kwa sokwe na safari, lakini Rwanda inaweza kutembelewa mwaka mzima."
+      },
+      "3": {
+        "q": "Je, kutembelea sokwe ni salama?",
+        "a": "Ndiyo. Safari zinaongozwa na askari wa hifadhi na waongozaji wenye uzoefu wanaozijua vizuri familia za sokwe na milima."
+      },
+      "4": {
+        "q": "Naweza kubadilisha safari yangu?",
+        "a": "Bila shaka. Kila sehemu ya safari yako, kuanzia malazi hadi shughuli na mahitaji ya chakula, inaandaliwa kwa ajili yako."
+      }
+    },
+    "choices": {
+      "Other": "Nyingine",
+      "Adventure": "Matukio",
+      "Cultural": "Utamaduni",
+      "Photography": "Upigaji picha",
+      "Honeymoon": "Fungate",
+      "Family Trip": "Safari ya familia",
+      "Luxury Lodges": "Malazi ya kifahari",
+      "Boutique Hotels": "Hoteli za kipekee",
+      "Mid-range Hotels": "Hoteli za kati",
+      "Eco Lodges": "Malazi ya kiikolojia",
+      "Camping": "Kambi",
+      "Yes": "Ndiyo",
+      "No": "Hapana"
+    },
+    "otherAria": "{label}: nyingine",
+    "fewer": "Punguza: {label}",
+    "more": "Ongeza: {label}",
+    "errors": {
+      "destination": "Tafadhali chagua angalau kivutio kimoja.",
+      "dates": "Tafadhali chagua tarehe za kuwasili na kuondoka.",
+      "style": "Tafadhali chagua mtindo wa safari kwa {title}.",
+      "accommodation": "Tafadhali chagua malazi kwa {title}.",
+      "budget": "Tafadhali chagua bajeti kwa {title}.",
+      "name": "Tafadhali andika jina lako kamili.",
+      "email": "Tafadhali andika barua pepe sahihi.",
+      "phone": "Tafadhali andika namba sahihi ya simu au WhatsApp.",
+      "fromRwanda": "Tafadhali tuambie kama unatoka Rwanda.",
+      "country": "Tafadhali andika nchi unayotoka."
+    },
+    "flexible": "Zinabadilika",
+    "heroAlt": "Msafiri mwenye sanduku akitazama ndege ikiruka",
+    "breadcrumb": "Njia",
+    "home": "Nyumbani",
+    "booking": "Kuweka Safari",
+    "title1": "Weka",
+    "title2": "Safari Yako",
+    "subtitle": "Chagua kivutio, tarehe na idadi ya wageni ili kuanza.",
+    "barDestination": "Kivutio",
+    "whereTo": "Unaenda wapi?",
+    "barDates": "Tarehe",
+    "addDates": "Ongeza tarehe",
+    "barGuests": "Wageni",
+    "adults": "{count, plural, one {Mtu mzima #} other {Watu wazima #}}",
+    "children": "{count, plural, one {Mtoto #} other {Watoto #}}",
+    "bookNow": "Weka Sasa",
+    "sent": "Ombi limetumwa!",
+    "sentName": "Ombi limetumwa, {name}!",
+    "sentText": "Asante kwa kuchagua Acacia Safaris. Mmoja wa wataalamu wetu atakutumia ratiba yako binafsi na bei ndani ya saa 24. Ifuatilie na uongee nasi kwenye ukurasa wa safari yako (tumekutumia pia kiungo kwa barua pepe).",
+    "follow": "Fuatilia safari yangu",
+    "exploreDestinations": "Gundua Vivutio",
+    "backHome": "Rudi Nyumbani",
+    "whereGo": "Ungependa kwenda wapi?",
+    "pickMany": "Chagua vingi kadiri unavyopenda.",
+    "elsewhere": "Mahali pengine?",
+    "elsewherePlaceholder": "mf. msitu wa Gishwati, ziara ya mji wa Kigali…",
+    "aboutTrip": "Tuambie kuhusu safari yako",
+    "aboutTripText": "Chagua tarehe zako, kisha mtindo wa safari, malazi na bajeti kwa kila kivutio.",
+    "selectDates": "Chagua tarehe za safari",
+    "adultsLabel": "Watu wazima",
+    "childrenLabel": "Watoto",
+    "style": "Mtindo wa safari",
+    "stylePlaceholder": "Tuambie mtindo wako wa safari",
+    "accommodation": "Malazi",
+    "accommodationPlaceholder": "Tuambie ungependa kukaa wapi",
+    "budget": "Bajeti",
+    "almost": "Karibu umemaliza!",
+    "sendWhere": "Tukutumie ratiba yako wapi?",
+    "fullName": "Jina kamili *",
+    "email": "Barua pepe *",
+    "phone": "Simu / WhatsApp *",
+    "fromRwanda": "Je, unatoka Rwanda? *",
+    "whichCountry": "Unatoka nchi gani? *",
+    "countryPlaceholder": "mf. Kenya",
+    "anythingElse": "Jambo lingine?",
+    "notesPlaceholder": "Sherehe maalum, mahitaji ya chakula, ufikiaji…",
+    "back": "Rudi",
+    "stepOf": "Hatua {step} kati ya {total}",
+    "continue": "Endelea",
+    "sending": "Inatuma…",
+    "send": "Tuma Ombi Langu",
+    "yourTrip": "Safari yako",
+    "remove": "Ondoa {title}",
+    "noDestinations": "Bado hakuna vivutio",
+    "dates": "Tarehe",
+    "travelers": "Wasafiri",
+    "needHelp": "Unahitaji msaada?",
+    "talkExpert": "Ongea na mtaalamu wa safari",
+    "chatWhatsapp": "Ongea kwenye WhatsApp",
+    "simple": "Rahisi na haraka",
+    "howItWorks": "Jinsi inavyofanya kazi",
+    "goodToKnow": "Vizuri kujua",
+    "questions": "Maswali"
+  },
+  "Legal": {
+    "label": "Kisheria",
+    "updated": "Ilisasishwa mwisho: {date}",
+    "onThisPage": "Kwenye ukurasa huu",
+    "questions": "Una maswali?",
+    "help": "Timu yetu iko tayari kukusaidia kuhusu chochote kwenye ukurasa huu.",
+    "contact": "Wasiliana Nasi",
+    "englishPrevails": "Tafsiri hii imetolewa kwa urahisi wako. Kukiwa na tofauti, toleo la Kiingereza ndilo linalotumika.",
+    "privacyMeta": "Sera ya Faragha | Acacia Safaris",
+    "termsMeta": "Masharti ya Huduma | Acacia Safaris"
   }
 }
