@@ -230,3 +230,15 @@ the confirmation (trip, day by day itinerary, included / not included, price and
 On the day, the team scans it in **Admin > Check-in** (the camera needs https or localhost; the code can also be typed).
 Online payment is not built yet: the deposit text says the team sends the payment details.
 
+
+## Request limits
+
+Each visitor (IP address) can make 120 requests per minute. Stricter limits (see `src/common/limits.ts`):
+admin login 5 per minute, "forgot password" 3 per 15 minutes, reset code 10 per 15 minutes,
+website forms (booking, contact, review, quotation email) 5 per 10 minutes, booking chat 30 per minute.
+Images (`/api/files`) and ticket QR codes have no limit. Over the limit: 429 "Too many attempts…".
+Online behind a proxy, set `TRUST_PROXY=1` so each visitor's real IP is counted.
+
+## Secrets
+
+Real keys and passwords go only in `backend/.env` (ignored by git). `.env.example` is public: placeholders only.

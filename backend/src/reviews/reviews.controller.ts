@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 import { ReviewsService } from './reviews.service';
+import { FormLimit } from '../common/limits';
 
 // Routes under /api/reviews
 @ApiTags('Reviews')
@@ -36,6 +37,7 @@ export class ReviewsController {
 
   // POST /api/reviews   (website: a guest leaves a review)
   @Post()
+  @FormLimit()
   create(@Body() dto: CreateReviewDto) {
     return this.reviewsService.create(dto);
   }

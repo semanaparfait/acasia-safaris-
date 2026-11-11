@@ -1,12 +1,19 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { allowedOrigins } from './common/origins';
 import { LiveAdapter } from './live/live.adapter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Online, the API usually sits behind a proxy (Render, Railway, Nginx…): set TRUST_PROXY=1
+  // so request limits count each visitor's real IP, not the proxy's. Leave it unset locally,
+  // otherwise anyone could fake their IP with an X-Forwarded-For header.
+  const trustProxy = process.env.TRUST_PROXY;
+  if (trustProxy) app.set('trust proxy', Number(trustProxy) || trustProxy);
 
   // Every route starts with /api, e.g. GET http://localhost:4000/api/packages
   app.setGlobalPrefix('api');

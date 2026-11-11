@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { PackageDto, QuotationEmailDto } from './dto/package.dto';
 import { PackagesService } from './packages.service';
+import { FormLimit } from '../common/limits';
 
 // Routes under /api/packages
 @ApiTags('Packages')
@@ -52,6 +53,7 @@ export class PackagesController {
 
   // POST /api/packages/<id>/quotation/email   (website: anyone can ask for it)
   @Post(':id/quotation/email')
+  @FormLimit()
   @HttpCode(200)
   emailQuotation(
     @Param('id', ParseUUIDPipe) id: string,

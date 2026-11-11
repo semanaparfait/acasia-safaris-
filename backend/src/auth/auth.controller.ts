@@ -19,6 +19,7 @@ import {
   UpdateAccountDto,
   VerifyResetCodeDto,
 } from './dto/account.dto';
+import { LoginLimit, ResetCodeLimit, ResetEmailLimit } from '../common/limits';
 
 class LoginDto {
   @IsEmail()
@@ -38,6 +39,7 @@ export class AuthController {
   // Returns { token, worker }. Send the token on admin requests:
   //   Authorization: Bearer <token>
   @Post('login')
+  @LoginLimit()
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto.email, dto.password);
   }
@@ -47,6 +49,7 @@ export class AuthController {
   // Emails a 6 digit code to the worker's personal email and returns
   // { sentTo: "sh********it@gmail.com" }. 404 if no worker has this company email.
   @Post('forgot-password')
+  @ResetEmailLimit()
   @HttpCode(200)
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto.email);
@@ -55,6 +58,7 @@ export class AuthController {
   // POST /api/auth/verify-reset-code   body: { "email": "...", "code": "123456" }
   // Checks the code (it is not used up). 400 if it is wrong or expired.
   @Post('verify-reset-code')
+  @ResetCodeLimit()
   @HttpCode(200)
   verifyResetCode(@Body() dto: VerifyResetCodeDto) {
     return this.authService.verifyResetCode(dto.email, dto.code);
@@ -63,6 +67,7 @@ export class AuthController {
   // POST /api/auth/reset-password   body: { "email": "...", "code": "123456", "newPassword": "..." }
   // Sets the new password, logs out every device and returns { token, worker } (logged in)
   @Post('reset-password')
+  @ResetCodeLimit()
   @HttpCode(200)
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);

@@ -21,6 +21,8 @@ import {
   CreateBookingDto,
   UpdateBookingDto,
 } from './dto/booking.dto';
+import { SkipThrottle } from '@nestjs/throttler';
+import { ChatLimit, FormLimit } from '../common/limits';
 
 // Routes under /api/bookings
 @ApiTags('Bookings')
@@ -32,6 +34,7 @@ export class BookingsController {
   // Package bookings send "guests" and may send "offer" (a lower price) to start bargaining.
   // Returns the booking with its accessToken: the visitor's page is /my-booking/<accessToken>
   @Post()
+  @FormLimit()
   create(@Body() dto: CreateBookingDto) {
     return this.bookingsService.create(dto);
   }
@@ -45,6 +48,7 @@ export class BookingsController {
 
   // GET /api/bookings/track/<token>/qr   -> the ticket QR code (PNG), once confirmed
   @Get('track/:token/qr')
+  @SkipThrottle()
   @Header('Content-Type', 'image/png')
   @Header('Cache-Control', 'private, max-age=86400')
   async ticketQr(@Param('token') token: string) {
@@ -53,6 +57,7 @@ export class BookingsController {
 
   // POST /api/bookings/track/<token>/messages   body: { "text": "...", "offer"?: 6000 }
   @Post('track/:token/messages')
+  @ChatLimit()
   customerMessage(
     @Param('token') token: string,
     @Body() dto: BookingMessageDto,
@@ -62,6 +67,7 @@ export class BookingsController {
 
   // POST /api/bookings/track/<token>/accept   -> accepts the team's price (or the current one)
   @Post('track/:token/accept')
+  @ChatLimit()
   @HttpCode(200)
   customerAccept(@Param('token') token: string) {
     return this.bookingsService.customerAccept(token);

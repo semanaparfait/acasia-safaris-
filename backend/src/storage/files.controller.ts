@@ -1,3 +1,4 @@
+import { SkipThrottle } from '@nestjs/throttler';
 import {
   Controller,
   Get,
@@ -14,6 +15,8 @@ import { StorageService } from './storage.service';
 // The buckets are private, so the website loads images through this route.
 // Add ?download=<name> to save the file under that name instead of opening it.
 @ApiTags('Files')
+// Images and PDFs: a gallery page loads many at once, so no request limit
+@SkipThrottle()
 @Controller('files')
 export class FilesController {
   constructor(private storage: StorageService) {}

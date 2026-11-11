@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
 import { MessagesService } from './messages.service';
+import { FormLimit } from '../common/limits';
 
 // Routes under /api/messages
 @ApiTags('Messages')
@@ -22,6 +23,7 @@ export class MessagesController {
 
   // POST /api/messages   (website contact form: public)
   @Post()
+  @FormLimit()
   create(@Body() dto: CreateMessageDto) {
     return this.messagesService.create(dto);
   }
