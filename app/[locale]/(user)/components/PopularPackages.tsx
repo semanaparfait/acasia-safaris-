@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
 import { daysLabel, tourHref } from "@/lib/helpers";

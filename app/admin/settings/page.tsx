@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneField } from "@/components/ui/phone-field";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Building2, Bell, Shield, User, Users, Save } from "lucide-react";
@@ -199,7 +200,7 @@ function AccountForm() {
           </div>
           <div>
             <label className={labelClass}>Phone (used for WhatsApp alerts)</label>
-            <input className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <PhoneField value={form.phone} onChange={(phone) => setForm({ ...form, phone })} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Company email (your login)</label>

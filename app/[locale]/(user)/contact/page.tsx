@@ -1,4 +1,5 @@
 "use client";
+import { PhoneField } from "@/components/ui/phone-field";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -319,12 +320,10 @@ export default function Contact() {
                       <label htmlFor="phone" className={labelClass}>
                         Phone / WhatsApp
                       </label>
-                      <input
+                      <PhoneField
                         id="phone"
-                        type="tel"
                         value={form.phone}
-                        onChange={update("phone")}
-                        placeholder="+1 555 000 000"
+                        onChange={(phone) => setForm((f) => ({ ...f, phone }))}
                         className={fieldClass}
                       />
                     </div>

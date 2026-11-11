@@ -47,6 +47,17 @@ export class BookingsController {
     return this.bookingsService.findByToken(token);
   }
 
+  // GET /api/bookings/track/<token>/calendar.ics   -> "Add to calendar" (.ics file)
+  @Get('track/:token/calendar.ics')
+  @Header('Content-Type', 'text/calendar; charset=utf-8')
+  @Header(
+    'Content-Disposition',
+    'attachment; filename="acacia-safaris-trip.ics"',
+  )
+  async tripIcs(@Param('token') token: string) {
+    return this.bookingsService.tripIcs(token);
+  }
+
   // GET /api/bookings/track/<token>/qr   -> the ticket QR code (PNG), once confirmed
   @Get('track/:token/qr')
   @SkipThrottle()

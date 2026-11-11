@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   Facebook,
   Instagram,
@@ -14,7 +13,9 @@ import {
   ArrowUp,
   CheckCircle2,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
+import { Link } from "@/i18n/navigation";
 
 // TODO: replace '#' with the real social profile URLs
 const socials = [
@@ -24,22 +25,27 @@ const socials = [
   { icon: Youtube, label: "YouTube", href: "#" },
 ];
 
+// name = the text's key in messages/*.json ("Nav.home", "Footer.bookSafari"…)
 const exploreLinks = [
-  { name: "Home", href: "/" },
-  { name: "Destinations", href: "/destination" },
-  { name: "Tour Packages", href: "/tour" },
-  { name: "Gallery", href: "/gallery" },
+  { name: "Nav.home", href: "/" },
+  { name: "Nav.destinations", href: "/destination" },
+  { name: "Nav.tours", href: "/tour" },
+  { name: "Nav.gallery", href: "/gallery" },
 ];
 
 const companyLinks = [
-  { name: "About Us", href: "/aboutus" },
-  { name: "Book a Safari", href: "/booking" },
-  { name: "Contact Us", href: "/contact" },
+  { name: "Nav.about", href: "/aboutus" },
+  { name: "Footer.bookSafari", href: "/booking" },
+  { name: "Footer.contactUs", href: "/contact" },
 ];
 
-const destinations = ["Rwanda", "Uganda", "Kenya", "Tanzania"];
+// Country codes: the names come in the page's language ("Tanzanie" in French)
+const destinations = ["RW", "UG", "KE", "TZ"];
 
 const Footer = () => {
+  const t = useTranslations();
+  const locale = useLocale();
+  const countries = new Intl.DisplayNames([locale], { type: "region" });
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
@@ -58,10 +64,10 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-2">
-              Ready when you are
+              {t("Footer.ready")}
             </span>
             <h3 className="text-2xl md:text-3xl font-serif uppercase tracking-wide">
-              Your African adventure starts here
+              {t("Footer.headline")}
             </h3>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -69,13 +75,13 @@ const Footer = () => {
               href="/booking"
               className="bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-7 py-3 rounded-sm shadow-md transition-all duration-300"
             >
-              Book a Safari
+              {t("Footer.bookSafari")}
             </Link>
             <Link
               href="/contact"
               className="border border-white/40 hover:border-white bg-white/5 hover:bg-white/10 text-white text-sm px-7 py-3 rounded-sm transition-all duration-300"
             >
-              Contact Us
+              {t("Footer.contactUs")}
             </Link>
           </div>
         </div>
@@ -98,9 +104,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-sm text-zinc-400 leading-relaxed max-w-sm">
-              Crafting unforgettable African adventures. From the heart of the
-              savannah to the peaks of the mountains, experience the wild with
-              acacia Safaris Ltd.
+              {t("Footer.about")}
             </p>
             <div className="flex gap-3">
               {socials.map(({ icon: Icon, label, href }) => (
@@ -121,7 +125,7 @@ const Footer = () => {
           {/* Explore */}
           <div className="lg:col-span-2">
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-6">
-              Explore
+              {t("Footer.explore")}
             </h4>
             <ul className="space-y-3.5 text-sm text-zinc-400">
               {exploreLinks.map((link) => (
@@ -130,7 +134,7 @@ const Footer = () => {
                     href={link.href}
                     className="hover:text-[#c5a86d] transition-colors"
                   >
-                    {link.name}
+                    {t(link.name)}
                   </Link>
                 </li>
               ))}
@@ -140,7 +144,7 @@ const Footer = () => {
           {/* Company */}
           <div className="lg:col-span-2">
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-6">
-              Company
+              {t("Footer.company")}
             </h4>
             <ul className="space-y-3.5 text-sm text-zinc-400">
               {companyLinks.map((link) => (
@@ -149,7 +153,7 @@ const Footer = () => {
                     href={link.href}
                     className="hover:text-[#c5a86d] transition-colors"
                   >
-                    {link.name}
+                    {t(link.name)}
                   </Link>
                 </li>
               ))}
@@ -159,7 +163,7 @@ const Footer = () => {
           {/* Contact & newsletter */}
           <div className="md:col-span-2 lg:col-span-4 space-y-6">
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d]">
-              Stay in Touch
+              {t("Footer.stayInTouch")}
             </h4>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li>
@@ -168,7 +172,7 @@ const Footer = () => {
                   className="flex items-center gap-3 hover:text-white transition-colors"
                 >
                   <Phone size={16} className="text-[#c5a86d] shrink-0" />
-                  +250 7XX XXX XXX
+                  +250 798 635 578
                 </a>
               </li>
               <li>
@@ -186,23 +190,23 @@ const Footer = () => {
                   className="flex items-center gap-3 hover:text-white transition-colors"
                 >
                   <MapPin size={16} className="text-[#c5a86d] shrink-0" />
-                  Kigali, Rwanda
+                  {t("Footer.location")}
                 </Link>
               </li>
             </ul>
 
             <div>
               <p className="text-sm text-zinc-400 mb-3">
-                Get travel tips and exclusive safari offers.
+                {t("Footer.newsletter")}
               </p>
               {subscribed ? (
                 <p className="flex items-center gap-2 text-sm text-[#c5a86d] py-3.5">
-                  <CheckCircle2 size={18} /> Thanks for subscribing!
+                  <CheckCircle2 size={18} /> {t("Footer.thanks")}
                 </p>
               ) : (
                 <form onSubmit={handleSubscribe} className="relative">
                   <label htmlFor="footer-email" className="sr-only">
-                    Email address
+                    {t("Footer.emailLabel")}
                   </label>
                   <input
                     id="footer-email"
@@ -210,12 +214,12 @@ const Footer = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email address"
+                    placeholder={t("Footer.emailPlaceholder")}
                     className="w-full bg-white/5 border border-white/10 rounded-md py-3.5 pl-5 pr-14 text-sm placeholder:text-zinc-500 outline-none focus:border-[#c5a86d] transition-colors"
                   />
                   <button
                     type="submit"
-                    aria-label="Subscribe"
+                    aria-label={t("Footer.subscribe")}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-md bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] flex items-center justify-center transition-colors"
                   >
                     <ArrowRight size={18} />
@@ -229,7 +233,7 @@ const Footer = () => {
         {/* Destinations row */}
         <div className="py-8 border-b border-white/10 flex flex-wrap items-center gap-x-6 gap-y-3">
           <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-zinc-500">
-            Destinations
+            {t("Footer.destinations")}
           </span>
           {destinations.map((country) => (
             <Link
@@ -237,7 +241,7 @@ const Footer = () => {
               href="/destination"
               className="text-sm text-zinc-400 hover:text-[#c5a86d] transition-colors"
             >
-              {country}
+              {countries.of(country)}
             </Link>
           ))}
         </div>
@@ -246,21 +250,21 @@ const Footer = () => {
         <div className="pt-8 flex flex-col-reverse md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
             <p className="text-zinc-500 text-xs tracking-widest uppercase text-center md:text-left">
-              © {currentYear} acacia Safaris Ltd. All rights reserved.
+              {t("Footer.rights", { year: currentYear })}
             </p>
             <div className="flex items-center gap-5 text-xs text-zinc-400">
               <Link
                 href="/privacy"
                 className="hover:text-[#c5a86d] transition-colors"
               >
-                Privacy Policy
+                {t("Footer.privacy")}
               </Link>
               <span className="w-1 h-1 rounded-full bg-white/20" />
               <Link
                 href="/terms"
                 className="hover:text-[#c5a86d] transition-colors"
               >
-                Terms of Service
+                {t("Footer.terms")}
               </Link>
             </div>
           </div>
@@ -268,7 +272,7 @@ const Footer = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="group flex items-center gap-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors"
           >
-            Back to top
+            {t("Footer.backToTop")}
             <span className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center group-hover:bg-[#c5a86d] group-hover:text-[#0e1d16] group-hover:border-[#c5a86d] transition-all">
               <ArrowUp size={15} />
             </span>

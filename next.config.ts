@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// Translations: i18n/request.ts
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 // The backend. NEXT_PUBLIC_API_URL is its address, e.g. https://api.example.com/api
 // (the live connection in lib/live.ts uses it too).
@@ -38,9 +42,10 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       // Private pages: never kept by shared caches
       { source: "/my-booking/:path*", headers: [{ key: "Cache-Control", value: "private, no-store" }] },
+      { source: "/:locale(fr|sw)/my-booking/:path*", headers: [{ key: "Cache-Control", value: "private, no-store" }] },
       { source: "/admin/:path*", headers: [{ key: "Cache-Control", value: "private, no-store" }] },
     ];
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

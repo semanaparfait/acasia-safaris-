@@ -21,6 +21,7 @@ export type BookingInput = {
   guests?: { label: string; count: number }[]; // package bookings: travelers per price group
   offer?: number; // package bookings: a lower total price the visitor asks for
   offerNote?: string; // why they ask for it
+  locale?: string; // the website's language ("en", "fr", "sw"): emails are sent in it
 };
 
 export type BookingChanges = {

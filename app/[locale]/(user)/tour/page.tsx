@@ -1,15 +1,16 @@
 "use client";
 import React, { Suspense, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation"; // keeps the visitor's language
 import { GiGorilla, GiElephant, GiMountainRoad } from "react-icons/gi";
 import { FaUsers, FaGem } from "react-icons/fa";
 import { PiPawPrintFill } from "react-icons/pi";
 import Image from "next/image";
-import TourDetail from "@/app/(user)/tour/components/TourDetail";
+import TourDetail from "@/app/[locale]/(user)/tour/components/TourDetail";
 import { usePackagesStore } from "@/store/packagesStore";
 import { tourHref } from "@/lib/helpers";
-import GroupVsTailorMade from "@/app/(user)/tour/components/GroupVsTailorMade";
-import AllPackages from "@/app/(user)/tour/components/AllPackages";
+import GroupVsTailorMade from "@/app/[locale]/(user)/tour/components/GroupVsTailorMade";
+import AllPackages from "@/app/[locale]/(user)/tour/components/AllPackages";
 
 export default function TourPage() {
   return (

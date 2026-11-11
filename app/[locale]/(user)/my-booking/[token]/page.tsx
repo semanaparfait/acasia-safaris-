@@ -4,8 +4,9 @@
 // The link is emailed to them when they book (the token is the key, no login).
 // They see their trip and price, accept a price from the team, and talk with the team.
 import React, { use, useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { format } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { useGroupText } from "@/lib/useGroupText";
 import {
   CalendarDays,
   CheckCircle2,
@@ -19,8 +20,10 @@ import {
   Users,
 } from "lucide-react";
 import { API_URL, api } from "@/lib/api";
+import { moment, tripDate, tripRange } from "@/lib/dates";
 import { liveSocket } from "@/lib/live";
-import { depositOf, DEPOSIT_RATE, money } from "@/lib/helpers";
+import { depositOf, DEPOSIT_RATE } from "@/lib/helpers";
+import { Money, useMoneyText } from "@/components/ui/money";
 import type { BookingMessage, PublicBooking } from "@/lib/types";
 
 
@@ -34,6 +37,8 @@ const statusStyle: Record<string, string> = {
 
 export default function MyBookingPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
+  const t = useTranslations("MyBooking");
+  const locale = useLocale();
   const [booking, setBooking] = useState<PublicBooking | null>(null);
   const [notFound, setNotFound] = useState(false);
 
@@ -61,9 +66,9 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-6 bg-[#faf8f5]">
         <div className="text-center max-w-sm">
-          <h1 className="font-serif text-2xl text-[#12231a] mb-2">Booking not found</h1>
-          <p className="text-sm text-[#0a120b]/60 mb-6">This link is not valid. Please use the link in the email we sent you, or contact us.</p>
-          <Link href="/contact" className="inline-block bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-6 py-3 rounded-lg">Contact us</Link>
+          <h1 className="font-serif text-2xl text-[#12231a] mb-2">{t("notFound")}</h1>
+          <p className="text-sm text-[#0a120b]/60 mb-6">{t("notFoundText")}</p>
+          <Link href="/contact" className="inline-block bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] font-medium text-sm px-6 py-3 rounded-lg">{t("contactUs")}</Link>
         </div>
       </div>
     );
@@ -89,13 +94,13 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#12231a] via-[#12231a]/80 to-[#12231a]/40" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-32 pb-10">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-2">Your booking</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-2">{t("yourBooking")}</p>
           <h1 className="font-serif text-3xl sm:text-4xl leading-tight max-w-3xl">{title}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-white/70">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[booking.status] ?? "bg-white/10"}`}>{booking.status}</span>
-            <span>Hello {booking.customer.split(" ")[0]}</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[booking.status] ?? "bg-white/10"}`}>{t(`status.${booking.status}`)}</span>
+            <span>{t("hello", { name: booking.customer.split(" ")[0] })}</span>
             <span className="text-white/30">·</span>
-            <span>Booked {format(new Date(booking.createdAt), "d MMM yyyy")}</span>
+            <span>{t("booked", { date: tripDate(booking.createdAt, "long", locale) })}</span>
           </div>
         </div>
       </section>
@@ -118,7 +123,9 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
 // ---------- Price ----------
 
 function PriceCard({ booking, token, onChange }: { booking: PublicBooking; token: string; onChange: (b: PublicBooking) => void }) {
+  const t = useTranslations("MyBooking");
   const [accepting, setAccepting] = useState(false);
+  const moneyText = useMoneyText();
   const [error, setError] = useState("");
   const teamOffer = booking.offerBy === "team" && booking.offer ? booking.offer : null;
   const myOffer = booking.offerBy === "customer" && booking.offer ? booking.offer : null;
@@ -152,7 +159,7 @@ function PriceCard({ booking, token, onChange }: { booking: PublicBooking; token
   return (
     <div className="rounded-2xl bg-white border border-[#0a120b]/[0.07] shadow-sm overflow-hidden">
       <div className="px-5 pt-5">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45">Price</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45">{t("price")}</p>
       </div>
 
       <div className="p-5 pt-3 space-y-4">
@@ -160,46 +167,53 @@ function PriceCard({ booking, token, onChange }: { booking: PublicBooking; token
         {open && teamOffer ? (
           <>
             <div className="rounded-xl bg-[#c5a86d]/10 border border-[#c5a86d]/40 p-4">
-              <p className="text-xs text-[#7a5d22] font-medium">Our offer for you</p>
-              <p className="font-serif text-3xl text-[#12231a] tabular-nums mt-1">{money(teamOffer)}</p>
+              <p className="text-xs text-[#7a5d22] font-medium">{t("ourOffer")}</p>
+              <p className="font-serif text-3xl text-[#12231a] tabular-nums mt-1"><Money usd={teamOffer} approxClassName="font-sans" /></p>
               {booking.listAmount > teamOffer && (
                 <p className="text-xs text-[#0a120b]/50 mt-1">
-                  instead of <span className="line-through">{money(booking.listAmount)}</span>
+                  {t.rich("insteadOf", { old: () => <span className="line-through">{moneyText(booking.listAmount)}</span> })}
                 </p>
               )}
             </div>
-            {acceptButton(`Accept ${money(teamOffer)}`)}
-            <p className="text-xs text-[#0a120b]/50 text-center">Or reply in the conversation to keep talking.</p>
+            {acceptButton(t("accept", { price: moneyText(teamOffer) }))}
+            <p className="text-xs text-[#0a120b]/50 text-center">{t("orReply")}</p>
           </>
         ) : open && myOffer ? (
           <>
             <div className="flex items-start gap-3">
               <span className="w-9 h-9 shrink-0 rounded-lg bg-[#f4efe6] text-[#8e7345] flex items-center justify-center"><Clock size={17} /></span>
               <div>
-                <p className="text-sm font-medium">You offered {money(myOffer)}</p>
-                <p className="text-xs text-[#0a120b]/55 mt-0.5">Our team will answer within 24 hours. The full price is {money(booking.listAmount)}.</p>
+                <p className="text-sm font-medium">{t.rich("youOffered", { price: () => <Money usd={myOffer} /> })}</p>
+                <p className="text-xs text-[#0a120b]/55 mt-0.5">{t.rich("teamWillAnswer", { price: () => <Money usd={booking.listAmount} /> })}</p>
               </div>
             </div>
-            {booking.listAmount > 0 && acceptButton(`Book at ${money(booking.listAmount)} instead`, false)}
+            {booking.listAmount > 0 && acceptButton(t("bookInstead", { price: moneyText(booking.listAmount) }), false)}
           </>
         ) : booking.amount > 0 ? (
           <>
             <div>
-              <p className="font-serif text-3xl text-[#12231a] tabular-nums">{money(booking.amount)}</p>
+              <p className="font-serif text-3xl text-[#12231a] tabular-nums"><Money usd={booking.amount} approxClassName="font-sans" /></p>
               <p className="text-xs text-[#0a120b]/50 mt-0.5">
-                {booking.status === "Pending" ? "Our team will confirm your booking within 24 hours." : "Total for everyone"}
+                {booking.status === "Pending" ? t("confirmWithin") : t("totalEveryone")}
               </p>
             </div>
             {(booking.status === "Confirmed" || booking.status === "Completed") && (
               <div className="rounded-xl bg-emerald-50 border border-emerald-200/70 p-4 text-sm">
-                <p className="flex items-center gap-2 font-medium text-emerald-800"><ShieldCheck size={16} /> Price agreed</p>
+                <p className="flex items-center gap-2 font-medium text-emerald-800"><ShieldCheck size={16} /> {t("priceAgreed")}</p>
                 {booking.payment === "Paid" ? (
-                  <p className="text-xs text-emerald-800/80 mt-1.5">Fully paid. Thank you!</p>
+                  <p className="text-xs text-emerald-800/80 mt-1.5">{t("paid")}</p>
                 ) : booking.payment === "Deposit" ? (
-                  <p className="text-xs text-emerald-800/80 mt-1.5">Deposit received. The rest is paid before your trip.</p>
+                  <p className="text-xs text-emerald-800/80 mt-1.5">{t("depositReceived")}</p>
                 ) : (
                   <p className="text-xs text-emerald-800/80 mt-1.5">
-                    A {DEPOSIT_RATE * 100}% deposit of <strong>{money(depositOf(booking.amount))}</strong> holds your dates. We will send you the payment details.
+                    {t.rich("depositDue", {
+                      rate: DEPOSIT_RATE * 100,
+                      price: () => (
+                        <strong>
+                          <Money usd={depositOf(booking.amount)} />
+                        </strong>
+                      ),
+                    })}
                   </p>
                 )}
               </div>
@@ -208,7 +222,7 @@ function PriceCard({ booking, token, onChange }: { booking: PublicBooking; token
         ) : (
           <div className="flex items-start gap-3">
             <span className="w-9 h-9 shrink-0 rounded-lg bg-[#f4efe6] text-[#8e7345] flex items-center justify-center"><HandCoins size={17} /></span>
-            <p className="text-sm text-[#0a120b]/70">Our team is preparing your price and will send it here within 24 hours.</p>
+            <p className="text-sm text-[#0a120b]/70">{t("preparing")}</p>
           </div>
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -221,12 +235,14 @@ function PriceCard({ booking, token, onChange }: { booking: PublicBooking; token
 
 // Confirmed: the QR code the team scans on the day (also in the confirmation email)
 function TicketCard({ booking, token }: { booking: PublicBooking; token: string }) {
+  const t = useTranslations("MyBooking");
+  const locale = useLocale();
   const qr = `${API_URL}/bookings/track/${token}/qr`;
   return (
     <div className="relative rounded-2xl bg-[#12231a] text-white shadow-lg overflow-hidden">
       <div className="absolute -top-20 -right-16 w-52 h-52 rounded-full bg-[#c5a86d]/15" />
       <div className="relative p-5 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d]">Your ticket</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d]">{t("ticket")}</p>
         <div className="mt-4 mx-auto w-48 rounded-xl bg-white p-3 shadow-md">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qr} alt={`Ticket QR code ${booking.ticketCode}`} width={168} height={168} className="w-full h-auto" />
@@ -234,21 +250,27 @@ function TicketCard({ booking, token }: { booking: PublicBooking; token: string 
         <p className="mt-3 font-mono text-lg font-bold tracking-[0.3em] text-[#c5a86d]">{booking.ticketCode}</p>
         {booking.checkedInAt ? (
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-200">
-            <CheckCircle2 size={13} /> Checked in {format(new Date(booking.checkedInAt), "d MMM, HH:mm")}. Enjoy your trip!
+            <CheckCircle2 size={13} /> {t("checkedIn", { time: moment(booking.checkedInAt, locale) })}
           </p>
         ) : (
           <p className="mt-3 text-xs text-white/65 leading-relaxed">
-            Show this QR code on the day of your trip, printed or on your phone. It is also in your confirmation email.
+            {t("showQr")}
           </p>
         )}
       </div>
-      <a
-        href={qr}
-        download={`Acacia ticket ${booking.ticketCode}.png`}
-        className="relative block border-t border-dashed border-white/15 py-3 text-center text-xs font-medium text-[#c5a86d] hover:bg-white/5 transition-colors"
-      >
-        Save the QR code
-      </a>
+      <div className="relative grid grid-cols-2 border-t border-dashed border-white/15 text-xs font-medium text-[#c5a86d]">
+        <a href={qr} download={`Acacia ticket ${booking.ticketCode}.png`} className="py-3 text-center hover:bg-white/5 transition-colors">
+          {t("saveQr")}
+        </a>
+        {/* Google, Apple and Outlook calendars open .ics files; with a reminder 2 days before */}
+        <a
+          href={`${API_URL}/bookings/track/${token}/calendar.ics`}
+          download="acacia-safaris-trip.ics"
+          className="inline-flex items-center justify-center gap-1.5 py-3 border-l border-dashed border-white/15 hover:bg-white/5 transition-colors"
+        >
+          <CalendarDays size={13} /> {t("addCalendar")}
+        </a>
+      </div>
     </div>
   );
 }
@@ -256,18 +278,21 @@ function TicketCard({ booking, token }: { booking: PublicBooking; token: string 
 // ---------- Trip ----------
 
 function TripCard({ booking }: { booking: PublicBooking }) {
+  const t = useTranslations("MyBooking");
+  const locale = useLocale();
+  const group = useGroupText();
   const guests = booking.guests?.filter((g) => g.count > 0) ?? [];
   return (
     <div className="rounded-2xl bg-white border border-[#0a120b]/[0.07] shadow-sm p-5 space-y-3.5 text-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45">Your trip</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45">{t("yourTrip")}</p>
       {booking.package?.location && <Row icon={MapPin} text={booking.package.location} />}
-      <Row icon={CalendarDays} text={`${format(new Date(booking.startDate), "EEE d MMM")} – ${format(new Date(booking.endDate), "EEE d MMM yyyy")}`} />
+      <Row icon={CalendarDays} text={tripRange(booking.startDate, booking.endDate, locale)} />
       <Row
         icon={Users}
         text={
           guests.length > 0
-            ? guests.map((g) => `${g.count} ${g.label.toLowerCase()}${g.count > 1 ? "s" : ""}`).join(", ")
-            : `${booking.travelers} traveler${booking.travelers > 1 ? "s" : ""}`
+            ? guests.map((g) => group.count(g.label, g.count)).join(", ")
+            : group.travelers(booking.travelers)
         }
       />
       {booking.destinations.length > 0 && (
@@ -282,7 +307,7 @@ function TripCard({ booking }: { booking: PublicBooking }) {
       )}
       {booking.package && (
         <Link href={`/tour?package=${booking.package.id}`} className="inline-block text-xs font-medium text-[#8e7345] hover:underline pt-1">
-          See the itinerary →
+          {t("seeItinerary")}
         </Link>
       )}
     </div>
@@ -300,6 +325,8 @@ function Row({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
 // ---------- Conversation ----------
 
 function Conversation({ booking, token, onChange }: { booking: PublicBooking; token: string; onChange: (b: PublicBooking) => void }) {
+  const t = useTranslations("MyBooking");
+  const moneyText = useMoneyText();
   const [text, setText] = useState("");
   const [withOffer, setWithOffer] = useState(false);
   const [offer, setOffer] = useState("");
@@ -344,8 +371,8 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
       <div className="flex items-center gap-3 px-5 py-4 border-b border-[#0a120b]/[0.06]">
         <span className="w-9 h-9 rounded-full bg-[#12231a] text-[#c5a86d] flex items-center justify-center"><MessageCircle size={17} /></span>
         <div>
-          <p className="text-sm font-semibold">Talk with our team</p>
-          <p className="text-xs text-[#0a120b]/50">Questions, changes or the price: we usually answer within a few hours.</p>
+          <p className="text-sm font-semibold">{t("talkTitle")}</p>
+          <p className="text-xs text-[#0a120b]/50">{t("talkText")}</p>
         </div>
       </div>
 
@@ -353,7 +380,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
         {count === 0 ? (
           <div className="h-[220px] flex flex-col items-center justify-center text-center text-sm text-[#0a120b]/45">
             <MessageCircle size={28} className="mb-2 text-[#0a120b]/20" />
-            No messages yet. Ask us anything about your trip.
+            {t("noMessages")}
           </div>
         ) : (
           booking.messages.map((m) => <Bubble key={m.id} message={m} />)
@@ -363,7 +390,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
 
       {closed ? (
         <p className="px-5 py-4 text-sm text-[#0a120b]/50 border-t border-[#0a120b]/[0.06]">
-          This booking is {booking.status.toLowerCase()}. For anything else, please contact us.
+          {t("closed", { status: t(`status.${booking.status}`).toLowerCase() })}
         </p>
       ) : (
         <form onSubmit={send} className="p-4 border-t border-[#0a120b]/[0.06] space-y-3">
@@ -377,7 +404,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
                 autoFocus
                 value={offer}
                 onChange={(e) => setOffer(e.target.value)}
-                placeholder={booking.listAmount > 0 ? `Your price, lower than ${money(booking.listAmount)}` : "Your budget for everyone (USD)"}
+                placeholder={booking.listAmount > 0 ? t("offerPlaceholderLower", { price: moneyText(booking.listAmount) }) : t("offerPlaceholderBudget")}
                 className="w-full bg-[#c5a86d]/[0.07] border border-[#c5a86d]/50 rounded-lg pl-7 pr-3 py-2.5 text-sm outline-none focus:ring-4 focus:ring-[#c5a86d]/15"
               />
             </div>
@@ -394,13 +421,13 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
                   send();
                 }
               }}
-              placeholder="Write a message…"
+              placeholder={t("write")}
               className="flex-1 resize-none bg-[#f7f5f0] border border-[#0a120b]/10 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all"
             />
             <button
               type="submit"
               disabled={sending || (!text.trim() && !(withOffer && Number(offer) > 0))}
-              aria-label="Send"
+              aria-label={t("send")}
               className="h-11 w-11 shrink-0 rounded-xl bg-[#12231a] hover:bg-[#1F5A42] text-white flex items-center justify-center disabled:opacity-40 transition-colors cursor-pointer"
             >
               {sending ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
@@ -415,12 +442,12 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
                   withOffer ? "bg-[#c5a86d] text-[#12231a]" : "bg-[#f4efe6] text-[#7a5d22] hover:bg-[#ece3d2]"
                 }`}
               >
-                <HandCoins size={13} /> {withOffer ? "Remove price" : "Propose a price"}
+                <HandCoins size={13} /> {withOffer ? t("removePrice") : t("proposePrice")}
               </button>
             ) : (
               <span />
             )}
-            <span className="text-[11px] text-[#0a120b]/35 hidden sm:block">Enter to send · Shift + Enter for a new line</span>
+            <span className="text-[11px] text-[#0a120b]/35 hidden sm:block">{t("enterHint")}</span>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
         </form>
@@ -430,7 +457,9 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
 }
 
 function Bubble({ message: m }: { message: BookingMessage }) {
-  const time = format(new Date(m.createdAt), "d MMM, HH:mm");
+  const t = useTranslations("MyBooking");
+  const locale = useLocale();
+  const time = moment(m.createdAt, locale);
 
   if (m.event === "accepted") {
     return (
@@ -447,7 +476,7 @@ function Bubble({ message: m }: { message: BookingMessage }) {
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[85%] sm:max-w-[75%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
         <span className="text-[11px] text-[#0a120b]/45 mb-1 px-1">
-          {mine ? "You" : `${m.authorName} · Acacia Safaris`} · {time}
+          {mine ? t("you") : t("fromTeam", { name: m.authorName })} · {time}
         </span>
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
@@ -456,7 +485,7 @@ function Bubble({ message: m }: { message: BookingMessage }) {
         >
           {m.offer != null && (
             <span className={`flex items-center gap-1.5 text-xs font-semibold mb-1 ${mine ? "text-[#c5a86d]" : "text-[#8e7345]"}`}>
-              <HandCoins size={13} /> {mine ? "Your offer" : "Our offer"}: {money(m.offer)}
+              <HandCoins size={13} /> {mine ? t("yourOfferLabel") : t("ourOfferLabel")}: <Money usd={m.offer} />
             </span>
           )}
           {m.text}

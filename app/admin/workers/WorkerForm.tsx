@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowLeft, ShieldCheck, UserRound, Contact, Briefcase, StickyNote, Globe } from "lucide-react";
 import type { Worker, WorkerStatus } from "@/lib/types";
 import { SOCIAL_NETWORKS } from "@/lib/socials";
+import { PhoneField } from "@/components/ui/phone-field";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
 import { LanguagePicker, WorkerPhoto, companyEmailFor, statuses, useRoles } from "./parts";
@@ -111,7 +112,7 @@ export default function WorkerForm({
               </div>
               <div>
                 <label className={labelClass}>Phone *</label>
-                <input className={inputClass} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+250 788 000 000" />
+                <PhoneField value={form.phone} onChange={(phone) => set("phone", phone)} className={inputClass} />
               </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Languages</label>

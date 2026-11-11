@@ -35,3 +35,9 @@
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 } */
+
+/* Phone field (components/ui/phone-field.tsx): the country picker blends into our inputs */
+.acacia-phone .PhoneInputCountry { margin-right: 0.25rem; }
+.acacia-phone .PhoneInputCountryIcon { width: 1.4em; height: 1em; box-shadow: none; border-radius: 2px; overflow: hidden; }
+.acacia-phone .PhoneInputCountrySelectArrow { opacity: 0.45; margin-left: 0.35em; }
+.acacia-phone input:focus { box-shadow: none; }

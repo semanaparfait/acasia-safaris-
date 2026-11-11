@@ -9,7 +9,16 @@ import { Prisma } from '@prisma/client';
 import { randomBytes, randomInt } from 'crypto';
 import { toBuffer } from 'qrcode';
 import { LiveGateway } from '../live/live.gateway';
+import {
+  EMAIL_TEXTS,
+  INTL_LOCALE,
+  asLang,
+  travelersText,
+  type Lang,
+} from '../mail/i18n';
+import { tripCalendar } from './calendar';
 import { checkLinkIsValid } from './link';
+import { toE164 } from '../common/phone';
 import { MailService } from '../mail/mail.service';
 import { ratesOf } from '../packages/quotation.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -105,15 +114,21 @@ export const ticketCodeFrom = (text: string) =>
     .toUpperCase()
     .replace(/^ACACIA:/, '');
 
-// "Mon 1 Dec" (dates are stored at midnight UTC)
-const day = (d: Date, year = false) =>
-  d.toLocaleDateString('en-GB', {
+// "Mon 1 Dec", "lun. 1 déc." (dates are stored at midnight UTC)
+const day = (d: Date, year = false, lang: Lang = 'en') =>
+  d.toLocaleDateString(INTL_LOCALE[lang], {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     ...(year ? { year: 'numeric' } : {}),
     timeZone: 'UTC',
   });
+
+// The visitor's booking page, in their language: /my-booking/… (English), /fr/my-booking/…
+const bookingPath = (token: string, locale?: string | null) => {
+  const lang = asLang(locale);
+  return `${lang === 'en' ? '' : `/${lang}`}/my-booking/${token}`;
+};
 
 @Injectable()
 export class BookingsService {
@@ -178,20 +193,21 @@ export class BookingsService {
     const booking = await this.findOne(id);
     await this.addMessage(booking, 'team', authorName, dto);
 
+    const T = EMAIL_TEXTS[asLang(booking.locale)];
     const email = dto.offer
       ? {
-          subject: `New price for your trip: ${usd(dto.offer)}`,
-          heading: 'We have a price for you',
+          subject: T.newPrice.subject(usd(dto.offer)),
+          heading: T.newPrice.heading,
           paragraphs: [
-            `${authorName} proposed ${usd(dto.offer)} for your trip.`,
+            T.newPrice.proposed(authorName, usd(dto.offer)),
             ...(dto.text?.trim() ? [`"${dto.text.trim()}"`] : []),
-            'Open your booking to accept it or to reply.',
+            T.newPrice.open,
           ],
         }
       : {
-          subject: 'New message about your trip',
-          heading: 'You have a new message',
-          paragraphs: [`${authorName} wrote:`, `"${dto.text?.trim()}"`],
+          subject: T.newMessage.subject,
+          heading: T.newMessage.heading,
+          paragraphs: [T.newMessage.wrote(authorName), `"${dto.text?.trim()}"`],
         };
     this.emailCustomer(booking, email);
     return this.changed(id);
@@ -240,6 +256,33 @@ export class BookingsService {
     return { booking: await this.changed(booking.id), alreadyCheckedIn: false };
   }
 
+  // "Add to calendar" on the visitor's booking page: the trip as an .ics file
+  async tripIcs(token: string) {
+    const b = await this.prisma.booking.findUnique({
+      where: { accessToken: token },
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        ticketCode: true,
+        locale: true,
+        destinations: { select: { title: true } },
+        package: { select: { title: true, location: true } },
+      },
+    });
+    if (!b) throw new NotFoundException('This booking link is not valid');
+    checkLinkIsValid(b.endDate);
+    return tripCalendar({
+      id: b.id,
+      title: b.package?.title ?? b.destinations.map((d) => d.title).join(' · '),
+      location: b.package?.location,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      ticketCode: b.ticketCode,
+      link: `${this.siteUrl}${bookingPath(token, b.locale)}`,
+    });
+  }
+
   // The QR code image for the visitor's booking page
   async ticketQr(token: string) {
     const { ticketCode } = await this.findBookingByToken(token);
@@ -263,15 +306,16 @@ export class BookingsService {
       // Booked at the full price: confirmed now, with the QR code ticket
       await this.confirm(id);
     } else {
+      const T = EMAIL_TEXTS[asLang(booking.locale)].received;
       this.emailCustomer(booking, {
-        subject: 'We received your booking request',
-        heading: 'Your booking request is in',
+        subject: T.subject,
+        heading: T.heading,
         paragraphs: [
-          `Thank you for choosing Acacia Safaris. We received your request for ${booking.package?.title ?? 'your trip'}.`,
+          T.thanks(booking.package?.title ?? T.yourTrip),
           booking.status === 'Negotiating'
-            ? `You asked for ${usd(booking.offer ?? 0)}. Our team will answer within 24 hours.`
-            : 'Our team will send you a price within 24 hours.',
-          'You can follow your booking and write to us at any time from your booking page.',
+            ? T.askedFor(usd(booking.offer ?? 0))
+            : T.priceSoon,
+          T.follow,
         ],
       });
     }
@@ -298,7 +342,7 @@ export class BookingsService {
       data: {
         customer: dto.customer,
         email: dto.email,
-        phone: dto.phone,
+        phone: toE164(dto.phone),
         country: dto.country,
         startDate,
         endDate,
@@ -307,6 +351,7 @@ export class BookingsService {
         notes: dto.notes,
         amount: 0,
         accessToken: newToken(),
+        locale: asLang(dto.locale),
         destinations: { create: destinations },
       },
       select: { id: true },
@@ -374,7 +419,7 @@ export class BookingsService {
       data: {
         customer: dto.customer,
         email: dto.email,
-        phone: dto.phone,
+        phone: toE164(dto.phone),
         country: dto.country,
         packageId: pkg.id,
         travelers,
@@ -387,6 +432,7 @@ export class BookingsService {
         listAmount,
         floorAmount,
         accessToken: newToken(),
+        locale: asLang(dto.locale),
         // Happy with the price: confirmed at once (online payment comes later)
         status: 'Confirmed',
         ...(bargains
@@ -622,15 +668,10 @@ export class BookingsService {
     });
     if (!b) return;
 
+    const lang = asLang(b.locale);
+    const T = EMAIL_TEXTS[lang];
     const guests = Array.isArray(b.guests) ? (b.guests as Guest[]) : [];
-    const travelers = guests.length
-      ? guests
-          .map(
-            (g) =>
-              `${g.count} ${g.label.toLowerCase()}${g.count > 1 ? 's' : ''}`,
-          )
-          .join(', ')
-      : `${b.travelers} traveler${b.travelers > 1 ? 's' : ''}`;
+    const travelers = travelersText(lang, guests, b.travelers);
     const days =
       Math.round((b.endDate.getTime() - b.startDate.getTime()) / 86_400_000) +
       1;
@@ -639,6 +680,7 @@ export class BookingsService {
       text.length > 450 ? `${text.slice(0, 447)}…` : text; // keeps the email under Gmail's size limit
 
     await this.mail.sendBookingConfirmation({
+      lang,
       to: b.email,
       name: b.customer,
       title: b.package?.title ?? b.destinations.map((d) => d.title).join(' · '),
@@ -652,16 +694,16 @@ export class BookingsService {
       perks: b.package?.perks ?? [],
       whyChoose: b.package?.whyChoose ?? [],
       quotationUrl: b.package?.quotation,
-      dates: `${day(b.startDate)} – ${day(b.endDate, true)}`,
-      duration: `${days} ${days === 1 ? 'day' : 'days'}`,
+      dates: `${day(b.startDate, false, lang)} – ${day(b.endDate, true, lang)}`,
+      duration: T.days(days),
       travelers,
       price: usd(b.amount),
       payment:
         b.payment === 'Paid'
-          ? 'Paid in full'
+          ? T.payment.paid
           : b.payment === 'Deposit'
-            ? 'Deposit received'
-            : `${DEPOSIT_RATE * 100}% deposit (${usd(deposit)}) holds your dates. We will send you the payment details.`,
+            ? T.payment.deposit
+            : T.payment.due(DEPOSIT_RATE * 100, usd(deposit)),
       itinerary: (b.package?.itinerary ?? []).map((d) => ({
         ...d,
         description: short(d.description),
@@ -670,7 +712,17 @@ export class BookingsService {
       exclusions: b.package?.exclusions ?? [],
       ticketCode,
       qrPng: await this.qrPng(ticketCode),
-      link: `${this.siteUrl}/my-booking/${b.accessToken}`,
+      calendar: tripCalendar({
+        id: b.id,
+        title:
+          b.package?.title ?? b.destinations.map((d) => d.title).join(' · '),
+        location: b.package?.location,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        ticketCode,
+        link: `${this.siteUrl}${bookingPath(b.accessToken, b.locale)}`,
+      }),
+      link: `${this.siteUrl}${bookingPath(b.accessToken, b.locale)}`,
     });
   }
 
@@ -697,14 +749,20 @@ export class BookingsService {
   }
 
   private emailCustomer(
-    booking: { email: string; customer: string; accessToken: string },
+    booking: {
+      email: string;
+      customer: string;
+      accessToken: string;
+      locale: string;
+    },
     email: { subject: string; heading: string; paragraphs: string[] },
   ) {
     void this.mail.sendBookingUpdate({
       ...email,
+      lang: asLang(booking.locale),
       to: booking.email,
       name: booking.customer,
-      link: `${this.siteUrl}/my-booking/${booking.accessToken}`,
+      link: `${this.siteUrl}${bookingPath(booking.accessToken, booking.locale)}`,
     });
   }
 }

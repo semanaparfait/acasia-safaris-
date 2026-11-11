@@ -167,6 +167,9 @@ model Booking {
   needsReply  Boolean @default(false) // the customer wrote last and the team has not answered
 
   // The visitor's private link to their booking: /my-booking/<accessToken>
+  // The website's language when booking ("en", "fr", "sw"): every email to the visitor uses it
+  locale String @default("en")
+
   accessToken String @unique
 
   // Ticket: made when the booking is confirmed. Its QR code is in the confirmation email

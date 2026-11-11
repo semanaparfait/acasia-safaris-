@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 import { safeFileName } from '../common/file-name';
+import { EMAIL_TEXTS, type Lang } from './i18n';
 
 const escapeHtml = (text: string) =>
   text.replace(
@@ -87,10 +88,16 @@ export class MailService {
       return;
     }
     const transport = this.transport;
+    const T = EMAIL_TEXTS[email.lang].confirm;
     const ticket = {
       filename: `Ticket ${email.ticketCode}.png`,
       content: email.qrPng,
       cid: 'ticket-qr',
+    };
+    const calendar = {
+      filename: T.calendarFile,
+      content: email.calendar,
+      contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
     };
     const quotation = email.quotationUrl && {
       filename: `${safeFileName(email.title)} - Quotation.pdf`,
@@ -101,21 +108,25 @@ export class MailService {
       transport.sendMail({
         from: this.from,
         to: email.to,
-        subject: `Confirmed: ${email.title} · ${email.dates}`,
+        subject: T.subject(email.title, email.dates),
         text: [
-          `Hello ${email.name},`,
-          `Your booking for ${email.title} is confirmed.`,
-          `Dates: ${email.dates}`,
-          `Travelers: ${email.travelers}`,
-          `Price: ${email.price}`,
-          `Your ticket code is ${email.ticketCode}. Bring the QR code (printed or on your phone) on the day of your trip.`,
-          `Open your booking: ${email.link}`,
+          EMAIL_TEXTS[email.lang].hello(email.name),
+          T.textConfirmed(email.title),
+          `${T.dates}: ${email.dates}`,
+          `${T.travelers}: ${email.travelers}`,
+          `${T.price}: ${email.price}`,
+          T.textTicket(email.ticketCode),
+          T.textOpen(email.link),
           'Acacia Safaris',
         ].join('\n\n'),
         html: confirmationHtml(
           withPdf ? email : { ...email, quotationUrl: null },
         ),
-        attachments: withPdf && quotation ? [ticket, quotation] : [ticket],
+        attachments: [
+          ticket,
+          calendar,
+          ...(withPdf && quotation ? [quotation] : []),
+        ],
       });
 
     try {
@@ -148,9 +159,9 @@ export class MailService {
         to: email.to,
         subject: email.subject,
         text: [
-          `Hello ${email.name},`,
+          EMAIL_TEXTS[email.lang].hello(email.name),
           ...email.paragraphs,
-          `Open your booking: ${email.link}`,
+          `${EMAIL_TEXTS[email.lang].openBooking}: ${email.link}`,
           'Acacia Safaris',
         ].join('\n\n'),
         html: bookingHtml(email),
@@ -216,6 +227,7 @@ Acacia Safaris`,
 }
 
 export type BookingEmail = {
+  lang: Lang; // the visitor's website language
   to: string;
   name: string;
   subject: string;
@@ -224,7 +236,8 @@ export type BookingEmail = {
   link: string; // the visitor's booking page
 };
 
-function bookingHtml({ name, heading, paragraphs, link }: BookingEmail) {
+function bookingHtml({ lang, name, heading, paragraphs, link }: BookingEmail) {
+  const T = EMAIL_TEXTS[lang];
   const body = paragraphs
     .map((p) => `<p style="margin:0 0 14px">${escapeHtml(p)}</p>`)
     .join('');
@@ -236,16 +249,17 @@ function bookingHtml({ name, heading, paragraphs, link }: BookingEmail) {
       <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;font-weight:normal">${escapeHtml(heading)}</h1>
     </div>
     <div style="padding:28px 32px;font-size:15px;line-height:1.6">
-      <p style="margin:0 0 14px">Hello ${escapeHtml(name)},</p>
+      <p style="margin:0 0 14px">${escapeHtml(T.hello(name))}</p>
       ${body}
-      <p style="margin:24px 0"><a href="${escapeHtml(link)}" style="background:#c5a86d;color:#0e1d16;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:6px;display:inline-block">Open my booking</a></p>
-      <p style="margin:0;color:#0a120b99;font-size:13px">Keep this email: the button is your private link to your booking and our conversation.</p>
+      <p style="margin:24px 0"><a href="${escapeHtml(link)}" style="background:#c5a86d;color:#0e1d16;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:6px;display:inline-block">${escapeHtml(T.openBooking)}</a></p>
+      <p style="margin:0;color:#0a120b99;font-size:13px">${escapeHtml(T.keepEmail)}</p>
     </div>
   </div>
 </div>`;
 }
 
 export type ConfirmationEmail = {
+  lang: Lang; // the visitor's website language
   to: string;
   name: string;
   title: string; // the package, or the destinations
@@ -273,6 +287,7 @@ export type ConfirmationEmail = {
   whyChoose: string[]; // "Title: explanation"
   ticketCode: string;
   qrPng: Buffer;
+  calendar: string; // the trip as an .ics file ("Add to calendar")
   quotationUrl?: string | null; // attached as a PDF when there is one
   link: string;
 };
@@ -289,6 +304,8 @@ const usdText = (n: number) => `$${n.toLocaleString('en-US')}`;
 // Emails are built with tables and inline styles: that is what every email app shows the same way
 export function confirmationHtml(e: ConfirmationEmail) {
   const h = escapeHtml;
+  const T = EMAIL_TEXTS[e.lang].confirm;
+  const hello = EMAIL_TEXTS[e.lang].hello;
 
   const heading = (eyebrow: string, title: string) => `
     <tr><td style="padding:36px 32px 14px">
@@ -306,12 +323,12 @@ export function confirmationHtml(e: ConfirmationEmail) {
         </td>`
       : '';
   const facts = [
-    factCell('Dates', e.dates),
-    factCell('Duration', e.duration),
-    factCell('Travelers', e.travelers),
-    factCell('Trip type', e.tripType),
-    factCell('Lodging', e.lodging),
-    factCell('Location', e.location),
+    factCell(h(T.dates), e.dates),
+    factCell(h(T.duration), e.duration),
+    factCell(h(T.travelers), e.travelers),
+    factCell(h(T.tripType), e.tripType),
+    factCell(h(T.lodging), e.lodging),
+    factCell(h(T.location), e.location),
   ].filter(Boolean);
   const factRows: string[] = [];
   for (let i = 0; i < facts.length; i += 2) {
@@ -322,7 +339,7 @@ export function confirmationHtml(e: ConfirmationEmail) {
 
   const route = e.route.length
     ? `<tr><td style="padding:4px 32px 0">
-        <p style="margin:14px 0 8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${MUTED}">Route</p>
+        <p style="margin:14px 0 8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${MUTED}">${h(T.route)}</p>
         <p style="margin:0;font-size:14px;line-height:2;color:${INK}">${e.route
           .map(
             (stop) =>
@@ -338,8 +355,8 @@ export function confirmationHtml(e: ConfirmationEmail) {
     .filter((g) => g.count > 0)
     .map(
       (g) => `<tr>
-        <td style="padding:7px 0;font-size:14px;color:${MUTED}">${g.count} &times; ${h(g.label)} <span style="color:#9aa39d">(${g.price > 0 ? usdText(g.price) : 'free'})</span></td>
-        <td align="right" style="padding:7px 0;font-size:14px;color:${INK}">${g.price > 0 ? usdText(g.count * g.price) : 'Free'}</td>
+        <td style="padding:7px 0;font-size:14px;color:${MUTED}">${g.count} &times; ${h(g.label)} <span style="color:#9aa39d">(${g.price > 0 ? usdText(g.price) : T.free})</span></td>
+        <td align="right" style="padding:7px 0;font-size:14px;color:${INK}">${g.price > 0 ? usdText(g.count * g.price) : T.free}</td>
       </tr>`,
     )
     .join('');
@@ -356,7 +373,7 @@ export function confirmationHtml(e: ConfirmationEmail) {
                 : ''
             }
             <td style="vertical-align:top;padding:14px 16px">
-              <p style="margin:0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8e7345;font-weight:bold">Day ${d.day}</p>
+              <p style="margin:0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8e7345;font-weight:bold">${h(T.day)} ${d.day}</p>
               <p style="margin:3px 0 0;font-size:15px;font-weight:bold;color:${INK}">${h(d.title)}</p>
               <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:${MUTED}">${h(d.description)}</p>
             </td>
@@ -391,9 +408,9 @@ export function confirmationHtml(e: ConfirmationEmail) {
     .join('');
 
   return `<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking confirmed</title></head>
+<html lang="${e.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking confirmed</title></head>
 <body style="margin:0;padding:0;background:${CREAM}">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0">Your trip ${h(e.title)} is confirmed. Your QR code ticket and every detail are inside.</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${h(T.preheader(e.title))}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};font-family:Arial,Helvetica,sans-serif;color:${INK}">
 <tr><td align="center" style="padding:28px 10px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(10,18,11,0.08)">
@@ -402,29 +419,29 @@ export function confirmationHtml(e: ConfirmationEmail) {
   <tr><td style="background:${GREEN};padding:22px 32px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:Georgia,'Times New Roman',serif;font-size:18px;letter-spacing:4px;color:#ffffff">ACACIA <span style="color:${GOLD}">SAFARIS</span></td>
-      <td align="right"><span style="display:inline-block;background:#1f5a42;color:#d6f5e3;font-size:11px;font-weight:bold;letter-spacing:1px;padding:6px 12px;border-radius:20px;white-space:nowrap">&#10003;&nbsp;CONFIRMED</span></td>
+      <td align="right"><span style="display:inline-block;background:#1f5a42;color:#d6f5e3;font-size:11px;font-weight:bold;letter-spacing:1px;padding:6px 12px;border-radius:20px;white-space:nowrap">&#10003;&nbsp;${h(T.badge)}</span></td>
     </tr></table>
   </td></tr>
 
   <!-- Hero -->
   ${e.image ? `<tr><td style="padding:0"><img src="${h(e.image)}" alt="${h(e.title)}" width="600" style="display:block;width:100%;height:auto;max-height:300px;object-fit:cover"></td></tr>` : ''}
   <tr><td style="background:${GREEN};padding:26px 32px 30px">
-    <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD}">Your trip is booked</p>
+    <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD}">${h(T.booked)}</p>
     <p style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.25;color:#ffffff">${h(e.title)}</p>
     <p style="margin:10px 0 0;font-size:14px;color:#ffffffb3">${h(e.dates)}${e.duration ? ` &nbsp;·&nbsp; ${h(e.duration)}` : ''}</p>
   </td></tr>
 
   <!-- Greeting -->
   <tr><td style="padding:30px 32px 0">
-    <p style="margin:0;font-size:16px">Hello ${h(e.name)},</p>
-    <p style="margin:10px 0 0;font-size:15px;line-height:1.65;color:${MUTED}">Wonderful news: your booking is <strong style="color:${INK}">confirmed</strong>. Below is your ticket and every detail of your trip. Please keep this email, you will need it on the day.</p>
+    <p style="margin:0;font-size:16px">${h(hello(e.name))}</p>
+    <p style="margin:10px 0 0;font-size:15px;line-height:1.65;color:${MUTED}">${T.intro}</p>
   </td></tr>
 
   <!-- Ticket -->
   <tr><td style="padding:26px 32px 0">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${GREEN};border-radius:16px">
       <tr><td align="center" style="padding:26px 20px 8px">
-        <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD}">Your ticket</p>
+        <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD}">${h(T.ticket)}</p>
         <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px auto 0"><tr><td style="background:#ffffff;border-radius:14px;padding:12px">
           <img src="cid:ticket-qr" alt="QR code ${h(e.ticketCode)}" width="190" height="190" style="display:block;width:190px;height:190px">
         </td></tr></table>
@@ -432,14 +449,14 @@ export function confirmationHtml(e: ConfirmationEmail) {
       </td></tr>
       <tr><td style="padding:14px 24px 0"><div style="border-top:2px dashed #ffffff26"></div></td></tr>
       <tr><td align="center" style="padding:14px 28px 24px">
-        <p style="margin:0;font-size:14px;line-height:1.6;color:#ffffff"><strong>Show this QR code on the day of your trip</strong></p>
-        <p style="margin:4px 0 0;font-size:13px;line-height:1.6;color:#ffffffa6">Printed or on your phone. Our team scans it to welcome you.</p>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#ffffff"><strong>${h(T.showQr)}</strong></p>
+        <p style="margin:4px 0 0;font-size:13px;line-height:1.6;color:#ffffffa6">${h(T.showQrNote)}</p>
       </td></tr>
     </table>
   </td></tr>
 
   <!-- Trip at a glance -->
-  ${heading('At a glance', 'Your trip')}
+  ${heading(h(T.glance), h(T.yourTrip))}
   <tr><td style="padding:0 26px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${factRows.join('')}</table>
   </td></tr>
@@ -447,13 +464,13 @@ export function confirmationHtml(e: ConfirmationEmail) {
 
   ${
     e.description
-      ? `${heading('Overview', 'About this journey')}
+      ? `${heading(h(T.overview), h(T.aboutJourney))}
   <tr><td style="padding:0 32px"><p style="margin:0;font-size:14px;line-height:1.7;color:${MUTED}">${h(e.description)}</p></td></tr>`
       : ''
   }
 
   <!-- Price -->
-  ${heading('Price', 'Your total')}
+  ${heading(h(T.price), h(T.yourTotal))}
   <tr><td style="padding:0 32px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};border-radius:12px">
       <tr><td style="padding:10px 18px 4px">
@@ -462,7 +479,7 @@ export function confirmationHtml(e: ConfirmationEmail) {
       <tr><td style="padding:0 18px"><div style="border-top:1px solid #e5ded0"></div></td></tr>
       <tr><td style="padding:12px 18px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="font-size:14px;color:${MUTED}">Total</td>
+          <td style="font-size:14px;color:${MUTED}">${h(T.total)}</td>
           <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${GREEN};font-weight:bold">${h(e.price)}</td>
         </tr></table>
       </td></tr>
@@ -472,18 +489,18 @@ export function confirmationHtml(e: ConfirmationEmail) {
 
   ${
     days
-      ? `${heading('Itinerary', 'Day by day')}
+      ? `${heading(h(T.itinerary), h(T.dayByDay))}
   <tr><td style="padding:0 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${days}</table></td></tr>`
       : ''
   }
 
   ${
     e.inclusions.length || e.exclusions.length
-      ? `${heading('What you get', 'Included and not included')}
+      ? `${heading(h(T.whatYouGet), h(T.includedTitle))}
   <tr><td style="padding:0 32px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-      ${e.inclusions.length ? `<td width="50%" style="vertical-align:top;padding-right:10px"><p style="margin:0 0 6px;font-size:12px;font-weight:bold;color:#1f5a42">INCLUDED</p><table role="presentation" cellpadding="0" cellspacing="0">${list(e.inclusions, '&#10003;', '#1f5a42')}</table></td>` : ''}
-      ${e.exclusions.length ? `<td width="50%" style="vertical-align:top;padding-left:10px"><p style="margin:0 0 6px;font-size:12px;font-weight:bold;color:#b4483c">NOT INCLUDED</p><table role="presentation" cellpadding="0" cellspacing="0">${list(e.exclusions, '&#10005;', '#b4483c')}</table></td>` : ''}
+      ${e.inclusions.length ? `<td width="50%" style="vertical-align:top;padding-right:10px"><p style="margin:0 0 6px;font-size:12px;font-weight:bold;color:#1f5a42">${h(T.included)}</p><table role="presentation" cellpadding="0" cellspacing="0">${list(e.inclusions, '&#10003;', '#1f5a42')}</table></td>` : ''}
+      ${e.exclusions.length ? `<td width="50%" style="vertical-align:top;padding-left:10px"><p style="margin:0 0 6px;font-size:12px;font-weight:bold;color:#b4483c">${h(T.notIncluded)}</p><table role="presentation" cellpadding="0" cellspacing="0">${list(e.exclusions, '&#10005;', '#b4483c')}</table></td>` : ''}
     </tr></table>
   </td></tr>`
       : ''
@@ -491,14 +508,14 @@ export function confirmationHtml(e: ConfirmationEmail) {
 
   ${
     e.perks.length
-      ? `${heading('Extras', 'Little things we add')}
+      ? `${heading(h(T.extras), h(T.extrasTitle))}
   <tr><td style="padding:0 32px"><table role="presentation" cellpadding="0" cellspacing="0">${list(e.perks, '&#9670;', GOLD)}</table></td></tr>`
       : ''
   }
 
   ${
     reasons
-      ? `${heading('Good to know', 'Why travelers love this trip')}
+      ? `${heading(h(T.goodToKnow), h(T.whyTitle))}
   <tr><td style="padding:0 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${reasons}</table></td></tr>`
       : ''
   }
@@ -507,18 +524,9 @@ export function confirmationHtml(e: ConfirmationEmail) {
   <tr><td style="padding:34px 32px 0">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fbf6ea;border:1px solid #ecdcb8;border-radius:14px">
       <tr><td style="padding:20px 22px">
-        <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8e7345;font-weight:bold">On the day, remember to bring</p>
+        <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8e7345;font-weight:bold">${h(T.bring)}</p>
         <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:10px">
-          ${list(
-            [
-              'This QR code ticket, printed or on your phone',
-              'A passport or ID for every traveler',
-              'Comfortable walking shoes and a light rain jacket',
-              'Sun protection, a refillable water bottle and your camera',
-            ],
-            '&#10003;',
-            '#1f5a42',
-          )}
+          ${list(T.bringItems, '&#10003;', '#1f5a42')}
         </table>
       </td></tr>
     </table>
@@ -526,18 +534,19 @@ export function confirmationHtml(e: ConfirmationEmail) {
 
   <!-- Buttons -->
   <tr><td align="center" style="padding:30px 32px 6px">
-    <a href="${h(e.link)}" style="display:inline-block;background:${GOLD};color:#0e1d16;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 34px;border-radius:8px">Open my booking</a>
+    <a href="${h(e.link)}" style="display:inline-block;background:${GOLD};color:#0e1d16;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 34px;border-radius:8px">${h(EMAIL_TEXTS[e.lang].openBooking)}</a>
   </td></tr>
   <tr><td align="center" style="padding:10px 32px 0">
-    <a href="https://wa.me/${WHATSAPP}" style="font-size:13px;color:#1f5a42;text-decoration:none;font-weight:bold">Chat with us on WhatsApp</a>
-    ${e.quotationUrl ? `<span style="color:#c8c2b4">&nbsp;·&nbsp;</span><span style="font-size:13px;color:${MUTED}">Full quotation attached (PDF)</span>` : ''}
+    <a href="https://wa.me/${WHATSAPP}" style="font-size:13px;color:#1f5a42;text-decoration:none;font-weight:bold">${h(T.whatsapp)}</a>
+    <span style="color:#c8c2b4">&nbsp;·&nbsp;</span><span style="font-size:13px;color:${MUTED}">&#128197; ${h(T.calendar)}</span>
+    ${e.quotationUrl ? `<span style="color:#c8c2b4">&nbsp;·&nbsp;</span><span style="font-size:13px;color:${MUTED}">${h(T.quotation)}</span>` : ''}
   </td></tr>
 
   <!-- Footer -->
   <tr><td style="padding:30px 32px 26px">
     <div style="border-top:1px solid #ece6da;padding-top:18px;text-align:center">
       <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:3px;color:${GREEN}">ACACIA SAFARIS</p>
-      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578<br>Questions? Reply to this email or write to us from your booking page.</p>
+      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578<br>${h(T.questions)}</p>
     </div>
   </td></tr>
 

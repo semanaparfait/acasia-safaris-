@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,13 +19,15 @@ export const metadata: Metadata = {
     "acacia safaris ltd is a tour and travel company based in kenya, we offer a wide range of tour and travel services to our clients, we are committed to providing our clients with the best possible service and we strive to exceed their expectations.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // The page's language (fr, sw, en) for screen readers, translation tools and search engines
+  const locale = await getLocale();
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

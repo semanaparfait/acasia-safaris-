@@ -13,6 +13,7 @@ import { LiveModule } from './live/live.module';
 import { MessagesModule } from './messages/messages.module';
 import { PackagesModule } from './packages/packages.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { RatesModule } from './rates/rates.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { RolesModule } from './roles/roles.module';
 import { StorageModule } from './storage/storage.module';
@@ -42,6 +43,7 @@ import { WorkersModule } from './workers/workers.module';
     MessagesModule,
     ReviewsModule,
     GalleryModule,
+    RatesModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -23,6 +23,7 @@ export const BOOKING_STATUSES = [
   'Completed',
   'Cancelled',
 ];
+export const LOCALES = ['en', 'fr', 'sw'];
 export const PAYMENT_STATUSES = ['Unpaid', 'Deposit', 'Paid', 'Refunded'];
 
 // One destination of the trip and what the visitor chose for it
@@ -122,6 +123,11 @@ export class CreateBookingDto {
   @IsInt()
   @Min(1)
   offer?: number;
+
+  // The website's language: emails to the visitor are written in it
+  @IsOptional()
+  @IsIn(LOCALES)
+  locale?: string;
 
   // Why they ask for it, e.g. "We are a group of students"
   @IsOptional()

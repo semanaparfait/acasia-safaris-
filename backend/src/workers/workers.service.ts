@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { toE164 } from '../common/phone';
 import type { Worker } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -132,6 +133,7 @@ export class WorkersService {
         ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
+        phone: toE164(dto.phone) ?? dto.phone,
         joined: toDate(dto.joined),
         passwordHash: password ? await hash(password, 10) : null,
       },
@@ -179,6 +181,7 @@ export class WorkersService {
         ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
+        phone: toE164(dto.phone) ?? dto.phone,
         joined: toDate(dto.joined),
         // Only change the password when a new one is sent
         ...(password ? { passwordHash: await hash(password, 10) } : {}),

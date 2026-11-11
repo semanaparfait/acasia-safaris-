@@ -1,7 +1,8 @@
 "use client";
 
 import React, { use, useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
@@ -23,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
+import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
 import { defaultTripOptions, tripOptions, type TripOptions } from "@/lib/helpers";
 import type { Destination } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
@@ -222,6 +224,7 @@ export default function BookingPage({
   const destinations = useDestinationsStore((s) => s.destinations);
   const loadDestinations = useDestinationsStore((s) => s.load);
   const createBooking = useBookingsStore((s) => s.createBooking);
+  const locale = useLocale();
 
   useEffect(() => {
     loadDestinations();
@@ -329,7 +332,7 @@ export default function BookingPage({
     if (!/^\S+@\S+\.\S+$/.test(details.email.trim())) {
       return "Please enter a valid email address.";
     }
-    if (!/^\+?[\d\s()-]{7,}$/.test(details.phone.trim())) {
+    if (!details.phone || !isValidPhoneNumber(details.phone)) {
       return "Please enter a valid phone or WhatsApp number.";
     }
     if (!details.fromRwanda) return "Please tell us if you are from Rwanda.";
@@ -385,6 +388,7 @@ export default function BookingPage({
     setError("");
     try {
       const booking = await createBooking({
+        locale, // emails go out in the visitor's language
         customer: details.name.trim(),
         email: details.email.trim(),
         phone: details.phone.trim(),
@@ -861,18 +865,11 @@ export default function BookingPage({
                               <label htmlFor="phone" className={labelClass}>
                                 Phone / WhatsApp *
                               </label>
-                              <input
+                              <PhoneField
                                 id="phone"
-                                type="tel"
                                 required
                                 value={details.phone}
-                                onChange={(e) =>
-                                  setDetails({
-                                    ...details,
-                                    phone: e.target.value,
-                                  })
-                                }
-                                placeholder="+1 555 000 000"
+                                onChange={(phone) => setDetails({ ...details, phone })}
                                 className={inputClass}
                               />
                             </div>

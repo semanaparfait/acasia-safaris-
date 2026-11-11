@@ -232,4 +232,21 @@ describe('BookingsService', () => {
     expect(result.alreadyCheckedIn).toBe(true);
     expect(prisma.booking.update).not.toHaveBeenCalled();
   });
+
+  it('emails a French visitor in French, with the French page link', async () => {
+    const { service, prisma, mail } = setup();
+    prisma.booking.findUnique.mockResolvedValue(
+      booking({ status: 'Negotiating', offer: 2100, locale: 'fr' }),
+    );
+    await service.create({ ...dto, offer: 2100, locale: 'fr' });
+
+    expect(createdData(prisma).locale).toBe('fr');
+    expect(mail.sendBookingUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lang: 'fr',
+        subject: 'Nous avons bien reçu votre demande de réservation',
+        link: 'https://acacia.example/fr/my-booking/tok',
+      }),
+    );
+  });
 });

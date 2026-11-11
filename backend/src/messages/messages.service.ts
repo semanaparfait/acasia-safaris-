@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { toE164 } from '../common/phone';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
 
@@ -17,7 +18,9 @@ export class MessagesService {
   }
 
   create(dto: CreateMessageDto) {
-    return this.prisma.message.create({ data: dto });
+    return this.prisma.message.create({
+      data: { ...dto, phone: toE164(dto.phone) },
+    });
   }
 
   async update(id: string, dto: UpdateMessageDto) {
