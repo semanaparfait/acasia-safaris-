@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -27,18 +28,10 @@ export default function WhyChooseUs() {
           className="relative h-[460px] sm:h-[560px]"
         >
           <div className="absolute left-0 top-0 w-[78%] h-[88%] rounded-[2rem] overflow-hidden shadow-2xl">
-            <img
-              src="https://i.pinimg.com/1200x/48/42/4b/48424b75b7f6fa0114c5664b86296ab8.jpg"
-              className="w-full h-full object-cover object-bottom hover:scale-105 transition-transform duration-700"
-              alt={t("walkAlt")}
-            />
+            <SmartImage src="https://i.pinimg.com/1200x/48/42/4b/48424b75b7f6fa0114c5664b86296ab8.jpg" alt={t("walkAlt")} className="w-full h-full object-cover object-bottom hover:scale-105 transition-transform duration-700" sizes="(max-width: 1024px) 80vw, 40vw" />
           </div>
           <div className="absolute right-0 bottom-0 w-[45%] h-[45%] rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white">
-            <img
-              src="https://i.pinimg.com/1200x/1d/3a/0e/1d3a0e7dbc04ee5e445faed00f48c164.jpg"
-              className="w-full h-full object-cover"
-              alt={t("gorillasAlt")}
-            />
+            <SmartImage src="https://i.pinimg.com/1200x/1d/3a/0e/1d3a0e7dbc04ee5e445faed00f48c164.jpg" alt={t("gorillasAlt")} className="w-full h-full object-cover" sizes="(max-width: 1024px) 45vw, 22vw" />
           </div>
 
           {/* Floating badge */}

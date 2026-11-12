@@ -7,6 +7,7 @@
 // The booking is saved, and the visitor goes to their booking page (/my-booking/<token>),
 // where they follow it and talk with the team.
 import React, { useEffect, useMemo, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -170,8 +171,7 @@ export default function BookPackageModal({
             {/* Header */}
             <div className="relative overflow-hidden bg-[#12231a] px-6 pt-6 pb-5 text-white">
               {tour.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={tour.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                <SmartImage src={tour.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" sizes="512px" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#12231a] via-[#12231a]/75 to-[#12231a]/30" />
               <button

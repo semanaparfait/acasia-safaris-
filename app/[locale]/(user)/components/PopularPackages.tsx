@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -55,12 +56,7 @@ export default function PopularPackages() {
               className="group bg-white rounded-2xl overflow-hidden border border-[#0a120b]/5 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 flex flex-col"
             >
               <div className="relative h-60 overflow-hidden">
-                <img
-                  src={pkg.image}
-                  alt={pkg.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                <SmartImage src={pkg.image} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 {pkg.badge && (
                   <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#c5a86d] text-[#0e1d16] text-[10px] font-bold uppercase tracking-widest">

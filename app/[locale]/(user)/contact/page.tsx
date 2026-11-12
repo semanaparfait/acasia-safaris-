@@ -1,5 +1,6 @@
 "use client";
 import { PhoneField } from "@/components/ui/phone-field";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -105,11 +106,7 @@ export default function Contact() {
       {/* Hero */}
       <section className="relative min-h-[60vh] w-full bg-[#0a1811] text-white flex flex-col justify-center overflow-hidden px-6">
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2000&q=80"
-            alt={t("heroAlt")}
-            className="w-full h-full object-cover object-center brightness-[0.8]"
-          />
+          <SmartImage src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2000&q=80" alt={t("heroAlt")} className="w-full h-full object-cover object-center brightness-[0.8]" sizes="100vw" priority />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
@@ -170,11 +167,7 @@ export default function Contact() {
             transition={{ duration: 0.8 }}
             className="lg:col-span-2 relative rounded-2xl overflow-hidden bg-[#12231a] text-white p-8 md:p-10 flex flex-col justify-between min-h-[520px]"
           >
-            <img
-              src="https://i.pinimg.com/736x/a8/51/a1/a851a155910cf89acc36f7598a83ee84.jpg"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-25"
-            />
+            <SmartImage src="https://i.pinimg.com/736x/a8/51/a1/a851a155910cf89acc36f7598a83ee84.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" sizes="(max-width: 1024px) 100vw, 33vw" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#12231a]/70 via-[#12231a]/85 to-[#0a1811]" />
 
             <div className="relative z-10">

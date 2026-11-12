@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { canOptimize } from "@/components/ui/smart-image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   MapPin,
@@ -115,7 +116,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               src={tour.image}
               alt={tour.title}
               fill
-              unoptimized
+              unoptimized={!canOptimize(tour.image)}
+              sizes="(max-width: 1024px) 100vw, 33vw"
               className="object-cover object-center"
               priority
             />
@@ -196,7 +198,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                         src={item.image}
                         alt={item.title}
                         fill
-                        unoptimized
+                        unoptimized={!canOptimize(item.image)}
+                        sizes="96px"
                         className="object-cover"
                       />
                     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { use, useEffect, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
@@ -411,11 +412,7 @@ export default function BookingPage({
       {/* Hero */}
       <section className="relative z-30 w-full bg-[#0a1811] text-white px-6">
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80"
-            alt={t("heroAlt")}
-            className="w-full h-full object-cover object-center brightness-[0.85]"
-          />
+          <SmartImage src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80" alt={t("heroAlt")} className="w-full h-full object-cover object-center brightness-[0.85]" sizes="100vw" priority />
           <div className="absolute inset-0 bg-black/50" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
@@ -652,11 +649,7 @@ export default function BookingPage({
                                       : "ring-transparent hover:ring-[#c5a86d]/40"
                                   }`}
                                 >
-                                  <img
-                                    src={d.image}
-                                    alt={d.title}
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                  />
+                                  <SmartImage src={d.image} alt={d.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 50vw, 25vw" />
                                   <div
                                     className={`absolute inset-0 transition-colors ${active ? "bg-[#12231a]/55" : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"}`}
                                   />
@@ -963,11 +956,7 @@ export default function BookingPage({
                 <ul className="space-y-2.5 mb-5">
                   {chosen.map((d) => (
                     <li key={d.id} className="flex items-center gap-3">
-                      <img
-                        src={d.image}
-                        alt=""
-                        className="w-11 h-11 rounded-lg object-cover"
-                      />
+                      <SmartImage src={d.image} alt="" className="w-11 h-11 rounded-lg object-cover" sizes="64px" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate">{d.title}</p>
                         <p className="text-[11px] text-zinc-400 truncate">

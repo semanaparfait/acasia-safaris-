@@ -3,6 +3,7 @@
 // "Meet the team" on the About us page. Shows the workers marked "Show on website"
 // in Admin > Workers. Clicking one opens a pop-up with their full profile.
 import React, { useEffect, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Languages, Mail, Phone, X } from "lucide-react";
@@ -18,7 +19,7 @@ const initials = (name: string) =>
 function Photo({ member, className }: { member: TeamMember; className: string }) {
   if (member.photo) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={member.photo} alt={member.name} className={`${className} object-cover`} />;
+    return <SmartImage src={member.photo} alt={member.name} className={`${className} object-cover`} sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 17vw" />;
   }
   return (
     <div className={`${className} flex items-center justify-center bg-gradient-to-br from-[#1c2e22] to-[#2f4a37]`}>

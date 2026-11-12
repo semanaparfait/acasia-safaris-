@@ -2,6 +2,7 @@
 
 // "Request quotation" pop-up: get the package's PDF by download, WhatsApp or email.
 import React, { useEffect, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -160,8 +161,7 @@ export default function QuotationModal({
             {/* Header: the package photo under a dark green veil */}
             <div className="relative overflow-hidden bg-[#12231a] px-6 pt-7 pb-6 text-white">
               {tour.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={tour.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                <SmartImage src={tour.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" sizes="448px" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#12231a] via-[#12231a]/70 to-[#12231a]/30" />
               <button

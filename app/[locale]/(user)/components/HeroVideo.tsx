@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useState, useSyncExternalStore } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -69,8 +70,7 @@ export default function HeroVideo() {
           onPause={() => setPlaying(false)}
         />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={POSTER} alt="" fetchPriority="high" className="absolute inset-0 w-full h-full object-cover" />
+        <SmartImage src={POSTER} alt="" className="absolute inset-0 w-full h-full object-cover" sizes="100vw" priority />
       )}
       <div className="absolute inset-0 bg-black/45" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0a1811] via-transparent to-black/50" />

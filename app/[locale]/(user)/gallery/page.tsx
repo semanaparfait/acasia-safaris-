@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -199,11 +200,7 @@ export default function GalleryPage() {
       {/* Hero */}
       <section className="relative min-h-[70vh] w-full bg-[#0a1811] text-white flex flex-col justify-center px-6">
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1504173010664-32509aeebb62?auto=format&fit=crop&w=2000&q=80"
-            alt={t("heroAlt")}
-            className="w-full h-full object-cover object-[70%_center] brightness-[0.9]"
-          />
+          <SmartImage src="https://images.unsplash.com/photo-1504173010664-32509aeebb62?auto=format&fit=crop&w=2000&q=80" alt={t("heroAlt")} className="w-full h-full object-cover object-[70%_center] brightness-[0.9]" sizes="100vw" priority />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
@@ -299,12 +296,7 @@ export default function GalleryPage() {
                   onClick={() => setLightboxIndex(i)}
                   className="group relative block w-full mb-5 overflow-hidden rounded-xl bg-[#f7f5f0] break-inside-avoid text-left shadow-sm hover:shadow-2xl transition-shadow duration-500"
                 >
-                  <img
-                    src={img.src}
-                    alt={img.title}
-                    loading="lazy"
-                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
+                  <SmartImage src={img.src} alt={img.title} className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
 
                   <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold uppercase tracking-widest text-[#12231a]">
@@ -383,11 +375,7 @@ export default function GalleryPage() {
                 aria-label={t("playFilm")}
                 className="group absolute inset-0 w-full h-full"
               >
-                <img
-                  src={`https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`}
-                  alt={t("filmAlt")}
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                />
+                <SmartImage src={`https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`} alt={t("filmAlt")} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" sizes="(max-width: 1024px) 100vw, 50vw" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <span className="absolute inset-0 flex items-center justify-center">
                   <span className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:bg-[#c5a86d] group-hover:border-[#c5a86d] transition-all duration-300">
@@ -423,11 +411,7 @@ export default function GalleryPage() {
                 onClick={() => openCollection(story.category)}
                 className="group relative rounded-xl overflow-hidden shadow-xl h-[420px] flex flex-col justify-end p-6 text-left border border-white/10 hover:border-[#c5a86d]/40 transition-all duration-500"
               >
-                <img
-                  src={story.img}
-                  alt={t(`stories.${story.key}.title` as "stories.gorilla.title")}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
+                <SmartImage src={story.img} alt={t(`stories.${story.key}.title` as "stories.gorilla.title")} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" sizes="(max-width: 768px) 100vw, 33vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
                 <div className="relative z-10 text-white">
                   <h3 className="text-xl sm:text-2xl font-serif mb-2 leading-snug">{t(`stories.${story.key}.title` as "stories.gorilla.title")}</h3>
@@ -446,11 +430,7 @@ export default function GalleryPage() {
       {/* CTA */}
       <section className="px-6 py-24">
         <div className="relative max-w-6xl mx-auto rounded-2xl overflow-hidden bg-[#0a1811] text-white">
-          <img
-            src="https://i.pinimg.com/736x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          />
+          <SmartImage src="https://i.pinimg.com/736x/2b/aa/0f/2baa0f0b1c59deec862d2a8a6b300ae8.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a1811] via-[#0a1811]/85 to-transparent" />
           <div className="relative z-10 px-8 py-16 md:px-16 md:py-20 max-w-2xl">
             <span className="text-[#c5a86d] font-semibold text-[10px] uppercase tracking-[0.35em] block mb-4">

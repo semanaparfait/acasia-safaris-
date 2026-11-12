@@ -1,4 +1,5 @@
 import React from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import shemaCEO from "@/public/aboutus/shema.jpeg"
 import Image from "next/image"
@@ -61,11 +62,7 @@ export default function Experience() {
               className="group relative rounded-xl overflow-hidden shadow-2xl h-[420px] sm:h-[460px] flex flex-col justify-end p-6 border border-white/10 hover:border-[#c5a86d]/40 transition-all duration-500"
             >
               {/* Background Image */}
-              <img
-                src={exp.image}
-                alt={exp.title}
-                className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+              <SmartImage src={exp.image} alt={exp.title} className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" sizes="(max-width: 768px) 100vw, 33vw" />
 
               {/* Multi-stage Dark Gradient Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -49,12 +50,7 @@ export default function GalleryStrip() {
               className={`group relative overflow-hidden rounded-2xl ${p.span} ${i === 0 ? "col-span-2 row-span-2" : ""}`}
             >
               <Link href="/gallery" aria-label={t("open", { alt: t(`photos.${p.alt}`) })} className="block w-full h-full">
-                <img
-                  src={p.src}
-                  alt={t(`photos.${p.alt}`)}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                <SmartImage src={p.src} alt={t(`photos.${p.alt}`)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="absolute bottom-3 left-4 right-4 text-white text-sm opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
                   {t(`photos.${p.alt}`)}

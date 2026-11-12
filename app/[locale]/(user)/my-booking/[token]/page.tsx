@@ -4,6 +4,7 @@
 // The link is emailed to them when they book (the token is the key, no login).
 // They see their trip and price, accept a price from the team, and talk with the team.
 import React, { use, useCallback, useEffect, useRef, useState } from "react";
+import SmartImage from "@/components/ui/smart-image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useGroupText } from "@/lib/useGroupText";
@@ -91,8 +92,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
       {/* Header */}
       <section className="relative overflow-hidden bg-[#12231a] text-white">
         {booking.package?.image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={booking.package.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+          <SmartImage src={booking.package.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" sizes="100vw" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#12231a] via-[#12231a]/80 to-[#12231a]/40" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-32 pb-10">
@@ -249,6 +249,7 @@ function TicketCard({ booking, token }: { booking: PublicBooking; token: string 
       <div className="relative p-5 text-center">
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d]">{t("ticket")}</p>
         <div className="mt-4 mx-auto w-48 rounded-xl bg-white p-3 shadow-md">
+          {/* Plain image: the QR code is private and must stay pixel-sharp to scan */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qr} alt={`Ticket QR code ${booking.ticketCode}`} width={168} height={168} className="w-full h-auto" />
         </div>

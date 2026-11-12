@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { canOptimize } from "@/components/ui/smart-image";
+import SmartImage from "@/components/ui/smart-image";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
@@ -102,7 +104,8 @@ export default function AllPackages({ title, packages, onSelectPackage }: AllPac
                       src={pkg.image}
                       alt={pkg.title}
                       fill
-                      unoptimized
+                      unoptimized={!canOptimize(pkg.image)}
+                      sizes="(max-width: 640px) 100vw, 320px"
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   )}
@@ -351,11 +354,7 @@ export default function AllPackages({ title, packages, onSelectPackage }: AllPac
           {/* Card 4: Testimonial Card */}
           <div className="bg-white rounded-2xl p-5 border border-neutral-200/90 shadow-sm space-y-3">
             <div className="flex items-center gap-3">
-              <img
-                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80"
-                alt="Sarah M."
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#B28236]"
-              />
+              <SmartImage src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80" alt="Sarah M." className="w-12 h-12 rounded-full object-cover border-2 border-[#B28236]" sizes="64px" />
               <div>
                 <p className="text-xs font-serif italic text-neutral-700 leading-snug">
                   &ldquo;Acacia Safaris made our trip unforgettable! From the gorillas to the beaches, everything was perfectly planned. Highly recommended!&rdquo;

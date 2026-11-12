@@ -7,6 +7,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 // The backend. NEXT_PUBLIC_API_URL is its address, e.g. https://api.example.com/api
 // (the live connection in lib/live.ts uses it too).
 const BACKEND = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/api\/?$/, "");
+const BACKEND_URL = new URL(BACKEND);
 
 // Security headers for every page of the website
 const securityHeaders = [
@@ -18,17 +19,24 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Photos are resized and compressed for each screen (and served by Vercel's CDN online).
+  // Allowed sources: keep in sync with components/ui/smart-image.tsx
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "i.pinimg.com" },
+      { protocol: "https", hostname: "img.youtube.com" },
+      // Photos uploaded in the admin panel, served by the backend: <backend>/api/files/…
       {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "i.pinimg.com",
+        protocol: BACKEND_URL.protocol.replace(":", "") as "http" | "https",
+        hostname: BACKEND_URL.hostname,
+        port: BACKEND_URL.port,
+        pathname: "/api/files/**",
       },
     ],
+    // Locally the backend is on localhost, which Next.js refuses by default
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
+    formats: ["image/avif", "image/webp"],
   },
 
   // The website calls its own /api/…, and Next.js forwards it to the backend.
