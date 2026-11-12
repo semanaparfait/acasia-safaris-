@@ -17,6 +17,7 @@ import {
   type Lang,
 } from '../mail/i18n';
 import { tripCalendar } from './calendar';
+import { cancellationSchedule } from './cancellation';
 import { checkLinkIsValid } from './link';
 import { toE164 } from '../common/phone';
 import { MailService } from '../mail/mail.service';
@@ -768,6 +769,25 @@ export class BookingsService {
       exclusions: b.package?.exclusions ?? [],
       ticketCode,
       qrPng: await this.qrPng(ticketCode),
+      cancellation: cancellationSchedule(b.startDate).map((r) => ({
+        when:
+          r.from && r.until
+            ? T.cancel.between(
+                day(r.from, true, lang),
+                day(r.until, true, lang),
+              )
+            : r.until
+              ? T.cancel.until(day(r.until, true, lang))
+              : r.from
+                ? T.cancel.fromDate(day(r.from, true, lang))
+                : T.cancel.fromToday,
+        what:
+          r.charge === 0
+            ? T.cancel.free
+            : r.charge === 100
+              ? T.cancel.all
+              : T.cancel.charge(r.charge),
+      })),
       calendar: tripCalendar({
         id: b.id,
         title:

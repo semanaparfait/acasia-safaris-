@@ -137,6 +137,18 @@ const en = {
       `Your ticket code is ${code}. Bring the QR code (printed or on your phone) on the day of your trip.`,
     textOpen: (link: string) => `Open your booking: ${link}`,
   },
+  cancel: {
+    title: 'Cancellation policy',
+    until: (date: string) => `Until ${date}`,
+    between: (from: string, until: string) => `${from} – ${until}`,
+    fromDate: (date: string) => `From ${date}`,
+    fromToday: 'From today',
+    free: 'Full refund, except permits',
+    charge: (percent: number) => `${percent}% of the total is charged`,
+    all: '100% is charged (also if you do not come)',
+    permits:
+      'Gorilla and chimpanzee permits cannot be refunded once bought. To cancel, write to us from your booking page.',
+  },
   days: (n: number) => `${n} ${n === 1 ? 'day' : 'days'}`,
   payment: {
     paid: 'Paid in full',
@@ -268,6 +280,18 @@ const fr: EmailTexts = {
       `Votre code billet est ${code}. Présentez le QR code (imprimé ou sur votre téléphone) le jour de votre voyage.`,
     textOpen: (link) => `Ouvrir votre réservation : ${link}`,
   },
+  cancel: {
+    title: "Conditions d'annulation",
+    until: (date) => `Jusqu'au ${date}`,
+    between: (from, until) => `Du ${from} au ${until}`,
+    fromDate: (date) => `À partir du ${date}`,
+    fromToday: "À partir d'aujourd'hui",
+    free: 'Remboursement intégral, sauf les permis',
+    charge: (percent) => `${percent} % du total est facturé`,
+    all: "100 % est facturé (y compris en cas d'absence)",
+    permits:
+      'Les permis gorilles et chimpanzés ne sont pas remboursables une fois achetés. Pour annuler, écrivez-nous depuis la page de votre réservation.',
+  },
   days: (n) => `${n} ${n === 1 ? 'jour' : 'jours'}`,
   payment: {
     paid: 'Entièrement payé',
@@ -394,6 +418,18 @@ const sw: EmailTexts = {
     textTicket: (code) =>
       `Namba ya tiketi yako ni ${code}. Leta QR code (iliyochapishwa au kwenye simu yako) siku ya safari.`,
     textOpen: (link) => `Fungua safari yako: ${link}`,
+  },
+  cancel: {
+    title: 'Sera ya kughairi',
+    until: (date) => `Hadi ${date}`,
+    between: (from, until) => `${from} – ${until}`,
+    fromDate: (date) => `Kuanzia ${date}`,
+    fromToday: 'Kuanzia leo',
+    free: 'Unarejeshewa fedha zote, isipokuwa vibali',
+    charge: (percent) => `${percent}% ya jumla inatozwa`,
+    all: '100% inatozwa (hata usipofika)',
+    permits:
+      'Vibali vya sokwe na sokwe-mtu havirejeshewi fedha baada ya kununuliwa. Ili kughairi, tuandikie kupitia ukurasa wa safari yako.',
   },
   days: (n) => `Siku ${n}`,
   payment: {

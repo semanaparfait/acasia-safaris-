@@ -2,10 +2,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
   Mail,
   Phone,
   MapPin,
@@ -16,14 +12,9 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
 import { Link } from "@/i18n/navigation";
+import SocialLinks from "@/components/SocialLinks";
+import { useMessagesStore } from "@/store/messagesStore";
 
-// TODO: replace '#' with the real social profile URLs
-const socials = [
-  { icon: Facebook, label: "Facebook", href: "#" },
-  { icon: Instagram, label: "Instagram", href: "#" },
-  { icon: Twitter, label: "Twitter", href: "#" },
-  { icon: Youtube, label: "YouTube", href: "#" },
-];
 
 // name = the text's key in messages/*.json ("Nav.home", "Footer.bookSafari"…)
 const exploreLinks = [
@@ -50,11 +41,28 @@ const Footer = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const sendMessage = useMessagesStore((s) => s.sendMessage);
+  const [subscribing, setSubscribing] = useState(false);
+
+  // Saved in Admin > Messages ("Newsletter"), so the team has the list of subscribers
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect to a newsletter service
-    setSubscribed(true);
-    setEmail("");
+    setSubscribing(true);
+    try {
+      await sendMessage({
+        name: "Newsletter subscriber",
+        email: email.trim(),
+        subject: "Newsletter subscription",
+        body: `Please add ${email.trim()} to the newsletter (website language: ${locale}).`,
+        source: "Newsletter",
+      });
+      setSubscribed(true);
+      setEmail("");
+    } catch {
+      // Could not be saved: the visitor can try again
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   return (
@@ -106,20 +114,7 @@ const Footer = () => {
             <p className="text-sm text-zinc-400 leading-relaxed max-w-sm">
               {t("Footer.about")}
             </p>
-            <div className="flex gap-3">
-              {socials.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all duration-300 hover:-translate-y-1"
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
+            <SocialLinks linkClassName="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all duration-300 hover:-translate-y-1" />
           </div>
 
           {/* Explore */}
@@ -219,6 +214,7 @@ const Footer = () => {
                   />
                   <button
                     type="submit"
+                    disabled={subscribing}
                     aria-label={t("Footer.subscribe")}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-md bg-[#c5a86d] hover:bg-[#b69656] text-[#0e1d16] flex items-center justify-center transition-colors"
                   >

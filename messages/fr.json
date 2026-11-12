@@ -519,8 +519,6 @@
     "free": "Gratuit et sans engagement"
   },
   "Compare": {
-    "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
-    "available": "Disponible",
     "days": {
       "1": {
         "title": "Arrivée et briefing safari",
@@ -565,7 +563,6 @@
       "small": "Petits groupes (6 maximum par véhicule)"
     },
     "upcoming": "Prochains départs",
-    "season": "2026/2027",
     "exploreGroup": "VOIR LES DÉPARTS EN GROUPE",
     "tailor": "SAFARIS SUR MESURE",
     "coupleAlt": "Couple en safari privé",
@@ -635,7 +632,9 @@
       "unsure": "Je ne sais pas encore, j'ai besoin de conseils"
     },
     "send": "ENVOYER MA DEMANDE",
-    "sending": "ENVOI…"
+    "sending": "ENVOI…",
+    "onRequest": "Nous organisons les départs en petit groupe (6 voyageurs maximum) avec les personnes intéressées. Indiquez-nous le mois souhaité et nous vous enverrons les prochaines dates et le prix.",
+    "askDates": "Demander les prochaines dates"
   },
   "About": {
     "heroAlt": "Paysage volcanique d'Afrique de l'Est dans la brume",
@@ -731,7 +730,7 @@
     "cards": {
       "call": {
         "label": "Appelez-nous",
-        "note": "Lun – sam, 8 h – 18 h (heure de Kigali)"
+        "note": "Lun – ven 8 h – 18 h · Sam 9 h – 14 h"
       },
       "email": {
         "label": "Écrivez-nous",
@@ -785,7 +784,9 @@
     "office": "Notre bureau à Kigali",
     "mapTitle": "Emplacement du bureau Acacia Safaris",
     "officeText": "Kigali, Rwanda. Visites sur rendez-vous. Appelez-nous avant de passer.",
-    "directions": "Itinéraire"
+    "directions": "Itinéraire",
+    "hoursTitle": "Horaires du bureau",
+    "hours": "Lun – ven 8 h – 18 h · Sam 9 h – 14 h"
   },
   "Gallery": {
     "categories": {
@@ -1027,5 +1028,20 @@
         "text": "Réponse sous 24 heures"
       }
     }
+  },
+  "Cancel": {
+    "title": "Conditions d'annulation",
+    "until": "Jusqu'au {date}",
+    "between": "Du {from} au {until}",
+    "fromDate": "À partir du {date}",
+    "fromToday": "À partir d'aujourd'hui",
+    "free": "Remboursement intégral, sauf les permis",
+    "charge": "{percent} % du total est facturé",
+    "all": "100 % est facturé (y compris en cas d'absence)",
+    "permits": "Les permis gorilles et chimpanzés ne sont pas remboursables une fois achetés.",
+    "how": "Pour annuler, écrivez-nous depuis la page de votre réservation ou par e-mail.",
+    "freeUntil": "Annulation gratuite jusqu'au {date} (sauf les permis).",
+    "ifNow": "En cas d'annulation maintenant, {percent} % du total est facturé.",
+    "fullPolicy": "Conditions complètes"
   }
 }

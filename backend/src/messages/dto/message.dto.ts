@@ -28,7 +28,7 @@ export class CreateMessageDto {
   body: string;
 
   @IsOptional()
-  @IsIn(['Contact form', 'Booking request', 'WhatsApp'])
+  @IsIn(['Contact form', 'Booking request', 'WhatsApp', 'Newsletter'])
   source?: string;
 }
 

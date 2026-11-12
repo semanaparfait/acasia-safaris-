@@ -10,7 +10,7 @@ export type LegalDoc = {
 };
 type Lang = "en" | "fr" | "sw";
 
-export const LEGAL_UPDATED = "2026-10-18"; // shown in the reader's date format
+export const LEGAL_UPDATED = "2026-11-12"; // shown in the reader's date format
 
 export const PRIVACY: Record<Lang, LegalDoc> = {
   en: {
@@ -112,14 +112,20 @@ export const TERMS: Record<Lang, LegalDoc> = {
     sections: [
       { title: "About These Terms", body: ["These terms apply to all bookings and services provided by Acacia Safaris Ltd (\"we\", \"us\"). By making a booking or using our website, you agree to them."] },
       { title: "Bookings & Payments", body: [{ list: [
-        "A booking is confirmed once we receive your deposit and send written confirmation.",
-        "The remaining balance is due before your trip starts, on the date shown in your invoice.",
+        "A booking made at the listed price is confirmed at once, by email, with your QR code ticket. A booking with a price offer is confirmed when we agree on the price.",
+        "A deposit of 50% of the total holds your dates. The remaining 50% is due before your trip starts; we send you a reminder and the payment details.",
         "Gorilla and chimpanzee permits must be paid in full at the time of booking, as they are bought in advance from park authorities.",
-        "Prices are quoted in the currency stated on your invoice and may change if taxes, park fees or exchange rates change.",
+        "Prices are in US dollars. Other currencies shown on the website are estimates. Prices may change if taxes, park fees or exchange rates change before you pay.",
       ] }] },
       { title: "Cancellations & Refunds", body: [
-        "If you need to cancel, please tell us in writing. Cancellation charges depend on how close to departure you cancel and on the policies of our partner lodges and airlines. The exact charges are listed in your booking confirmation.",
-        "Permits are generally non-refundable once purchased, as set by the issuing park authority.",
+        "If you need to cancel, please tell us in writing, from your booking page or by email. What you pay depends on how many days before the first day of the trip you cancel:",
+        { list: [
+          "60 days or more: full refund, except permits",
+          "30 to 59 days: 50% of the total is charged (the deposit)",
+          "15 to 29 days: 75% of the total is charged",
+          "14 days or less, or if you do not come: 100% of the total is charged",
+        ] },
+        "Gorilla and chimpanzee permits cannot be refunded once bought, as set by the park authority. Your booking page and confirmation email show these dates for your trip.",
       ] },
       { title: "Changes to Your Trip", body: ["We will do our best to accommodate changes you request, subject to availability and any extra costs. In rare cases we may need to adjust an itinerary because of weather, safety or circumstances beyond our control. We will always offer a suitable alternative."] },
       { title: "Travel Documents & Health", body: ["You are responsible for having a valid passport, visas and any required vaccinations (such as yellow fever). Gorilla trekking requires a reasonable level of fitness, and you may be refused entry to a park if you are visibly unwell."] },
@@ -136,14 +142,20 @@ export const TERMS: Record<Lang, LegalDoc> = {
     sections: [
       { title: "À propos de ces conditions", body: ["Ces conditions s'appliquent à toutes les réservations et à tous les services fournis par Acacia Safaris Ltd (« nous »). En réservant ou en utilisant notre site, vous les acceptez."] },
       { title: "Réservations et paiements", body: [{ list: [
-        "Une réservation est confirmée dès réception de votre acompte et après l'envoi de notre confirmation écrite.",
-        "Le solde est à régler avant le début du voyage, à la date indiquée sur votre facture.",
+        "Une réservation au prix affiché est confirmée immédiatement par e-mail, avec votre billet QR code. Une réservation avec une offre de prix est confirmée lorsque nous nous mettons d'accord sur le prix.",
+        "Un acompte de 50 % du total réserve vos dates. Les 50 % restants sont à régler avant le début du voyage ; nous vous envoyons un rappel et les détails du paiement.",
         "Les permis gorilles et chimpanzés doivent être payés intégralement à la réservation, car ils sont achetés à l'avance auprès des autorités des parcs.",
-        "Les prix sont indiqués dans la devise de votre facture et peuvent changer en cas d'évolution des taxes, des droits d'entrée des parcs ou des taux de change.",
+        "Les prix sont en dollars américains. Les autres devises affichées sur le site sont des estimations. Les prix peuvent changer si les taxes, les droits d'entrée des parcs ou les taux de change évoluent avant votre paiement.",
       ] }] },
       { title: "Annulations et remboursements", body: [
-        "Si vous devez annuler, merci de nous en informer par écrit. Les frais d'annulation dépendent de la date d'annulation par rapport au départ et des conditions de nos lodges et compagnies aériennes partenaires. Les frais exacts figurent dans votre confirmation de réservation.",
-        "Les permis ne sont généralement pas remboursables une fois achetés, selon les règles de l'autorité du parc qui les délivre.",
+        "Si vous devez annuler, merci de nous prévenir par écrit, depuis la page de votre réservation ou par e-mail. Le montant facturé dépend du nombre de jours avant le premier jour du voyage :",
+        { list: [
+          "60 jours ou plus : remboursement intégral, sauf les permis",
+          "30 à 59 jours : 50 % du total est facturé (l'acompte)",
+          "15 à 29 jours : 75 % du total est facturé",
+          "14 jours ou moins, ou en cas d'absence : 100 % du total est facturé",
+        ] },
+        "Les permis gorilles et chimpanzés ne sont pas remboursables une fois achetés, selon les règles de l'autorité du parc. La page de votre réservation et l'e-mail de confirmation indiquent ces dates pour votre voyage.",
       ] },
       { title: "Modifications de votre voyage", body: ["Nous ferons notre possible pour répondre à vos demandes de modification, selon les disponibilités et les éventuels frais supplémentaires. Dans de rares cas, nous pouvons devoir adapter un itinéraire en raison de la météo, de la sécurité ou de circonstances indépendantes de notre volonté. Nous vous proposerons toujours une alternative adaptée."] },
       { title: "Documents de voyage et santé", body: ["Vous êtes responsable d'avoir un passeport valide, les visas et les vaccins requis (comme la fièvre jaune). La randonnée vers les gorilles demande une bonne condition physique, et l'accès à un parc peut vous être refusé si vous êtes visiblement malade."] },
@@ -160,14 +172,20 @@ export const TERMS: Record<Lang, LegalDoc> = {
     sections: [
       { title: "Kuhusu Masharti Haya", body: ["Masharti haya yanahusu safari na huduma zote zinazotolewa na Acacia Safaris Ltd (\"sisi\"). Kwa kuweka safari au kutumia tovuti yetu, unakubali masharti haya."] },
       { title: "Kuweka Safari na Malipo", body: [{ list: [
-        "Safari inathibitishwa tunapopokea amana yako na kukutumia uthibitisho wa maandishi.",
-        "Kiasi kilichobaki kinalipwa kabla safari haijaanza, kwa tarehe iliyo kwenye ankara yako.",
+        "Safari iliyowekwa kwa bei iliyoorodheshwa inathibitishwa mara moja kwa barua pepe, pamoja na tiketi yako ya QR code. Safari yenye pendekezo la bei inathibitishwa tukikubaliana bei.",
+        "Amana ya 50% ya jumla inashikilia tarehe zako. 50% iliyobaki inalipwa kabla safari haijaanza; tunakutumia ukumbusho na maelezo ya malipo.",
         "Vibali vya sokwe na sokwe-mtu lazima vilipwe vyote wakati wa kuweka safari, kwa kuwa vinanunuliwa mapema kutoka kwa mamlaka za hifadhi.",
-        "Bei zinatolewa kwa sarafu iliyoandikwa kwenye ankara yako na zinaweza kubadilika kodi, ada za hifadhi au viwango vya kubadilisha fedha vikibadilika.",
+        "Bei ziko kwa dola za Marekani. Sarafu nyingine zinazoonyeshwa kwenye tovuti ni makadirio. Bei zinaweza kubadilika kodi, ada za hifadhi au viwango vya kubadilisha fedha vikibadilika kabla ya malipo.",
       ] }] },
       { title: "Kughairi na Kurejeshewa Fedha", body: [
-        "Ukihitaji kughairi, tafadhali tujulishe kwa maandishi. Gharama za kughairi zinategemea muda uliobaki kabla ya safari na sera za malazi na mashirika ya ndege tunayoshirikiana nayo. Gharama kamili zimeorodheshwa kwenye uthibitisho wa safari yako.",
-        "Kwa kawaida vibali havirejeshewi fedha baada ya kununuliwa, kwa mujibu wa mamlaka ya hifadhi inayovitoa.",
+        "Ukihitaji kughairi, tafadhali tujulishe kwa maandishi, kupitia ukurasa wa safari yako au kwa barua pepe. Kiasi unacholipa kinategemea idadi ya siku kabla ya siku ya kwanza ya safari:",
+        { list: [
+          "Siku 60 au zaidi: unarejeshewa fedha zote, isipokuwa vibali",
+          "Siku 30 hadi 59: 50% ya jumla inatozwa (amana)",
+          "Siku 15 hadi 29: 75% ya jumla inatozwa",
+          "Siku 14 au chini, au usipofika: 100% ya jumla inatozwa",
+        ] },
+        "Vibali vya sokwe na sokwe-mtu havirejeshewi fedha baada ya kununuliwa, kwa mujibu wa mamlaka ya hifadhi. Ukurasa wa safari yako na barua pepe ya uthibitisho zinaonyesha tarehe hizi kwa safari yako.",
       ] },
       { title: "Mabadiliko ya Safari Yako", body: ["Tutajitahidi kukubali mabadiliko unayoomba, kulingana na upatikanaji na gharama za ziada. Mara chache tunaweza kulazimika kubadilisha ratiba kwa sababu ya hali ya hewa, usalama au mambo yaliyo nje ya uwezo wetu. Tutakupa mbadala unaofaa kila wakati."] },
       { title: "Hati za Safari na Afya", body: ["Unawajibika kuwa na pasipoti halali, viza na chanjo zinazohitajika (kama homa ya manjano). Kutembelea sokwe kunahitaji afya nzuri ya mwili, na unaweza kukataliwa kuingia hifadhini ikiwa unaonekana kuwa mgonjwa."] },

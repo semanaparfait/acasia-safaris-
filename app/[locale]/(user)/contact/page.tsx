@@ -13,12 +13,9 @@ import {
   ChevronDown,
   Clock,
   CheckCircle2,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
 } from "lucide-react";
 import { useMessagesStore } from "@/store/messagesStore";
+import SocialLinks from "@/components/SocialLinks";
 
 const contactCards = [
   {
@@ -203,24 +200,11 @@ export default function Contact() {
               <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
                 <Clock size={20} className="text-[#c5a86d] shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Office Hours</p>
-                  <p className="text-xs text-zinc-400">
-                    Mon – Fri 8:00 – 18:00 · Sat 9:00 – 14:00
-                  </p>
+                  <p className="text-sm font-medium">{t("hoursTitle")}</p>
+                  <p className="text-xs text-zinc-400">{t("hours")}</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    aria-label={t("social")}
-                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <Icon size={16} />
-                  </a>
-                ))}
-              </div>
+              <SocialLinks linkClassName="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#c5a86d] hover:text-[#0e1d16] hover:border-[#c5a86d] transition-all duration-300 hover:-translate-y-1" />
             </div>
           </motion.aside>
 

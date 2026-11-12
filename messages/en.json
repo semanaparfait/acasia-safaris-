@@ -519,8 +519,6 @@
     "free": "Free, with no obligation to book"
   },
   "Compare": {
-    "seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}",
-    "available": "Available",
     "days": {
       "1": {
         "title": "Arrival & Safari Briefing",
@@ -565,7 +563,6 @@
       "small": "Small groups (Max 6 per vehicle)"
     },
     "upcoming": "Upcoming Departures",
-    "season": "2026/2027",
     "exploreGroup": "EXPLORE GROUP DEPARTURES",
     "tailor": "TAILOR-MADE SAFARIS",
     "coupleAlt": "Private couple on safari",
@@ -635,7 +632,9 @@
       "unsure": "Not Sure — Need Advice"
     },
     "send": "SEND SAFARI REQUEST",
-    "sending": "SENDING…"
+    "sending": "SENDING…",
+    "onRequest": "We plan small group departures (6 travelers at most) with the people who ask. Tell us your preferred month and we will send you the next dates and the price.",
+    "askDates": "Ask for the next dates"
   },
   "About": {
     "heroAlt": "East Africa volcanic landscape with mist",
@@ -731,7 +730,7 @@
     "cards": {
       "call": {
         "label": "Call Us",
-        "note": "Mon – Sat, 8am – 6pm CAT"
+        "note": "Mon – Fri 8:00 – 18:00 · Sat 9:00 – 14:00"
       },
       "email": {
         "label": "Email Us",
@@ -785,7 +784,9 @@
     "office": "Our Kigali Office",
     "mapTitle": "Acacia Safaris office location",
     "officeText": "Kigali, Rwanda. Visits by appointment. Give us a call before you drop by.",
-    "directions": "Get Directions"
+    "directions": "Get Directions",
+    "hoursTitle": "Office Hours",
+    "hours": "Mon – Fri 8:00 – 18:00 · Sat 9:00 – 14:00"
   },
   "Gallery": {
     "categories": {
@@ -1027,5 +1028,20 @@
         "text": "We reply within 24 hours"
       }
     }
+  },
+  "Cancel": {
+    "title": "Cancellation policy",
+    "until": "Until {date}",
+    "between": "{from} – {until}",
+    "fromDate": "From {date}",
+    "fromToday": "From today",
+    "free": "Full refund, except permits",
+    "charge": "{percent}% of the total is charged",
+    "all": "100% is charged (also if you do not come)",
+    "permits": "Gorilla and chimpanzee permits cannot be refunded once bought.",
+    "how": "To cancel, write to us from your booking page or by email.",
+    "freeUntil": "Free cancellation until {date} (except permits).",
+    "ifNow": "If you cancel now, {percent}% of the total is charged.",
+    "fullPolicy": "Full policy"
   }
 }

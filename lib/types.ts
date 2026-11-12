@@ -192,7 +192,7 @@ export type Message = {
   phone?: string | null;
   subject: string;
   body: string;
-  source: "Contact form" | "Booking request" | "WhatsApp" | "Quotation request";
+  source: "Contact form" | "Booking request" | "WhatsApp" | "Quotation request" | "Newsletter";
   read: boolean;
   starred: boolean;
   receivedAt: string;

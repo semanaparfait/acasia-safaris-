@@ -30,6 +30,7 @@ import { DEPOSIT_RATE, packageDays, packageRates } from "@/lib/helpers";
 import { useGroupText } from "@/lib/useGroupText";
 import { CurrencyPicker, Money, useMoneyText } from "@/components/ui/money";
 import { tripRange } from "@/lib/dates";
+import CancellationPolicy from "@/components/CancellationPolicy";
 import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
 import { useBookingsStore } from "@/store/bookingsStore";
 
@@ -327,6 +328,8 @@ export default function BookPackageModal({
                     <ShieldCheck size={14} className="shrink-0 mt-px text-[#1F5A42]" />
                     {bargain ? t("nothingNowOffer") : t("nothingNowBook", { deposit: DEPOSIT_RATE * 100 })}
                   </p>
+                  {/* Before booking: what cancelling would cost, with the real date */}
+                  {startDate && <CancellationPolicy startDate={startDate} compact />}
                 </div>
               )}
 

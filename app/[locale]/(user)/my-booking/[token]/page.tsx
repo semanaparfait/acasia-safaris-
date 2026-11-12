@@ -7,6 +7,7 @@ import React, { use, useCallback, useEffect, useRef, useState } from "react";
 import SmartImage from "@/components/ui/smart-image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import CancellationPolicy from "@/components/CancellationPolicy";
 import { useGroupText } from "@/lib/useGroupText";
 import {
   CalendarDays,
@@ -113,6 +114,10 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
           {booking.ticketCode && <TicketCard booking={booking} token={token} />}
           <PriceCard booking={booking} token={token} onChange={setBooking} />
           <TripCard booking={booking} />
+          {/* The cancellation dates of this trip (not once it is over or cancelled) */}
+          {(booking.status === "Pending" || booking.status === "Negotiating" || booking.status === "Confirmed") && (
+            <PolicyCard startDate={booking.startDate} />
+          )}
           {booking.status !== "Cancelled" && new Date(booking.startDate).getTime() <= openedAt && (
             <ReviewCard booking={booking} token={token} onChange={setBooking} />
           )}
@@ -352,6 +357,18 @@ function ReviewCard({ booking, token, onChange }: { booking: PublicBooking; toke
           </button>
         </form>
       )}
+    </div>
+  );
+}
+
+// ---------- Cancellation policy ----------
+
+function PolicyCard({ startDate }: { startDate: string }) {
+  const t = useTranslations("Cancel");
+  return (
+    <div className="rounded-2xl bg-white border border-[#0a120b]/[0.07] shadow-sm p-5 space-y-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#0a120b]/45">{t("title")}</p>
+      <CancellationPolicy startDate={startDate} />
     </div>
   );
 }

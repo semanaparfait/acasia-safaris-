@@ -519,8 +519,6 @@
     "free": "Bure, bila wajibu wa kuweka safari"
   },
   "Compare": {
-    "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
-    "available": "Zinapatikana",
     "days": {
       "1": {
         "title": "Kuwasili na Maelezo ya Safari",
@@ -565,7 +563,6 @@
       "small": "Vikundi vidogo (Wasafiri 6 kwa gari)"
     },
     "upcoming": "Safari Zijazo",
-    "season": "2026/2027",
     "exploreGroup": "TAZAMA SAFARI ZA KIKUNDI",
     "tailor": "SAFARI MAALUM",
     "coupleAlt": "Wapenzi kwenye safari binafsi",
@@ -635,7 +632,9 @@
       "unsure": "Sina Uhakika — Nahitaji Ushauri"
     },
     "send": "TUMA OMBI LA SAFARI",
-    "sending": "INATUMA…"
+    "sending": "INATUMA…",
+    "onRequest": "Tunapanga safari za vikundi vidogo (wasafiri 6 zaidi) pamoja na wanaouliza. Tuambie mwezi unaopendelea na tutakutumia tarehe zijazo na bei.",
+    "askDates": "Uliza tarehe zijazo"
   },
   "About": {
     "heroAlt": "Mandhari ya volkano ya Afrika Mashariki yenye ukungu",
@@ -731,7 +730,7 @@
     "cards": {
       "call": {
         "label": "Tupigie Simu",
-        "note": "Jumatatu – Jumamosi, saa 2 asubuhi – saa 12 jioni"
+        "note": "Jumatatu – Ijumaa 2:00 asubuhi – 12:00 jioni · Jumamosi 3:00 – 8:00 mchana"
       },
       "email": {
         "label": "Tutumie Barua Pepe",
@@ -785,7 +784,9 @@
     "office": "Ofisi Yetu ya Kigali",
     "mapTitle": "Mahali ilipo ofisi ya Acacia Safaris",
     "officeText": "Kigali, Rwanda. Kutembelea kwa miadi. Tupigie simu kabla ya kuja.",
-    "directions": "Pata Maelekezo"
+    "directions": "Pata Maelekezo",
+    "hoursTitle": "Saa za Ofisi",
+    "hours": "Jumatatu – Ijumaa 2:00 asubuhi – 12:00 jioni · Jumamosi 3:00 – 8:00 mchana"
   },
   "Gallery": {
     "categories": {
@@ -1027,5 +1028,20 @@
         "text": "Tunajibu ndani ya saa 24"
       }
     }
+  },
+  "Cancel": {
+    "title": "Sera ya kughairi",
+    "until": "Hadi {date}",
+    "between": "{from} – {until}",
+    "fromDate": "Kuanzia {date}",
+    "fromToday": "Kuanzia leo",
+    "free": "Unarejeshewa fedha zote, isipokuwa vibali",
+    "charge": "{percent}% ya jumla inatozwa",
+    "all": "100% inatozwa (hata usipofika)",
+    "permits": "Vibali vya sokwe na sokwe-mtu havirejeshewi fedha baada ya kununuliwa.",
+    "how": "Ili kughairi, tuandikie kupitia ukurasa wa safari yako au kwa barua pepe.",
+    "freeUntil": "Kughairi bure hadi {date} (isipokuwa vibali).",
+    "ifNow": "Ukighairi sasa, {percent}% ya jumla inatozwa.",
+    "fullPolicy": "Sera kamili"
   }
 }

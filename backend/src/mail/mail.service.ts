@@ -316,6 +316,8 @@ export type ConfirmationEmail = {
   whyChoose: string[]; // "Title: explanation"
   ticketCode: string;
   qrPng: Buffer;
+  // The cancellation policy with this trip's dates: [{ when: "Until 2 Oct 2026", what: "Full refund…" }]
+  cancellation: { when: string; what: string }[];
   calendar: string; // the trip as an .ics file ("Add to calendar")
   quotationUrl?: string | null; // attached as a PDF when there is one
   link: string;
@@ -546,6 +548,25 @@ export function confirmationHtml(e: ConfirmationEmail) {
     reasons
       ? `${heading(h(T.goodToKnow), h(T.whyTitle))}
   <tr><td style="padding:0 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${reasons}</table></td></tr>`
+      : ''
+  }
+
+  ${
+    e.cancellation.length
+      ? `${heading(h(T.goodToKnow), h(EMAIL_TEXTS[e.lang].cancel.title))}
+  <tr><td style="padding:0 32px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ece6da;border-radius:12px">
+      ${e.cancellation
+        .map(
+          (r, i) => `<tr>
+        <td style="padding:10px 14px;font-size:13px;color:${MUTED};${i ? 'border-top:1px solid #ece6da;' : ''}">${h(r.when)}</td>
+        <td align="right" style="padding:10px 14px;font-size:13px;font-weight:bold;color:${INK};${i ? 'border-top:1px solid #ece6da;' : ''}">${h(r.what)}</td>
+      </tr>`,
+        )
+        .join('')}
+    </table>
+    <p style="margin:8px 0 0;font-size:12px;line-height:1.55;color:${MUTED}">${h(EMAIL_TEXTS[e.lang].cancel.permits)}</p>
+  </td></tr>`
       : ''
   }
 

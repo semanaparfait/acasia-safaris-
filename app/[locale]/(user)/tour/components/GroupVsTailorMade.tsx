@@ -59,12 +59,11 @@ export default function GroupVsTailorMade() {
     }
   };
 
-  const sampleGroupSchedule = [
-    { tour: "7-Day Gorilla & Wildlife", date: "Oct 15 - Oct 21", price: "$2,450", seats: 2 },
-    { tour: "5-Day Classic Big Five", date: "Nov 02 - Nov 06", price: "$1,850", seats: 4 },
-    { tour: "7-Day Zanzibar & Safari", date: "Nov 18 - Nov 24", price: "$2,980", seats: 0 }, // 0 = available
-    { tour: "8-Day Rwanda Adventure", date: "Dec 05 - Dec 12", price: "$2,750", seats: 3 },
-  ];
+  // "Ask for the next dates": the request form below, with a small group chosen
+  const askGroupDates = () => {
+    setFormData((f) => ({ ...f, travelType: "Small Group Departure" }));
+    document.getElementById("safari-request")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   const sample7DayItinerary = [
     { day: 1 },
@@ -157,31 +156,19 @@ export default function GroupVsTailorMade() {
                     </ul>
                   </div>
 
-                  {/* Right Schedule Table Box */}
-                  <div className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-4 text-xs space-y-2.5">
-                    <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
-                      <span className="font-bold text-[#11241A] uppercase tracking-wider text-[11px]">
-                        {t("upcoming")}
-                      </span>
-                      <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded">
-                        {t("season")}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {sampleGroupSchedule.map((s, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-[11px] py-1 border-b border-neutral-100 last:border-0">
-                          <div>
-                            <span className="font-bold text-[#11241A] block">{s.tour}</span>
-                            <span className="text-[10px] text-neutral-500">{s.date}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-bold text-emerald-800 block">{s.price}</span>
-                            <span className="text-[9px] text-neutral-400">{s.seats ? t("seatsLeft", { count: s.seats }) : t("available")}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  {/* Group departures: planned with travelers (no made-up dates or seats) */}
+                  <div className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-4 text-xs space-y-3">
+                    <span className="font-bold text-[#11241A] uppercase tracking-wider text-[11px] block border-b border-neutral-200 pb-2">
+                      {t("upcoming")}
+                    </span>
+                    <p className="text-[11px] leading-relaxed text-neutral-600">{t("onRequest")}</p>
+                    <button
+                      type="button"
+                      onClick={askGroupDates}
+                      className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#11241A]/20 px-3 py-2 text-[11px] font-semibold text-[#11241A] hover:border-[#11241A] transition-colors cursor-pointer"
+                    >
+                      {t("askDates")} <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -424,7 +411,7 @@ export default function GroupVsTailorMade() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl">
+            <form id="safari-request" onSubmit={handleSubmit} className="scroll-mt-28 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl">
               <div>
                 <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
                   {t("name")}
