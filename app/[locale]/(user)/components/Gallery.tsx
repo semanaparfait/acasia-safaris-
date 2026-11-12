@@ -242,7 +242,7 @@ export default function PerfectGridGallery() {
               </button>
             </div>
           </div>
-          <div className="text-4xl text-gray-100 font-serif italic">"</div>
+          <div className="text-4xl text-gray-100 font-serif italic">&ldquo;</div>
         </div>
       </div>
     </section>

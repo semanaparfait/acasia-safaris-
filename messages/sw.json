@@ -57,7 +57,8 @@
     "sending": "Inatuma…",
     "payInUsd": "Unalipa kwa dola za Marekani. Sarafu nyingine ni makadirio kwa kiwango cha leo.",
     "estimate": "Makadirio kwa kiwango cha leo. Unalipa kwa dola za Marekani.",
-    "phonePlaceholder": "Namba ya simu au WhatsApp"
+    "phonePlaceholder": "Namba ya simu au WhatsApp",
+    "skip": "Ruka hadi maudhui"
   },
   "Groups": {
     "Adult": "Mtu mzima",

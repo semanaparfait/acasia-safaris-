@@ -41,3 +41,9 @@
 .acacia-phone .PhoneInputCountryIcon { width: 1.4em; height: 1em; box-shadow: none; border-radius: 2px; overflow: hidden; }
 .acacia-phone .PhoneInputCountrySelectArrow { opacity: 0.45; margin-left: 0.35em; }
 .acacia-phone input:focus { box-shadow: none; }
+
+/* Keyboard users always see where they are (mouse clicks keep the clean look) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #c5a86d;
+  outline-offset: 2px;
+}

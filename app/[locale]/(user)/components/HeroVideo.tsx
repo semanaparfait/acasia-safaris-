@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -15,18 +15,28 @@ import {
 const POSTER =
   "https://i.pinimg.com/1200x/68/01/19/6801199e33bc9eaa9f4777a21ee25a45.jpg";
 
+// The file name must match exactly: servers online are case-sensitive (acacia.MP4)
+const VIDEO = "/acacia.MP4";
+
+const noSubscribe = () => () => {};
+function wantsVideo() {
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return (
+    window.matchMedia("(min-width: 768px)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+    !connection?.saveData
+  );
+}
+
 export default function HeroVideo() {
   const t = useTranslations("Home.hero");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
 
-  // Respect users who prefer reduced motion: show the poster instead of playing
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      videoRef.current?.pause();
-    }
-  }, []);
+  // The video (28 MB) only plays on larger screens with a normal connection.
+  // Phones, data-saver connections and "reduce motion" get the still photo: no download.
+  const withVideo = useSyncExternalStore(noSubscribe, wantsVideo, () => false);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -44,19 +54,24 @@ export default function HeroVideo() {
 
   return (
     <section className="relative h-screen min-h-[600px] w-full overflow-hidden bg-[#0a1811] text-white font-sans selection:bg-[#c5a86d] selection:text-black">
-      {/* Background video */}
-      <video
-        ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover"
-        src="/acacia.mp4"
-        poster={POSTER}
-        autoPlay
-        muted
-        loop
-        playsInline
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-      />
+      {/* Background: the video on larger screens, the photo everywhere else */}
+      {withVideo ? (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          src={VIDEO}
+          poster={POSTER}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={POSTER} alt="" fetchPriority="high" className="absolute inset-0 w-full h-full object-cover" />
+      )}
       <div className="absolute inset-0 bg-black/45" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0a1811] via-transparent to-black/50" />
 
@@ -117,7 +132,8 @@ export default function HeroVideo() {
         </motion.div>
       </div>
 
-      {/* Video controls */}
+      {/* Video controls (only when the video plays) */}
+      {withVideo && (
       <div className="absolute z-10 bottom-8 right-6 md:right-10 flex gap-2">
         <button
           onClick={togglePlay}
@@ -138,6 +154,7 @@ export default function HeroVideo() {
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
+      )}
 
       {/* Scroll cue */}
       <motion.button

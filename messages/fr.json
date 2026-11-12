@@ -57,7 +57,8 @@
     "sending": "Envoi…",
     "payInUsd": "Vous payez en dollars américains. Les autres devises sont des estimations au taux du jour.",
     "estimate": "Estimation au taux du jour. Vous payez en dollars américains.",
-    "phonePlaceholder": "Numéro de téléphone ou WhatsApp"
+    "phonePlaceholder": "Numéro de téléphone ou WhatsApp",
+    "skip": "Aller au contenu"
   },
   "Groups": {
     "Adult": "Adulte",

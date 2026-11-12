@@ -45,12 +45,13 @@ export const daysLabel = (p: TourPackage) => {
   return `${n} ${n === 1 ? "Day" : "Days"}`;
 };
 
-// Link to the Tours page with a category or package open:
-//   tourHref({ package: pkg.id })  ->  "/tour?package=3f2a9c1e-…"
+// Link to a package's own page, or to the Tours page with a category open:
+//   tourHref({ package: pkg.id })        ->  "/tour/3f2a9c1e-…"  (its own page: good for Google)
+//   tourHref({ category: "Gorilla Trekking" })  ->  "/tour?category=Gorilla+Trekking"
 export const tourHref = (opts: { category?: string; package?: string } = {}) => {
+  if (opts.package) return `/tour/${opts.package}`;
   const params = new URLSearchParams();
   if (opts.category && opts.category !== "All Packages") params.set("category", opts.category);
-  if (opts.package) params.set("package", opts.package);
   const query = params.toString();
   return query ? `/tour?${query}` : "/tour";
 };

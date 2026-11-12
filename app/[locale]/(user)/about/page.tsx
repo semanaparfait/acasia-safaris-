@@ -165,9 +165,9 @@ export default function About() {
             </span>
           </h2>
           <p className="text-xl md:text-2xl leading-relaxed text-[#0a120b]/70 font-serif italic max-w-3xl mx-auto">
-            "Our journey began with a singular vision: to reveal the untamed
+            &ldquo;Our journey began with a singular vision: to reveal the untamed
             beauty of Rwanda. We believe every traveler deserves an authentic,
-            deeply moving experience of the Land of a Thousand Hills."
+            deeply moving experience of the Land of a Thousand Hills.&rdquo;
           </p>
         </motion.div>
       </section>

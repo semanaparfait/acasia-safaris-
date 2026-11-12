@@ -42,3 +42,5 @@ next-env.d.ts
 
 # backend env example is safe to commit
 !backend/.env.example
+# website env example (no secrets) is safe to commit
+!.env.example

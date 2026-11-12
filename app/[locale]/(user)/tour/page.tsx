@@ -51,6 +51,11 @@ function TourPageContent() {
     loadPublished();
   }, [loadPublished]);
 
+  // Old links (/tour?package=…): each package now has its own page, /tour/<id>
+  useEffect(() => {
+    if (selectedId) router.replace(tourHref({ package: selectedId }));
+  }, [selectedId, router]);
+
   const packages = allPackages.filter((p) => p.active);
   const selectedPackage = packages.find((p) => p.id === selectedId);
 
@@ -81,7 +86,7 @@ function TourPageContent() {
     router.push(href, { scroll: false });
     document.getElementById("package-section")?.scrollIntoView({ behavior: "smooth" });
   };
-  const showPackage = (id: string) => navigate(tourHref({ category: activePackage, package: id }));
+  const showPackage = (id: string) => router.push(tourHref({ package: id }));
 
   const TourPackages = [
     {

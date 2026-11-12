@@ -57,7 +57,8 @@
     "sending": "Sending…",
     "payInUsd": "You pay in US dollars. Other currencies are estimates at today's rate.",
     "estimate": "Estimate at today's rate. You pay in US dollars.",
-    "phonePlaceholder": "Phone or WhatsApp number"
+    "phonePlaceholder": "Phone or WhatsApp number",
+    "skip": "Skip to content"
   },
   "Groups": {
     "Adult": "Adult",

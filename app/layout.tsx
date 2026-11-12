@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
 // Default for pages outside the website languages (e.g. the admin panel);
 // the website pages get theirs from app/[locale]/layout.tsx
 export const metadata: Metadata = {
+  // Full addresses for social previews and canonical links (set NEXT_PUBLIC_SITE_URL online)
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Acacia Safaris",
   description:
     "Acacia Safaris Ltd is a Rwandan tour operator based in Kigali: gorilla trekking, wildlife safaris and luxury lodges across Rwanda and East Africa.",

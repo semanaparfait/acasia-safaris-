@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // The NestJS API has its own lint setup
     "backend/**",
+    // Node script run by hand to make quotation PDFs (not website code)
+    "quotations/**",
   ]),
 ]);
 

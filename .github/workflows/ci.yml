@@ -1,0 +1,61 @@
+# Checks every change before it can reach customers.
+# Runs on every push and pull request; a red cross on GitHub means something is broken.
+#   Backend:  lint, unit tests (no database needed), build
+#   Website:  lint, production build with type check (all pages in en / fr / sw)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (NestJS)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Placeholders: the unit tests do not touch a real database or real keys
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci # also runs "prisma generate"
+      - name: Lint
+        run: npx eslint "{src,test}/**/*.ts"
+      - name: Unit tests
+        run: npx jest --ci
+      - name: Build
+        run: npm run build
+
+  website:
+    name: Website (Next.js)
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NEXT_PUBLIC_SITE_URL: https://example.com
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npx eslint .
+      - name: Build (includes the type check)
+        run: npx next build
