@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft, Pencil, Trash2, MapPin, Sun, Car, Sparkles, FileText, Route, Globe, ExternalLink, CalendarPlus } from "lucide-react";
 import { useDestinationsStore } from "@/store/destinationsStore";
 import { Button, Card, ConfirmDialog, EmptyState, Toggle } from "../../components/ui";
+import TranslationsPanel from "../../components/TranslationsPanel";
 import { FeaturedBadge, GroupLabel, toInput, useDestination } from "../parts";
 
 export default function DestinationDetailsPage() {
@@ -138,6 +139,11 @@ export default function DestinationDetailsPage() {
             </dl>
           </InfoCard>
         </div>
+      </div>
+
+      {/* French and Swahili texts of the website */}
+      <div className="mt-5">
+        <TranslationsPanel kind="destinations" id={d.id} />
       </div>
 
       <ConfirmDialog

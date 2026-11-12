@@ -24,7 +24,9 @@ export class PrismaService
           loginAttempts: true,
         },
         // The lowest bargaining price is for admins only (see PackagesService)
-        package: { minPrice: true },
+        // Translations are read by TranslationsService only: the website gets the texts already translated
+        package: { minPrice: true, translations: true },
+        destination: { translations: true },
         booking: { floorAmount: true, accessToken: true },
       },
     });

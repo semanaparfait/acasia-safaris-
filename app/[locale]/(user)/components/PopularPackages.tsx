@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import SmartImage from "@/components/ui/smart-image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, MapPin, BedDouble } from "lucide-react";
@@ -14,10 +14,11 @@ export default function PopularPackages() {
   const tc = useTranslations("Common");
   const allPackages = usePackagesStore((s) => s.packages);
   const loadPublished = usePackagesStore((s) => s.loadPublished);
+  const locale = useLocale();
 
   useEffect(() => {
-    loadPublished();
-  }, [loadPublished]);
+    loadPublished(locale);
+  }, [loadPublished, locale]);
 
   const packages = allPackages.filter((p) => p.active);
   // 3 packages for the home page: ones with a badge (e.g. "POPULAR", set in Admin) come first

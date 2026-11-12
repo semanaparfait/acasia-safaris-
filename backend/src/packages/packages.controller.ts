@@ -8,8 +8,10 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import { isLang } from '../translations/content';
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
@@ -23,10 +25,10 @@ import { FormLimit } from '../common/limits';
 export class PackagesController {
   constructor(private packagesService: PackagesService) {}
 
-  // GET /api/packages            (website: published packages)
+  // GET /api/packages?lang=fr    (website: published packages, translated; no lang = English)
   @Get()
-  findPublished() {
-    return this.packagesService.findPublished();
+  findPublished(@Query('lang') lang?: string) {
+    return this.packagesService.findPublished(isLang(lang) ? lang : undefined);
   }
 
   // GET /api/packages/all        (admin: drafts included)
@@ -46,10 +48,16 @@ export class PackagesController {
     return this.packagesService.findOneForAdmin(id);
   }
 
-  // GET /api/packages/<id>
+  // GET /api/packages/<id>?lang=fr
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.packagesService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.packagesService.findOneLocalized(
+      id,
+      isLang(lang) ? lang : undefined,
+    );
   }
 
   // POST /api/packages/<id>/quotation/email   (website: anyone can ask for it)

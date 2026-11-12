@@ -1,7 +1,7 @@
 // Destinations, loaded from the API. Same pattern as packagesStore.ts.
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { api } from "@/lib/api";
+import { api, langQuery } from "@/lib/api";
 import type { Destination, DestinationInput } from "@/lib/types";
 
 type DestinationsState = {
@@ -9,7 +9,7 @@ type DestinationsState = {
   loading: boolean;
   error: string | null;
 
-  load: () => Promise<void>;
+  load: (locale?: string) => Promise<void>; // website: pass the locale; admin: none (English)
   loadOne: (id: string) => Promise<Destination>; // one destination (details / edit pages)
   createDestination: (input: DestinationInput) => Promise<Destination>;
   updateDestination: (id: string, input: DestinationInput) => Promise<Destination>;
@@ -23,10 +23,10 @@ export const useDestinationsStore = create<DestinationsState>()(
       loading: false,
       error: null,
 
-      load: async () => {
+      load: async (locale) => {
         set({ loading: true, error: null }, false, "destinations/load/start");
         try {
-          const destinations = await api<Destination[]>("/destinations");
+          const destinations = await api<Destination[]>(`/destinations${langQuery(locale)}`);
           set({ destinations, loading: false }, false, "destinations/load/success");
         } catch (error) {
           set({ error: (error as Error).message, loading: false }, false, "destinations/load/error");

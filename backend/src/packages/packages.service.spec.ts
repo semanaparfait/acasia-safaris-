@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { PackagesService } from './packages.service';
 import { QuotationService } from './quotation.service';
+import { TranslationsService } from '../translations/translations.service';
 
 const pkg = (changes = {}) => ({
   id: 'p1',
@@ -36,6 +37,7 @@ const setup = (found = pkg()) => {
     storage as unknown as StorageService,
     mail as unknown as MailService,
     quotations as unknown as QuotationService,
+    { refreshLater: jest.fn() } as unknown as TranslationsService,
   );
   return { service, prisma, storage, mail, quotations };
 };

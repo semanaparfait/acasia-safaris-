@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import SmartImage from "@/components/ui/smart-image";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -33,10 +33,11 @@ export default function DestinationPage() {
   const loading = useDestinationsStore((s) => s.loading);
   const error = useDestinationsStore((s) => s.error);
   const load = useDestinationsStore((s) => s.load);
+  const locale = useLocale(); // destinations come in the visitor's language
 
   useEffect(() => {
-    load();
-  }, [load]);
+    load(locale);
+  }, [load, locale]);
 
   const filtered =
     activeGroup === "All" ? destinations : destinations.filter((d) => d.group === activeGroup);

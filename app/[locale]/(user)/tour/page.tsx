@@ -6,7 +6,7 @@ import { GiGorilla, GiElephant, GiMountainRoad } from "react-icons/gi";
 import { FaUsers, FaGem } from "react-icons/fa";
 import { PiPawPrintFill } from "react-icons/pi";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import TourDetail from "@/app/[locale]/(user)/tour/components/TourDetail";
 import { usePackagesStore } from "@/store/packagesStore";
 import { tourHref } from "@/lib/helpers";
@@ -46,10 +46,11 @@ function TourPageContent() {
   const loading = usePackagesStore((s) => s.loading);
   const error = usePackagesStore((s) => s.error);
   const loadPublished = usePackagesStore((s) => s.loadPublished);
+  const locale = useLocale(); // packages come in the visitor's language
 
   useEffect(() => {
-    loadPublished();
-  }, [loadPublished]);
+    loadPublished(locale);
+  }, [loadPublished, locale]);
 
   // Old links (/tour?package=…): each package now has its own page, /tour/<id>
   useEffect(() => {
@@ -191,7 +192,7 @@ function TourPageContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800 flex items-center justify-between gap-4">
             <span>{t("error", { error })}</span>
-            <button onClick={loadPublished} className="font-semibold underline cursor-pointer">
+            <button onClick={() => loadPublished(locale)} className="font-semibold underline cursor-pointer">
               {t("tryAgain")}
             </button>
           </div>

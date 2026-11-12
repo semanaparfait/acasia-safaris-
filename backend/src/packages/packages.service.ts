@@ -12,6 +12,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { PackageDto, QuotationEmailDto } from './dto/package.dto';
 import { QuotationService } from './quotation.service';
+import { TranslationsService } from '../translations/translations.service';
+import type { Lang } from '../translations/content';
 
 // Anyone can ask for a quotation email, so the form cannot be used to flood
 // one inbox, or to use up the sending limit of the mail account
@@ -59,15 +61,29 @@ export class PackagesService {
     private storage: StorageService,
     private mail: MailService,
     private quotations: QuotationService,
+    private translations: TranslationsService,
   ) {}
 
-  // Website: only published packages
-  findPublished() {
-    return this.prisma.package.findMany({
+  // Website: only published packages, in the visitor's language (no lang = English)
+  async findPublished(lang?: Lang) {
+    const packages = await this.prisma.package.findMany({
       where: { active: true },
       include: withItinerary,
+      omit: { translations: false },
       orderBy: { createdAt: 'asc' },
     });
+    return packages.map((p) => this.translations.localizePackage(p, lang));
+  }
+
+  // Website: one package in the visitor's language
+  async findOneLocalized(id: string, lang?: Lang) {
+    const pkg = await this.prisma.package.findUnique({
+      where: { id },
+      include: withItinerary,
+      omit: { translations: false },
+    });
+    if (!pkg) throw new NotFoundException(`Package "${id}" not found`);
+    return this.translations.localizePackage(pkg, lang);
   }
 
   // Admin: everything, drafts included
@@ -111,6 +127,7 @@ export class PackagesService {
       include: withItinerary,
       omit: adminView,
     });
+    this.translations.refreshLater('package', pkg.id); // French + Swahili, in the background
     return dto.quotation ? pkg : this.refreshQuotation(pkg);
   }
 
@@ -135,6 +152,7 @@ export class PackagesService {
       include: withItinerary,
       omit: adminView,
     });
+    this.translations.refreshLater('package', id); // only new or changed texts are translated
 
     if (pdfChanged) {
       await this.storage.deleteByUrl(current.quotation);

@@ -7,6 +7,10 @@ import type { Bucket } from "./types";
 // Same address as the page, so the admin login cookie is a normal first-party cookie.
 export const API_URL = "/api";
 
+// Packages and destinations come in the visitor's language: "?lang=fr" / "?lang=sw".
+// English (and the admin panel, which passes no locale) gets the texts as typed in admin.
+export const langQuery = (locale?: string) => (locale === "fr" || locale === "sw" ? `?lang=${locale}` : "");
+
 // Every request carries this header. With the login cookie, the backend only accepts
 // changes that have it, which other websites cannot add (protection against CSRF).
 const BASE_HEADERS = { "X-Requested-With": "acacia" };

@@ -16,7 +16,7 @@ visitor ──https──> Vercel (website, /api is forwarded) ──https──
 ## 2. The API on Render
 1. render.com > **New > Blueprint** > choose the repository. Render reads `render.yaml`.
 2. Fill in the values it asks for (from `backend/.env`): `DATABASE_URL`, `DIRECT_URL`, the `AWS_…` storage
-   values, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, the WhatsApp values, and:
+   values, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, the WhatsApp values, `GOOGLE_TRANSLATE_API_KEY`, and:
    - `FRONTEND_URL` = the website address, e.g. `https://acaciasafaris.com`
      (several: separate with commas, the first one is used in email links)
    - `PUBLIC_API_URL` = the API's own address, e.g. `https://acacia-api.onrender.com`

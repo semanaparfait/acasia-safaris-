@@ -56,9 +56,11 @@ export type Destination = {
   travelStyles: string[];
   accommodations: string[];
   budgets: string[];
+  // On the website in French / Swahili: the English name (bookings keep it, so the team reads English)
+  titleEn?: string;
 };
 
-export type DestinationInput = Omit<Destination, "id">;
+export type DestinationInput = Omit<Destination, "id" | "titleEn">;
 
 // Worker roles are managed in Admin > Roles
 export type Role = {

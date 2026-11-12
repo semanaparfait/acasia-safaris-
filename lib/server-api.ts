@@ -1,6 +1,7 @@
 // Reading the API from the server (pages Google reads, the sitemap). The browser uses lib/api.ts.
 // Answers are cached for 5 minutes, so a busy page does not call the backend every time.
 import type { TourPackage } from "./types";
+import { langQuery } from "./api";
 
 // NEXT_PUBLIC_API_URL is the backend, e.g. https://api.example.com/api
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
@@ -19,14 +20,14 @@ async function get<T>(path: string): Promise<T | null> {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// A published package, or null
-export async function getPackage(id: string) {
+// A published package in the page's language, or null
+export async function getPackage(id: string, locale?: string) {
   if (!UUID.test(id)) return null;
-  const pkg = await get<TourPackage>(`/packages/${id}`);
+  const pkg = await get<TourPackage>(`/packages/${id}${langQuery(locale)}`);
   return pkg?.active ? pkg : null;
 }
 
 // All published packages (empty when the backend cannot be reached)
-export async function getPackages() {
-  return (await get<TourPackage[]>("/packages")) ?? [];
+export async function getPackages(locale?: string) {
+  return (await get<TourPackage[]>(`/packages${langQuery(locale)}`)) ?? [];
 }

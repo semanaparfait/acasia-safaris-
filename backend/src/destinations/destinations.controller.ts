@@ -7,8 +7,10 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import { isLang } from '../translations/content';
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
@@ -21,14 +23,21 @@ import { DestinationDto } from './dto/destination.dto';
 export class DestinationsController {
   constructor(private destinationsService: DestinationsService) {}
 
+  // GET /api/destinations?lang=fr   (translated; no lang = English)
   @Get()
-  findAll() {
-    return this.destinationsService.findAll();
+  findAll(@Query('lang') lang?: string) {
+    return this.destinationsService.findAll(isLang(lang) ? lang : undefined);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.destinationsService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.destinationsService.findOneLocalized(
+      id,
+      isLang(lang) ? lang : undefined,
+    );
   }
 
   @Post()

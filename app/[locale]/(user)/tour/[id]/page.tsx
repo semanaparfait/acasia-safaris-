@@ -14,7 +14,7 @@ const localePath = (locale: string, id: string) => `${locale === "en" ? "" : `/$
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
-  const pkg = await getPackage(id);
+  const pkg = await getPackage(id, locale);
   if (!pkg) return {};
   const description = pkg.description.length > 160 ? `${pkg.description.slice(0, 157)}…` : pkg.description;
   return {
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TourPackagePage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const pkg = await getPackage(id);
+  const pkg = await getPackage(id, locale);
   if (!pkg) notFound();
 
   // Structured data (schema.org): Google can show the trip, its days and its price

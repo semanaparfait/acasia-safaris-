@@ -14,6 +14,7 @@ import { useBookingsStore } from "@/store/bookingsStore";
 import { usePackagesStore } from "@/store/packagesStore";
 import { Button, Card, ConfirmDialog, EmptyState, Toggle } from "../../components/ui";
 import { LiveBadge, QuotationField, toInput, usePackage } from "../parts";
+import TranslationsPanel from "../../components/TranslationsPanel";
 
 export default function PackageDetailsPage() {
   const router = useRouter();
@@ -232,6 +233,11 @@ export default function PackageDetailsPage() {
             </dl>
           </InfoCard>
         </div>
+      </div>
+
+      {/* French and Swahili texts of the website */}
+      <div className="mt-5">
+        <TranslationsPanel kind="packages" id={p.id} />
       </div>
 
       <ConfirmDialog

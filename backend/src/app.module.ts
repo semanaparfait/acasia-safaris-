@@ -19,6 +19,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { RolesModule } from './roles/roles.module';
 import { StorageModule } from './storage/storage.module';
+import { TranslationsModule } from './translations/translations.module';
 import { WorkersModule } from './workers/workers.module';
 
 // The root module: every feature module is listed here.
@@ -38,6 +39,7 @@ import { WorkersModule } from './workers/workers.module';
     AuthModule,
     LiveModule,
     StorageModule,
+    TranslationsModule,
     PackagesModule,
     DestinationsModule,
     WorkersModule,

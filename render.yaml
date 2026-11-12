@@ -61,3 +61,6 @@ services:
         value: new_booking
       - key: WHATSAPP_TEMPLATE_LANGUAGE
         value: en
+      # French + Swahili versions of packages and destinations (Google Cloud Translation)
+      - key: GOOGLE_TRANSLATE_API_KEY
+        sync: false

@@ -42,8 +42,12 @@ model Package {
   perks      String[]
   itinerary  ItineraryDay[] // the number of days = the package duration
   bookings   Booking[]
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+
+  // French and Swahili texts (see src/translations): { fr: { "<key>": { t, src, edited? } }, sw: {...} }
+  // Never sent as-is: the website gets the package already in its language (?lang=fr).
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model ItineraryDay {
@@ -76,6 +80,9 @@ model Destination {
   travelStyles   String[] @default([])
   accommodations String[] @default([])
   budgets        String[] @default([])
+
+  // French and Swahili texts, like Package.translations
+  translations Json @default("{}")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

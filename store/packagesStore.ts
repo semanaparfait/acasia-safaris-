@@ -11,7 +11,7 @@
 //   const loadPublished = usePackagesStore((s) => s.loadPublished);
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { api } from "@/lib/api";
+import { api, langQuery } from "@/lib/api";
 import type { PackageInput, TourPackage } from "@/lib/types";
 
 type PackagesState = {
@@ -19,7 +19,7 @@ type PackagesState = {
   loading: boolean;
   error: string | null;
 
-  loadPublished: () => Promise<void>; // website
+  loadPublished: (locale?: string) => Promise<void>; // website, in the visitor's language
   loadAll: () => Promise<void>; // admin (drafts included)
   loadOne: (id: string, admin?: boolean) => Promise<TourPackage>; // one package (details / edit pages)
   createPackage: (input: PackageInput) => Promise<TourPackage>;
@@ -36,10 +36,10 @@ export const usePackagesStore = create<PackagesState>()(
       loading: false,
       error: null,
 
-      loadPublished: async () => {
+      loadPublished: async (locale) => {
         set({ loading: true, error: null }, false, "packages/load/start");
         try {
-          const packages = await api<TourPackage[]>("/packages");
+          const packages = await api<TourPackage[]>(`/packages${langQuery(locale)}`);
           set({ packages, loading: false }, false, "packages/load/success");
         } catch (error) {
           set({ error: (error as Error).message, loading: false }, false, "packages/load/error");

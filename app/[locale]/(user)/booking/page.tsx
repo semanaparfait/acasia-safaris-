@@ -55,7 +55,7 @@ const finalValue = (picked: string, typed: string) =>
   picked === OTHER ? typed.trim() : picked;
 
 // A destination of the trip with its own choices
-type Stop = { key: string; title: string; options: TripOptions };
+type Stop = { key: string; title: string; titleEn?: string; options: TripOptions };
 
 // Texts of these lists: messages Planner.steps / perks / process / faqs
 const steps = ["1", "2", "3"] as const;
@@ -206,8 +206,8 @@ export default function BookingPage({
   const choiceText = useChoiceText();
 
   useEffect(() => {
-    loadDestinations();
-  }, [loadDestinations]);
+    loadDestinations(locale); // names and texts in the visitor's language
+  }, [loadDestinations, locale]);
 
   // Pre-select a destination when arriving from a "Book Now" link:
   //   /booking?destination=<destination id>   or   /booking?destination=Gorilla Trekking
@@ -250,7 +250,9 @@ export default function BookingPage({
 
   // A selection is a destination id, or a destination name (from a link)
   const matches = (d: Destination, key: string) =>
-    key === d.id || key.toLowerCase() === d.title.toLowerCase();
+    key === d.id ||
+    key.toLowerCase() === d.title.toLowerCase() ||
+    key.toLowerCase() === d.titleEn?.toLowerCase();
   const isPicked = (d: Destination) => selected.some((key) => matches(d, key));
 
   const toggle = (d: Destination) =>
@@ -269,6 +271,7 @@ export default function BookingPage({
   const stops: Stop[] = chosen.map((d) => ({
     key: d.id,
     title: d.title,
+    titleEn: d.titleEn ?? d.title, // the booking keeps the English name, for the team
     options: tripOptions(d),
   }));
   if (otherDestination.trim()) {
@@ -373,10 +376,10 @@ export default function BookingPage({
         phone: details.phone.trim(),
         country:
           details.fromRwanda === "Yes" ? "Rwanda" : details.country.trim(),
-        destinations: stops.map(({ key, title }) => {
+        destinations: stops.map(({ key, title, titleEn }) => {
           const c = choiceFor(key);
           return {
-            title,
+            title: titleEn ?? title,
             travelStyle: finalValue(c.style, c.otherStyle),
             accommodation: finalValue(c.accommodation, c.otherAccommodation),
             budget: c.budget,
