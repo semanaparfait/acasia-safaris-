@@ -7,6 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getPackage, SITE_URL } from "@/lib/server-api";
 import { packageRates } from "@/lib/helpers";
 import PackagePage from "./PackagePage";
+import { COMPANY } from "@/lib/company";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
 
@@ -72,7 +73,7 @@ export default async function TourPackagePage({ params }: Props) {
       "@type": "TravelAgency",
       name: "Acacia Safaris Ltd",
       url: SITE_URL,
-      telephone: "+250798635578",
+      telephone: COMPANY.phoneLink.replace("tel:", ""),
       email: "info@acaciasafaris.com",
       address: { "@type": "PostalAddress", addressLocality: "Kigali", addressCountry: "RW" },
     },

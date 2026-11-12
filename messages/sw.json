@@ -46,7 +46,26 @@
   "WhatsApp": {
     "message": "Habari Acacia Safaris! Ningependa kupanga safari ya kwenda Rwanda.",
     "chat": "Ongea nasi",
-    "aria": "Ongea nasi kwenye WhatsApp"
+    "aria": "Ongea nasi kwenye WhatsApp",
+    "title": "Acacia Safaris",
+    "status": "Tunajibu kwenye WhatsApp · Jumatatu–Jumamosi, saa za Kigali",
+    "greeting": "Muraho! 👋 Tukusaidieje kupanga safari yako?",
+    "choose": "Chagua mada, au tusalimie tu:",
+    "topics": {
+      "trip": "Uliza kuhusu {title}",
+      "gorilla": "Vibali vya sokwe na tarehe",
+      "custom": "Panga safari maalum",
+      "prices": "Bei na kilichojumuishwa",
+      "other": "Jambo jingine"
+    },
+    "messages": {
+      "trip": "Habari Acacia Safaris! Ninavutiwa na {title} ({days}). Je, inapatikana kwa tarehe zangu? {url}",
+      "gorilla": "Habari Acacia Safaris! Ningependa kujua kuhusu vibali vya sokwe na tarehe zinazopatikana.",
+      "custom": "Habari Acacia Safaris! Ningependa kupanga safari maalum nchini Rwanda.",
+      "prices": "Habari Acacia Safaris! Mnaweza kunieleza kuhusu bei zenu na kilichojumuishwa?"
+    },
+    "note": "Inafungua WhatsApp ujumbe wako ukiwa tayari kutumwa.",
+    "close": "Funga"
   },
   "Common": {
     "days": "{count, plural, one {Siku #} other {Siku #}}",

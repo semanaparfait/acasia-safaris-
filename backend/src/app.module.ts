@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { BackupsModule } from './backups/backups.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { GalleryModule } from './gallery/gallery.module';
@@ -50,6 +51,7 @@ import { WorkersModule } from './workers/workers.module';
     GalleryModule,
     RatesModule,
     RemindersModule,
+    BackupsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
@@ -46,6 +48,11 @@ const LOGIN_CODE_MINUTES = 10; // how long a login code works
 const MAX_CODE_TRIES = 5; // wrong codes before it stops working
 const RESEND_SECONDS = 60; // a new code can be asked for after this
 
+// Wrong passwords for one account, from any IP (the per-IP limit alone can be dodged
+// by an attacker with many addresses): after 10 in a row the account waits 15 minutes
+export const MAX_FAILED_LOGINS = 10;
+const LOCK_MINUTES = 15;
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -66,8 +73,25 @@ export class AuthService {
     const typed = email.toLowerCase().trim();
     const worker = await this.prisma.worker.findUnique({
       where: { email: typed },
-      omit: { passwordHash: false, tokenVersion: false }, // needed to check the password
+      // needed to check the password and the lock
+      omit: {
+        passwordHash: false,
+        tokenVersion: false,
+        failedLogins: false,
+        lockedUntil: false,
+      },
     });
+
+    // Locked: the password is not even checked, so guessing stops working for a while
+    const lockedFor = worker?.lockedUntil
+      ? Math.ceil((worker.lockedUntil.getTime() - Date.now()) / 60_000)
+      : 0;
+    if (lockedFor > 0) {
+      throw new HttpException(
+        `Too many wrong passwords. This account is locked for ${lockedFor} more minute${lockedFor === 1 ? '' : 's'}.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
 
     // Same message for every failure, so nobody can guess which emails exist
     const wrong = new UnauthorizedException('Wrong email or password');
@@ -81,10 +105,25 @@ export class AuthService {
         action: 'Failed login (wrong password)',
         ip: visitor.ip,
       });
+      if (worker) await this.countFailedLogin(worker, visitor);
       throw wrong;
     }
-    const { passwordHash, tokenVersion, ...safeWorker } = worker;
+    const {
+      passwordHash,
+      tokenVersion,
+      failedLogins,
+      lockedUntil,
+      ...safeWorker
+    } = worker;
     void passwordHash;
+    void lockedUntil;
+    if (failedLogins > 0) {
+      await this.prisma.worker.update({
+        where: { id: worker.id },
+        data: { failedLogins: 0, lockedUntil: null },
+        select: { id: true },
+      });
+    }
 
     if (!worker.isAdmin || worker.status !== 'Active') {
       throw new UnauthorizedException(
@@ -124,6 +163,47 @@ export class AuthService {
       ),
       sentTo: maskEmail(worker.personalEmail),
     };
+  }
+
+  // One more wrong password for this account. The 10th locks it for 15 minutes and warns
+  // the worker and the main admin by email.
+  private async countFailedLogin(
+    worker: { id: string; name: string; personalEmail: string | null },
+    visitor: Visitor,
+  ) {
+    const { failedLogins } = await this.prisma.worker.update({
+      where: { id: worker.id },
+      data: { failedLogins: { increment: 1 } },
+      select: { failedLogins: true },
+    });
+    if (failedLogins < MAX_FAILED_LOGINS) return;
+
+    await this.prisma.worker.update({
+      where: { id: worker.id },
+      data: {
+        failedLogins: 0,
+        lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60_000),
+      },
+      select: { id: true },
+    });
+    void this.audit.record({
+      worker,
+      action: `Account locked for ${LOCK_MINUTES} minutes (${MAX_FAILED_LOGINS} wrong passwords)`,
+      ip: visitor.ip,
+    });
+    const owner = await this.prisma.worker.findFirst({
+      where: { isOwner: true },
+      select: { personalEmail: true },
+    });
+    void this.mail.sendAlert({
+      to: [worker.personalEmail ?? '', owner?.personalEmail ?? ''],
+      subject: `${worker.name}'s admin account was locked`,
+      lines: [
+        `Someone typed a wrong password ${MAX_FAILED_LOGINS} times in a row for ${worker.name}'s admin account${visitor.ip ? ` (last try from IP ${visitor.ip})` : ''}.`,
+        `The account is locked for ${LOCK_MINUTES} minutes. The password was not found: nobody got in.`,
+        'If this was not you, change the password in Admin > Settings, and check Admin > Activity.',
+      ],
+    });
   }
 
   // Login, step 2: the 6 digit code. "remember" trusts this browser for 30 days.

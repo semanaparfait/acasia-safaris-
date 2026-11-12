@@ -245,6 +245,9 @@ Real keys and passwords go only in `backend/.env` (ignored by git). `.env.exampl
 
 ## Admin login and security
 
+- **Account lock.** The login limit above counts per IP address. On top of that, 10 wrong passwords
+  in a row for one account (from any IP) lock it for 15 minutes, even for the right password. The admin
+  and the main admin get an email, and Admin > Activity shows "Account locked".
 - **Two-step login.** After the password, a 6 digit code is emailed to the admin's personal email
   (valid 10 minutes, 5 tries). "Trust this device" skips the code on that browser for 30 days;
   changing the password (or logging out everywhere) ends every trusted device. An admin without a
@@ -259,6 +262,34 @@ Real keys and passwords go only in `backend/.env` (ignored by git). `.env.exampl
   Passwords and codes are removed before saving.
 - **Booking links** (`/my-booking/<token>`) stop working 90 days after the trip ends (`src/bookings/link.ts`).
 - **Security headers:** `helmet` on the API, and headers for every website page in `next.config.ts`.
+
+## Backups (src/backups)
+
+Every night at 02:15 (Kigali) the whole database is exported, compressed, **encrypted** (AES-256-GCM)
+and saved in the private Neon Storage bucket `backups`. Each backup is downloaded again, decrypted and
+its rows counted before it counts as OK. Backups are kept `BACKUP_KEEP_DAYS` (30) days, never fewer
+than the last 7. A failed backup is emailed to the main admin. Admin > Backups (main admin only) shows
+them, makes one now, and downloads a file. Photos are not in it: they stay in their storage buckets.
+
+Set up once:
+1. Neon Console > Storage: create a bucket named `backups`. Never use an image bucket: those are
+   served publicly by `/api/files/...` (the code refuses it).
+2. Make a key: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`, put it in
+   `BACKUP_ENCRYPTION_KEY` (backend/.env and Render), **and in a password manager**. Without this key the
+   backups cannot be opened; anyone with the files but not the key cannot read them.
+3. Admin > Backups > Back up now: it should say "Backups are working".
+
+Check a backup (do it once a month; changes nothing):
+`npm run db:restore -- ~/Downloads/acacia-2026-11-12T00-15-00Z.acb --check`
+
+Restore (only into an **empty** database, e.g. a new Neon branch or database):
+1. Point `DATABASE_URL` / `DIRECT_URL` in backend/.env to the empty database, run `npx prisma migrate deploy`.
+2. `npm run db:restore -- <file>`: it refuses a database that already has data, or that is at another
+   migration version than the backup.
+3. Point the API (Render settings) to that database.
+
+Neon's own history (point-in-time restore, Neon Console > Branches > Restore) is the fastest fix for a
+mistake made a few hours ago; these files are the independent copy if the Neon project itself is lost.
 
 ## Automatic emails to travelers (src/reminders)
 

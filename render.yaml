@@ -64,3 +64,8 @@ services:
       # French + Swahili versions of packages and destinations (Google Cloud Translation)
       - key: GOOGLE_TRANSLATE_API_KEY
         sync: false
+      # Nightly encrypted database backups (see "Backups" in backend/README.md)
+      - key: BACKUP_ENCRYPTION_KEY
+        sync: false
+      - key: BACKUP_BUCKET
+        value: backups

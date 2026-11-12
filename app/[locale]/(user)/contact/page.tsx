@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useMessagesStore } from "@/store/messagesStore";
 import SocialLinks from "@/components/SocialLinks";
+import { whatsappLink } from "@/lib/whatsapp";
 
 const contactCards = [
   {
@@ -33,7 +34,7 @@ const contactCards = [
   {
     icon: MessageCircle,
     key: "whatsapp",
-    href: "https://wa.me/250798635578",
+    href: whatsappLink(),
   },
   {
     icon: MapPin,

@@ -46,7 +46,26 @@
   "WhatsApp": {
     "message": "Bonjour Acacia Safaris ! Je souhaite organiser un voyage au Rwanda.",
     "chat": "Discutons",
-    "aria": "Discuter avec nous sur WhatsApp"
+    "aria": "Discuter avec nous sur WhatsApp",
+    "title": "Acacia Safaris",
+    "status": "Réponses sur WhatsApp · lun–sam, heure de Kigali",
+    "greeting": "Muraho ! 👋 Comment pouvons-nous vous aider à préparer votre safari ?",
+    "choose": "Choisissez un sujet, ou dites simplement bonjour :",
+    "topics": {
+      "trip": "Question sur {title}",
+      "gorilla": "Permis gorilles et dates",
+      "custom": "Safari sur mesure",
+      "prices": "Prix et ce qui est inclus",
+      "other": "Autre chose"
+    },
+    "messages": {
+      "trip": "Bonjour Acacia Safaris ! Je suis intéressé(e) par {title} ({days}). Est-il disponible à mes dates ? {url}",
+      "gorilla": "Bonjour Acacia Safaris ! J'aimerais en savoir plus sur les permis gorilles et les dates disponibles.",
+      "custom": "Bonjour Acacia Safaris ! J'aimerais organiser un safari sur mesure au Rwanda.",
+      "prices": "Bonjour Acacia Safaris ! Pourriez-vous m'indiquer vos prix et ce qui est inclus ?"
+    },
+    "note": "Ouvre WhatsApp avec votre message prêt à envoyer.",
+    "close": "Fermer"
   },
   "Common": {
     "days": "{count, plural, one {# jour} other {# jours}}",

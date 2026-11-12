@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { COMPANY } from "@/lib/company";
 
 // name = the text's key in messages/*.json (Nav)
 const navLinks = [
@@ -22,7 +23,7 @@ const navLinks = [
 ] as const;
 
 const PHONE = "+250 798 635 578";
-const WHATSAPP = "250798635578";
+const WHATSAPP = COMPANY.whatsapp;
 const EMAIL = "info@acaciasafaris.com";
 
 export default function Navbar() {

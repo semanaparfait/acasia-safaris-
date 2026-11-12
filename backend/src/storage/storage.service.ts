@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -106,6 +107,75 @@ export class StorageService {
     if (!BUCKETS.includes(bucket)) return;
 
     await this.client.send(
+      new DeleteObjectCommand({ Bucket: bucket, Key: key }),
+    );
+  }
+
+  // ---------- Private files (database backups) ----------
+  // These never go through checkBucket/download, so FilesController (/api/files/...)
+  // can never serve them: the backup bucket must not be in BUCKETS.
+
+  get configured() {
+    return this.client !== null;
+  }
+
+  private checkPrivate(bucket: string) {
+    if (BUCKETS.includes(bucket)) {
+      throw new Error(
+        `"${bucket}" is a public bucket: use another bucket for private files`,
+      );
+    }
+  }
+
+  async putPrivate(bucket: string, key: string, body: Buffer) {
+    this.checkPrivate(bucket);
+    await this.getClient().send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: body,
+        ContentType: 'application/octet-stream',
+      }),
+    );
+  }
+
+  async getPrivate(bucket: string, key: string) {
+    this.checkPrivate(bucket);
+    const result = await this.getClient().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    );
+    return Buffer.from(await result.Body!.transformToByteArray());
+  }
+
+  async listPrivate(bucket: string, prefix: string) {
+    this.checkPrivate(bucket);
+    const files: { key: string; size: number; date: Date }[] = [];
+    let token: string | undefined;
+    do {
+      const page = await this.getClient().send(
+        new ListObjectsV2Command({
+          Bucket: bucket,
+          Prefix: prefix,
+          ContinuationToken: token,
+        }),
+      );
+      for (const o of page.Contents ?? []) {
+        if (o.Key) {
+          files.push({
+            key: o.Key,
+            size: o.Size ?? 0,
+            date: o.LastModified ?? new Date(0),
+          });
+        }
+      }
+      token = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (token);
+    return files;
+  }
+
+  async deletePrivate(bucket: string, key: string) {
+    this.checkPrivate(bucket);
+    await this.getClient().send(
       new DeleteObjectCommand({ Bucket: bucket, Key: key }),
     );
   }

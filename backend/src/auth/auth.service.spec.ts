@@ -1,11 +1,15 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash } from 'bcryptjs';
 import { AuditService } from '../audit/audit.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { AuthService, maskEmail } from './auth.service';
+import { AuthService, MAX_FAILED_LOGINS, maskEmail } from './auth.service';
 
 const row = (changes = {}) => ({
   id: 'w1',
@@ -21,14 +25,21 @@ const setup = () => {
   const worker = {
     findUnique: jest.fn(),
     findUniqueOrThrow: jest.fn(),
-    update: jest.fn(),
+    findFirst: jest
+      .fn()
+      .mockResolvedValue({ personalEmail: 'owner@gmail.com' }),
+    update: jest.fn().mockResolvedValue({ failedLogins: 1 }),
   };
   const jwt = {
     verifyAsync: jest.fn(),
     signAsync: jest.fn().mockResolvedValue('new-token'),
   };
   const storage = { deleteByUrl: jest.fn() };
-  const mail = { sendResetCode: jest.fn(), sendLoginCode: jest.fn() };
+  const mail = {
+    sendResetCode: jest.fn(),
+    sendLoginCode: jest.fn(),
+    sendAlert: jest.fn(),
+  };
   const service = new AuthService(
     { worker } as unknown as PrismaService,
     jwt as unknown as JwtService,
@@ -363,6 +374,74 @@ describe('AuthService', () => {
       jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'login' });
       await expect(service.verify('challenge')).rejects.toThrow(
         UnauthorizedException,
+      );
+    });
+  });
+
+  describe('account lock', () => {
+    const admin = async (changes = {}) =>
+      row({
+        name: 'Jean',
+        personalEmail: 'jean@gmail.com',
+        passwordHash: await hash('secret123', 4),
+        failedLogins: 0,
+        lockedUntil: null,
+        ...changes,
+      });
+
+    it('counts a wrong password for the account', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(await admin());
+      await expect(service.login('a@b.co', 'nope')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(worker.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { failedLogins: { increment: 1 } } }),
+      );
+      expect(mail.sendAlert).not.toHaveBeenCalled();
+    });
+
+    it('locks the account and warns by email at the 10th wrong password', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(await admin());
+      worker.update.mockResolvedValueOnce({ failedLogins: MAX_FAILED_LOGINS });
+      await expect(
+        service.login('a@b.co', 'nope', { ip: '1.2.3.4' }),
+      ).rejects.toThrow(UnauthorizedException);
+      const calls = worker.update.mock.calls as [
+        { data: { lockedUntil: Date; failedLogins: number } },
+      ][];
+      const lock = calls[1][0];
+      expect(lock.data.failedLogins).toBe(0);
+      expect(lock.data.lockedUntil.getTime()).toBeGreaterThan(Date.now());
+      expect(mail.sendAlert).toHaveBeenCalledWith(
+        expect.objectContaining({ to: ['jean@gmail.com', 'owner@gmail.com'] }),
+      );
+    });
+
+    it('refuses even the right password while locked', async () => {
+      const { service, worker, mail } = setup();
+      worker.findUnique.mockResolvedValue(
+        await admin({ lockedUntil: new Date(Date.now() + 5 * 60_000) }),
+      );
+      await expect(service.login('a@b.co', 'secret123')).rejects.toThrow(
+        HttpException,
+      );
+      await expect(service.login('a@b.co', 'secret123')).rejects.toThrow(
+        /locked for 5 more minutes/,
+      );
+      expect(mail.sendLoginCode).not.toHaveBeenCalled();
+    });
+
+    it('starts counting again after the right password', async () => {
+      const { service, worker } = setup();
+      worker.findUnique.mockResolvedValue(await admin({ failedLogins: 4 }));
+      worker.findUniqueOrThrow.mockResolvedValue(await admin());
+      await service.login('a@b.co', 'secret123');
+      expect(worker.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { failedLogins: 0, lockedUntil: null },
+        }),
       );
     });
   });

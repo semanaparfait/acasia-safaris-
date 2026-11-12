@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   FileText,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useWhatsAppTopic } from "@/lib/whatsapp";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
 import QuotationModal from "./QuotationModal";
@@ -37,6 +38,15 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const t = useTranslations("Detail");
   const tc = useTranslations("Common");
   const dayLabel = tc("days", { count: tour.itinerary.length });
+  const locale = useLocale();
+
+  // The WhatsApp button offers "Ask about <this package>" while it is on screen
+  const setWhatsAppTopic = useWhatsAppTopic((s) => s.setTopic);
+  useEffect(() => {
+    const path = `${locale === "en" ? "" : `/${locale}`}/tour/${tour.id}`;
+    setWhatsAppTopic({ title: tour.title, days: tour.itinerary.length, url: window.location.origin + path });
+    return () => setWhatsAppTopic(null);
+  }, [setWhatsAppTopic, locale, tour.id, tour.title, tour.itinerary.length]);
 
   const [formData, setFormData] = useState({
     name: "",

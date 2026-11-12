@@ -14,6 +14,7 @@ import logo from "@/public/logo2.png";
 import { Link } from "@/i18n/navigation";
 import SocialLinks from "@/components/SocialLinks";
 import { useMessagesStore } from "@/store/messagesStore";
+import { COMPANY } from "@/lib/company";
 
 
 // name = the text's key in messages/*.json ("Nav.home", "Footer.bookSafari"…)
@@ -163,7 +164,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-zinc-400">
               <li>
                 <a
-                  href="tel:+250798635578"
+                  href={COMPANY.phoneLink}
                   className="flex items-center gap-3 hover:text-white transition-colors"
                 >
                   <Phone size={16} className="text-[#c5a86d] shrink-0" />

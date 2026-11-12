@@ -30,6 +30,7 @@ import { defaultTripOptions, tripOptions, type TripOptions } from "@/lib/helpers
 import type { Destination } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useDestinationsStore } from "@/store/destinationsStore";
+import { whatsappLink } from "@/lib/whatsapp";
 
 const OTHER = "Other";
 
@@ -1047,7 +1048,7 @@ export default function BookingPage({
                 </div>
               </div>
               <a
-                href="https://wa.me/250798635578"
+                href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 w-full inline-flex items-center justify-center gap-2 border border-[#0a120b]/15 hover:border-[#1F5A42] hover:text-[#1F5A42] text-sm px-5 py-2.5 rounded-sm transition-all"

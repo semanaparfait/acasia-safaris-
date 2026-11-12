@@ -126,6 +126,10 @@ model Worker {
   loginCodeExpires DateTime?
   loginAttempts    Int       @default(0)
 
+  // Wrong passwords in a row (any IP). After 10, the account is locked for 15 minutes.
+  failedLogins Int       @default(0)
+  lockedUntil  DateTime?
+
   // The main admin (only one): cannot be deleted, always keeps admin access,
   // and is the only one who can give or remove admin access. Set from .env by the seed.
   isOwner   Boolean  @default(false)

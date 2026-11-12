@@ -203,6 +203,34 @@ export class MailService {
     }
   }
 
+  // A security or system alert to the team (account locked, backup failed...).
+  // Never throws: an alert that cannot be sent is only logged.
+  async sendAlert(alert: { to: string[]; subject: string; lines: string[] }) {
+    const to = [...new Set(alert.to.filter(Boolean))];
+    if (!this.transport || !to.length) {
+      this.logger.warn(
+        `Alert not emailed (${alert.subject}): ${alert.lines.join(' ')}`,
+      );
+      return;
+    }
+    const html = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#0a120b;max-width:560px">
+  <p style="margin:0 0 12px;font-weight:bold;color:#9B2C2C">${escapeHtml(alert.subject)}</p>
+  ${alert.lines.map((l) => `<p style="margin:0 0 10px">${escapeHtml(l)}</p>`).join('')}
+  <p style="margin:16px 0 0;color:#5F6B64;font-size:12px">Acacia Safaris admin · automatic message</p>
+</div>`;
+    try {
+      await this.transport.sendMail({
+        from: this.from,
+        to,
+        subject: `[Acacia admin] ${alert.subject}`,
+        text: `${alert.lines.join('\n\n')}\n\nAcacia Safaris admin`,
+        html,
+      });
+    } catch (error) {
+      this.logger.error(`Alert email failed (${alert.subject}): ${error}`);
+    }
+  }
+
   // Forgot password: sends the 6 digit code to the worker's personal email.
   // Throws ServiceUnavailableException if the email could not be sent.
   async sendResetCode(email: ResetCodeEmail) {

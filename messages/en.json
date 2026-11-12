@@ -46,7 +46,26 @@
   "WhatsApp": {
     "message": "Hello Acacia Safaris! I'd like to plan a trip to Rwanda.",
     "chat": "Chat with us",
-    "aria": "Chat with us on WhatsApp"
+    "aria": "Chat with us on WhatsApp",
+    "title": "Acacia Safaris",
+    "status": "Replies on WhatsApp · Mon–Sat, Kigali time",
+    "greeting": "Muraho! 👋 How can we help you plan your safari?",
+    "choose": "Pick a topic, or just say hello:",
+    "topics": {
+      "trip": "Ask about {title}",
+      "gorilla": "Gorilla permits & dates",
+      "custom": "Plan a tailor-made safari",
+      "prices": "Prices & what's included",
+      "other": "Something else"
+    },
+    "messages": {
+      "trip": "Hello Acacia Safaris! I'm interested in {title} ({days}). Is it available for my dates? {url}",
+      "gorilla": "Hello Acacia Safaris! I'd like to know about gorilla permits and the available dates.",
+      "custom": "Hello Acacia Safaris! I'd like to plan a tailor-made safari in Rwanda.",
+      "prices": "Hello Acacia Safaris! Could you tell me about your prices and what is included?"
+    },
+    "note": "Opens WhatsApp with your message ready to send.",
+    "close": "Close"
   },
   "Common": {
     "days": "{count, plural, one {# Day} other {# Days}}",

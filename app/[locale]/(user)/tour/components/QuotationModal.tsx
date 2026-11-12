@@ -21,8 +21,9 @@ import { FaWhatsapp } from "react-icons/fa";
 import type { TourPackage } from "@/lib/types";
 import { usePackagesStore } from "@/store/packagesStore";
 import { useTranslations } from "next-intl";
+import { COMPANY } from "@/lib/company";
 
-const WHATSAPP_NUMBER = "250798635578";
+const WHATSAPP_NUMBER = COMPANY.whatsapp;
 
 const inputClass =
   "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-lg px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all";

@@ -22,7 +22,8 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "admin:main": "ts-node prisma/main-admin.ts"
+    "admin:main": "ts-node prisma/main-admin.ts",
+    "db:restore": "ts-node prisma/restore-backup.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

@@ -17,6 +17,7 @@ import {
   Images,
   Settings,
   History,
+  DatabaseBackup,
   ExternalLink,
   X,
 } from "lucide-react";
@@ -64,6 +65,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         { name: "Settings", href: "/admin/settings", icon: Settings },
         // Who did what: the main admin only
         ...(me?.isOwner ? [{ name: "Activity", href: "/admin/activity", icon: History }] : []),
+        ...(me?.isOwner ? [{ name: "Backups", href: "/admin/backups", icon: DatabaseBackup }] : []),
       ],
     },
   ];
