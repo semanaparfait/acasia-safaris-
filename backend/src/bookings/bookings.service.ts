@@ -25,6 +25,7 @@ import { ratesOf } from '../packages/quotation.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import {
+  AddPaymentDto,
   TripReviewDto,
   BookingDestinationDto,
   BookingMessageDto,
@@ -40,6 +41,9 @@ const adminInclude = {
   },
   destinations: true,
   messages: { orderBy: { createdAt: 'asc' as const } },
+  payments: {
+    orderBy: [{ paidAt: 'asc' as const }, { createdAt: 'asc' as const }],
+  },
 };
 const adminOmit = { floorAmount: false, accessToken: false } as const;
 
@@ -186,11 +190,76 @@ export class BookingsService {
   async update(id: string, dto: UpdateBookingDto) {
     const current = await this.findOne(id);
     await this.prisma.booking.update({ where: { id }, data: dto });
+    // New price: Paid / Deposit may change (only once payments are recorded,
+    // so older bookings keep the label set by hand)
+    // Taking back a refund: the label follows the payments again
+    if (
+      (dto.amount !== undefined &&
+        dto.payment === undefined &&
+        current.payments.length > 0) ||
+      (dto.payment !== undefined &&
+        dto.payment !== 'Refunded' &&
+        current.payment === 'Refunded')
+    ) {
+      await this.syncPaymentStatus(id);
+    }
     // Confirmed by hand (e.g. a destination trip once its price is set): send the ticket
     if (dto.status === 'Confirmed' && current.status !== 'Confirmed') {
       await this.confirm(id);
     }
     return this.changed(id);
+  }
+
+  // ---------- Payments (money received) ----------
+
+  async addPayment(id: string, dto: AddPaymentDto, recordedBy: string) {
+    await this.findOne(id);
+    await this.prisma.bookingPayment.create({
+      data: {
+        bookingId: id,
+        amount: dto.amount,
+        method: dto.method,
+        paidAt: new Date(dto.paidAt ?? new Date().toISOString().slice(0, 10)),
+        reference: dto.reference?.trim() || null,
+        note: dto.note?.trim() || null,
+        recordedBy,
+      },
+    });
+    await this.syncPaymentStatus(id);
+    return this.changed(id);
+  }
+
+  async removePayment(id: string, paymentId: string) {
+    const { count } = await this.prisma.bookingPayment.deleteMany({
+      where: { id: paymentId, bookingId: id },
+    });
+    if (!count) throw new NotFoundException(`Payment ${paymentId} not found`);
+    await this.syncPaymentStatus(id);
+    return this.changed(id);
+  }
+
+  // Unpaid / Deposit / Paid follows from the money received.
+  // "Refunded" is set by hand and left alone.
+  private async syncPaymentStatus(id: string) {
+    const booking = await this.prisma.booking.findUniqueOrThrow({
+      where: { id },
+      select: { amount: true, payment: true },
+    });
+    if (booking.payment === 'Refunded') return;
+    const { _sum } = await this.prisma.bookingPayment.aggregate({
+      where: { bookingId: id },
+      _sum: { amount: true },
+    });
+    const paid = _sum.amount ?? 0;
+    const payment =
+      paid <= 0
+        ? 'Unpaid'
+        : booking.amount > 0 && paid >= booking.amount
+          ? 'Paid'
+          : 'Deposit';
+    if (payment !== booking.payment) {
+      await this.prisma.booking.update({ where: { id }, data: { payment } });
+    }
   }
 
   async remove(id: string) {

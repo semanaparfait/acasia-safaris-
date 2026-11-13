@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { Booking, BookingDestination, BookingStatus, PaymentStatus, PublicBooking } from "@/lib/types";
+import type { Booking, BookingDestination, BookingStatus, PaymentMethod, PaymentStatus, PublicBooking } from "@/lib/types";
 
 // A booking is for a package (packageId) or for destinations (destinations + endDate)
 export type BookingInput = {
@@ -31,6 +31,14 @@ export type BookingChanges = {
   notes?: string;
 };
 
+export type PaymentInput = {
+  amount: number;
+  method: PaymentMethod;
+  paidAt?: string; // "2026-11-13", default today
+  reference?: string;
+  note?: string;
+};
+
 type BookingsState = {
   bookings: Booking[];
   loading: boolean;
@@ -49,6 +57,9 @@ type BookingsState = {
   findTicket: (code: string) => Promise<Booking>;
   checkIn: (code: string) => Promise<{ booking: Booking; alreadyCheckedIn: boolean }>;
   updateBooking: (id: string, changes: BookingChanges) => Promise<Booking>; // admin
+  // Admin: money received for a booking (the payment status follows from it)
+  addPayment: (id: string, payment: PaymentInput) => Promise<Booking>;
+  removePayment: (id: string, paymentId: string) => Promise<Booking>;
   deleteBooking: (id: string) => Promise<void>; // admin
 };
 
@@ -94,6 +105,18 @@ export const useBookingsStore = create<BookingsState>()(
           false,
           "bookings/update",
         );
+        return updated;
+      },
+
+      addPayment: async (id, payment) => {
+        const updated = await api<Booking>(`/bookings/${id}/payments`, { method: "POST", body: payment, admin: true });
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/addPayment");
+        return updated;
+      },
+
+      removePayment: async (id, paymentId) => {
+        const updated = await api<Booking>(`/bookings/${id}/payments/${paymentId}`, { method: "DELETE", admin: true });
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/removePayment");
         return updated;
       },
 

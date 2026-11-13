@@ -19,7 +19,7 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   const [withOffer, setWithOffer] = useState(false);
   const [offer, setOffer] = useState("");
   const [busy, setBusy] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
+  const thread = useRef<HTMLDivElement>(null);
 
   const messages = booking.messages ?? [];
   const closed = booking.status === "Completed" || booking.status === "Cancelled";
@@ -30,7 +30,8 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   const offerBelowFloor = offerValue != null && booking.floorAmount != null && offerValue < booking.floorAmount;
 
   useEffect(() => {
-    end.current?.scrollIntoView({ block: "nearest" });
+    // Show the latest message (scrolls the thread only, not the whole panel)
+    if (thread.current) thread.current.scrollTop = thread.current.scrollHeight;
   }, [messages.length]);
 
   const run = async (action: () => Promise<unknown>, success: string) => {
@@ -98,13 +99,12 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
       )}
 
       {/* Thread */}
-      <div className="rounded-xl border border-[#0a120b]/10 bg-[#f7f5f0]/50 p-3 space-y-2.5 max-h-80 overflow-y-auto">
+      <div ref={thread} className="rounded-xl border border-[#0a120b]/10 bg-[#f7f5f0]/50 p-3 space-y-2.5 max-h-80 overflow-y-auto">
         {messages.length === 0 ? (
           <p className="text-center text-xs text-[#0a120b]/40 py-6">No messages yet. Write to the customer below.</p>
         ) : (
           messages.map((m) => <Bubble key={m.id} message={m} />)
         )}
-        <div ref={end} />
       </div>
 
       {/* Reply */}

@@ -259,12 +259,14 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
+  confirmLabel = "Delete",
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmLabel?: string;
 }) {
   return (
     <Modal
@@ -274,7 +276,7 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button variant="danger" onClick={() => { onConfirm(); onClose(); }}>Delete</Button>
+          <Button variant="danger" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</Button>
         </>
       }
     >

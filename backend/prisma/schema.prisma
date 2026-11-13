@@ -195,6 +195,7 @@ model Booking {
   reviewedAt        DateTime? // the traveler left a review from their booking page
   messages          BookingMessage[]
   adminReminders    AdminReminder[]
+  payments          BookingPayment[] // money received; "payment" above follows from them
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,6 +215,23 @@ model BookingMessage {
   createdAt  DateTime @default(now())
 
   @@index([bookingId, createdAt])
+}
+
+// Money received for a booking, recorded by the team in Admin > Bookings.
+// Balance due = Booking.amount - the sum of its payments.
+model BookingPayment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId  String   @db.Uuid
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount     Int // USD
+  method     String // "Bank transfer", "Mobile Money", "Card", "Cash", "PayPal", "Other"
+  paidAt     DateTime @db.Date // the day the money arrived
+  reference  String? // transaction / receipt number
+  note       String?
+  recordedBy String // the worker who entered it
+  createdAt  DateTime @default(now())
+
+  @@index([bookingId])
 }
 
 // One destination of a booking, with what the visitor chose for it.

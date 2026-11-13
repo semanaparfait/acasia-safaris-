@@ -18,6 +18,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { BookingsService } from './bookings.service';
 import {
+  AddPaymentDto,
   TripReviewDto,
   BookingMessageDto,
   CreateBookingDto,
@@ -165,6 +166,31 @@ export class BookingsController {
     @Req() request: AdminRequest,
   ) {
     return this.bookingsService.teamAccept(id, request.worker.name);
+  }
+
+  // POST /api/bookings/12/payments   body: { "amount": 1500, "method": "Bank transfer", "paidAt"?: "2026-11-13", "reference"?: "..." }
+  @Post(':id/payments')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Recorded a payment', 'Booking')
+  addPayment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AddPaymentDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.bookingsService.addPayment(id, dto, request.worker.name);
+  }
+
+  // DELETE /api/bookings/12/payments/<paymentId>   (a payment entered by mistake)
+  @Delete(':id/payments/:paymentId')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Removed a payment', 'Booking')
+  removePayment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('paymentId', ParseUUIDPipe) paymentId: string,
+  ) {
+    return this.bookingsService.removePayment(id, paymentId);
   }
 
   @Delete(':id')

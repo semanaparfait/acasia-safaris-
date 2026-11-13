@@ -130,6 +130,28 @@ export const bookingTitle = (b: Booking) =>
 // Destination trips have no price until the admin sets one
 export const bookingAmount = (b: Booking) => (b.amount > 0 ? money(b.amount) : "To quote");
 
+// Money received so far, and what is still missing
+export const paidOf = (b: Booking) => (b.payments ?? []).reduce((sum, p) => sum + p.amount, 0);
+export const balanceOf = (b: Booking) =>
+  b.status === "Cancelled" || b.payment === "Refunded" ? 0 : Math.max(b.amount - paidOf(b), 0);
+
+// Days from today to the start of the trip (negative once it started)
+export const daysToTrip = (b: Pick<Booking, "startDate">) => {
+  const today = new Date(new Date().toISOString().slice(0, 10)).getTime();
+  return Math.round((new Date(b.startDate.slice(0, 10)).getTime() - today) / 864e5);
+};
+
+// Where the money of a booking stands, for the admin tables:
+// overdue = money still missing and the trip starts within 14 days
+export type MoneyState = "cancelled" | "refunded" | "quote" | "settled" | "due" | "overdue";
+export const moneyState = (b: Booking): MoneyState => {
+  if (b.status === "Cancelled") return "cancelled";
+  if (b.payment === "Refunded") return "refunded";
+  if (b.amount <= 0) return "quote";
+  if (balanceOf(b) <= 0) return "settled";
+  return daysToTrip(b) <= 14 ? "overdue" : "due";
+};
+
 // ---------- Customers ----------
 
 export type Customer = {

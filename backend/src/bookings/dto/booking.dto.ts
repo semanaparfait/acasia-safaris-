@@ -164,6 +164,41 @@ export class BookingMessageDto {
 }
 
 // What the admin sends to change a booking. Every field is optional.
+export const PAYMENT_METHODS = [
+  'Bank transfer',
+  'Mobile Money',
+  'Card',
+  'Cash',
+  'PayPal',
+  'Other',
+];
+
+// Admin > Bookings: money received for a booking
+export class AddPaymentDto {
+  @IsInt()
+  @Min(1)
+  amount: number;
+
+  @IsIn(PAYMENT_METHODS)
+  method: string;
+
+  // The day the money arrived, e.g. "2026-11-13" (default: today)
+  @IsOptional()
+  @IsDateString()
+  paidAt?: string;
+
+  // Transaction or receipt number
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  reference?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+}
+
 export class UpdateBookingDto {
   @IsOptional()
   @IsIn(BOOKING_STATUSES)

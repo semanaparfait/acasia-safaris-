@@ -163,6 +163,23 @@ export type Booking = {
   ticketCode?: string | null;
   checkedInAt?: string | null; // when the QR code was scanned in Admin > Check-in
   reviewedAt?: string | null; // the traveler reviewed the trip from their booking page
+
+  payments?: BookingPayment[]; // money received (admins only)
+};
+
+export const PAYMENT_METHODS = ["Bank transfer", "Mobile Money", "Card", "Cash", "PayPal", "Other"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+// Money received for a booking, recorded in Admin > Bookings
+export type BookingPayment = {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  paidAt: string; // the day the money arrived
+  reference?: string | null; // transaction / receipt number
+  note?: string | null;
+  recordedBy: string;
+  createdAt: string;
 };
 
 // Travelers in one price group of a package, e.g. 2 adults at $1,450
@@ -182,7 +199,7 @@ export type BookingMessage = {
 // What a visitor sees on their booking page (GET /api/bookings/track/<token>)
 export type PublicBooking = Omit<
   Booking,
-  "phone" | "packageId" | "package" | "notes" | "floorAmount" | "needsReply" | "accessToken"
+  "phone" | "packageId" | "package" | "notes" | "floorAmount" | "needsReply" | "accessToken" | "payments"
 > & {
   package: { id: string; title: string; image: string; location: string; _count: { itinerary: number } } | null;
 };
