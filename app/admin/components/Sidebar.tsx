@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarCheck,
+  CalendarDays,
   ScanLine,
   Package,
   MapPinned,
@@ -26,6 +27,8 @@ import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
 import { useReviewsStore } from "@/store/reviewsStore";
 import { useAuthStore } from "@/store/authStore";
+import { useCalendarStore } from "@/store/calendarStore";
+import { todayCount } from "@/lib/calendar";
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
@@ -33,6 +36,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   const messages = useMessagesStore((s) => s.messages);
   const reviews = useReviewsStore((s) => s.reviews);
   const me = useAuthStore((s) => s.worker);
+  const reminders = useCalendarStore((s) => s.reminders);
 
   const groups = [
     {
@@ -42,6 +46,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     {
       label: "Operations",
       items: [
+        // Count = departures, returns and to-dos today (overdue included)
+        { name: "Calendar", href: "/admin/calendar", icon: CalendarDays, count: todayCount(bookings, reminders) },
         { name: "Bookings", href: "/admin/bookings", icon: CalendarCheck, count: bookings.filter((b) => b.status === "Pending" || b.needsReply).length },
         { name: "Check-in", href: "/admin/check-in", icon: ScanLine },
         { name: "Customers", href: "/admin/customers", icon: Users },

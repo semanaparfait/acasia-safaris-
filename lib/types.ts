@@ -237,3 +237,27 @@ export type GalleryInput = Omit<GalleryItem, "id" | "createdAt">;
 
 // Storage buckets in Neon (see backend/src/storage/storage.service.ts)
 export type Bucket = "tourpackages" | "destinations" | "gallery" | "workers";
+
+// Admin > Calendar: a to-do for the team on a day (trips and payments come from the bookings)
+export type AdminReminder = {
+  id: string;
+  title: string;
+  date: string; // "2026-11-12T00:00:00.000Z": the day
+  time: string | null; // "14:30"
+  notes: string | null;
+  bookingId: string | null;
+  booking: { id: string; customer: string } | null;
+  done: boolean;
+  doneAt: string | null;
+  doneBy: string | null;
+  createdBy: string;
+  createdAt: string;
+};
+
+export type AdminReminderInput = {
+  title: string;
+  date: string; // "2026-11-12"
+  time?: string | null;
+  notes?: string | null;
+  bookingId?: string | null;
+};

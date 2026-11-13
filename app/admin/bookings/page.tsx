@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -15,7 +16,16 @@ type Filter = "All" | BookingStatus;
 const statusList: BookingStatus[] = ["Pending", "Negotiating", "Confirmed", "Completed", "Cancelled"];
 const paymentList: PaymentStatus[] = ["Unpaid", "Deposit", "Paid", "Refunded"];
 
+// /admin/bookings?open=<id> opens that booking (links from the calendar and the morning email)
 export default function BookingsPage() {
+  return (
+    <Suspense>
+      <BookingsList />
+    </Suspense>
+  );
+}
+
+function BookingsList() {
   // Bookings are loaded by AdminShell; this page reads and updates them
   const bookings = useBookingsStore((s) => s.bookings);
   const loading = useBookingsStore((s) => s.loading);
@@ -25,7 +35,8 @@ export default function BookingsPage() {
 
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const openId = useSearchParams().get("open");
+  const [selectedId, setSelectedId] = useState<string | null>(openId);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const selected = bookings.find((b) => b.id === selectedId) ?? null;

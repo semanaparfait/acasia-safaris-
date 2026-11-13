@@ -194,6 +194,7 @@ model Booking {
   reviewRequestAt   DateTime? // after the trip: "How was it?"
   reviewedAt        DateTime? // the traveler left a review from their booking page
   messages          BookingMessage[]
+  adminReminders    AdminReminder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -281,4 +282,26 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// ---------- Admin calendar ----------
+
+// A to-do for the team on a given day (Admin > Calendar), e.g. "Buy permits for Ana".
+// Trips, returns and balances due are not stored here: the calendar reads them from the bookings.
+model AdminReminder {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  date      DateTime  @db.Date // the day (Kigali)
+  time      String? // "14:30", empty = any time that day
+  notes     String?
+  bookingId String?   @db.Uuid // optional: the booking it is about
+  booking   Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  done      Boolean   @default(false)
+  doneAt    DateTime?
+  doneBy    String? // name of the admin who ticked it
+  createdBy String // name of the admin who added it
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([date])
 }

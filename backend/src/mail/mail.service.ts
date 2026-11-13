@@ -203,6 +203,26 @@ export class MailService {
     }
   }
 
+  // An email made elsewhere (e.g. the admins' morning agenda, src/calendar). Returns false if not sent.
+  async sendHtml(mail: {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+  }) {
+    if (!this.transport) {
+      this.logger.warn(`Email is not configured: "${mail.subject}" not sent`);
+      return false;
+    }
+    try {
+      await this.transport.sendMail({ from: this.from, ...mail });
+      return true;
+    } catch (error) {
+      this.logger.error(`Email "${mail.subject}" failed: ${error}`);
+      return false;
+    }
+  }
+
   // A security or system alert to the team (account locked, backup failed...).
   // Never throws: an alert that cannot be sent is only logged.
   async sendAlert(alert: { to: string[]; subject: string; lines: string[] }) {

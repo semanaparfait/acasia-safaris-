@@ -11,6 +11,7 @@ import { useMessagesStore } from "@/store/messagesStore";
 import { useReviewsStore } from "@/store/reviewsStore";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import { useCalendarStore } from "@/store/calendarStore";
 
 const noSubscribe = () => () => {};
 
@@ -38,18 +39,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const loadBookings = useBookingsStore((s) => s.load);
   const loadMessages = useMessagesStore((s) => s.load);
   const loadReviews = useReviewsStore((s) => s.loadAll);
+  const loadReminders = useCalendarStore((s) => s.load);
   useEffect(() => {
     if (!mounted || !loggedIn || isLoginPage) return;
     const refresh = () => {
       loadBookings();
       loadMessages();
       loadReviews();
+      loadReminders();
     };
     refresh();
     // Coming back to the tab shows anything that arrived from the website meanwhile
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
-  }, [mounted, loggedIn, isLoginPage, loadBookings, loadMessages, loadReviews]);
+  }, [mounted, loggedIn, isLoginPage, loadBookings, loadMessages, loadReviews, loadReminders]);
 
   // Live: bookings, customer messages and offers appear instantly (lib/live.ts)
   useEffect(() => {
