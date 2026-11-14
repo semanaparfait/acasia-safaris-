@@ -35,8 +35,10 @@ function Bookings() {
   const deleteBooking = useBookingsStore((s) => s.deleteBooking);
 
   const [view, setView] = useState<View>("trips");
-  const [tripKey, setTripKey] = useState<string | null>(null);
-  const openId = useSearchParams().get("open");
+  const params = useSearchParams();
+  // ?trip=<key> opens a trip (links from Admin > Departures)
+  const [tripKey, setTripKey] = useState<string | null>(params.get("trip"));
+  const openId = params.get("open");
   const [selectedId, setSelectedId] = useState<string | null>(openId);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 

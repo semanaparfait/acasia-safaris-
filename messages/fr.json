@@ -104,7 +104,7 @@
     },
     "startDate": "Date de départ",
     "travelers": "Voyageurs",
-    "each": "{price} par personne",
+    "each": "<price></price> par personne",
     "fewer": "Moins : {label}",
     "more": "Plus : {label}",
     "fullName": "Nom complet",
@@ -138,8 +138,13 @@
       "phone": "Veuillez saisir un numéro de téléphone ou WhatsApp valide.",
       "country": "Veuillez indiquer votre pays.",
       "offer": "Veuillez saisir le prix que vous souhaitez payer.",
-      "offerTooHigh": "Votre offre doit être inférieure à {price}."
-    }
+      "offerTooHigh": "Votre offre doit être inférieure à {price}.",
+      "seats": "{count, plural, one {Il ne reste qu’# place sur ce départ.} other {Il ne reste que # places sur ce départ.}}"
+    },
+    "eyebrowGroup": "Rejoindre un départ en groupe",
+    "groupDeparture": "Départ en groupe",
+    "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
+    "goingFrom": "des voyageurs de {countries} participent"
   },
   "MyBooking": {
     "notFound": "Réservation introuvable",
@@ -1062,5 +1067,19 @@
     "freeUntil": "Annulation gratuite jusqu'au {date} (sauf les permis).",
     "ifNow": "En cas d'annulation maintenant, {percent} % du total est facturé.",
     "fullPolicy": "Conditions complètes"
+  },
+  "Departures": {
+    "eyebrow": "Départs en groupe",
+    "title": "Rejoindre un départ en groupe",
+    "text": "Seul, en couple ou entre amis : partagez ce voyage avec un petit groupe à une date fixe.",
+    "showcaseTitle": "Prochains départs en groupe",
+    "showcaseText": "Seul, en couple ou entre amis : rejoignez un petit groupe à une date fixe, partagez l’aventure et rencontrez des voyageurs du monde entier.",
+    "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
+    "fewLeft": "{count, plural, one {Plus qu’# place !} other {Plus que # places !}}",
+    "full": "Complet",
+    "going": "{count, plural, one {# voyageur inscrit} other {# voyageurs inscrits}}",
+    "from": "Voyageurs venant de : {countries}",
+    "join": "Rejoindre ce groupe",
+    "perPerson": "à partir de <price></price> par personne"
   }
 }

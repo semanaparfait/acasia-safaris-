@@ -138,6 +138,7 @@ export type Booking = {
   country: string;
   packageId: string | null;
   package: { id: string; title: string } | null;
+  departureId?: string | null; // joined a group departure
   destinations: BookingDestination[]; // empty for a package booking
   startDate: string;
   endDate: string;
@@ -167,7 +168,34 @@ export type Booking = {
   payments?: BookingPayment[]; // money received (admins only)
 };
 
-export const PAYMENT_METHODS = ["Bank transfer", "Mobile Money", "Card", "Cash", "PayPal", "Other"] as const;
+// A group departure as the website shows it: a package on a fixed date anyone can join
+export type Departure = {
+  id: string;
+  packageId: string;
+  startDate: string;
+  endDate: string;
+  seats: number;
+  seatsLeft: number;
+  travelers: number; // already going
+  countries: string[]; // where they come from (never names)
+  note?: string | null;
+};
+
+// Admin > Departures
+export type AdminDeparture = {
+  id: string;
+  packageId: string;
+  package: { id: string; title: string; image: string; _count: { itinerary: number } };
+  startDate: string;
+  endDate: string;
+  seats: number;
+  travelers: number; // seats taken (cancelled bookings do not count)
+  bookingCount: number;
+  note?: string | null;
+  open: boolean;
+};
+
+export const PAYMENT_METHODS =["Bank transfer", "Mobile Money", "Card", "Cash", "PayPal", "Other"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 // Money received for a booking, recorded in Admin > Bookings

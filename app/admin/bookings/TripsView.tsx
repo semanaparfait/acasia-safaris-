@@ -14,7 +14,7 @@ import { downloadCsv } from "./csv";
 export type Trip = {
   key: string;
   title: string;
-  kind: "Package" | "Custom trip";
+  kind: "Package" | "Group departure" | "Custom trip";
   startDate: string;
   endDate: string;
   bookings: Booking[]; // every booking, cancelled ones too
@@ -28,8 +28,9 @@ export type Trip = {
 };
 
 const day = (d: string) => d.slice(0, 10);
+// A group departure is one trip; otherwise the same package on the same day
 const tripKey = (b: Booking) =>
-  `${b.packageId ?? `custom:${bookingTitle(b)}`}|${day(b.startDate)}`;
+  b.departureId ? `dep:${b.departureId}` : `${b.packageId ?? `custom:${bookingTitle(b)}`}|${day(b.startDate)}`;
 
 export function groupTrips(bookings: Booking[]): Trip[] {
   const groups = new Map<string, Booking[]>();
@@ -41,7 +42,7 @@ export function groupTrips(bookings: Booking[]): Trip[] {
     return {
       key,
       title: bookingTitle(list[0]),
-      kind: list[0].packageId ? "Package" : "Custom trip",
+      kind: list[0].departureId ? "Group departure" : list[0].packageId ? "Package" : "Custom trip",
       startDate: list[0].startDate,
       endDate: list.reduce((max, b) => (b.endDate > max ? b.endDate : max), list[0].endDate),
       bookings: sorted,

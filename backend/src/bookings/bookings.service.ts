@@ -489,15 +489,17 @@ export class BookingsService {
         : null;
 
     // A 7-day trip starting on the 1st ends on the 7th
-    const startDate = new Date(dto.startDate);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + pkg._count.itinerary - 1);
+    const datesFrom = (start: Date) => {
+      const end = new Date(start);
+      end.setDate(start.getDate() + pkg._count.itinerary - 1);
+      return { startDate: start, endDate: end };
+    };
 
     // Asking less than the price starts the bargaining
     const bargains = dto.offer != null && dto.offer < listAmount;
 
-    const booking = await this.prisma.booking.create({
-      data: {
+    const data = (dates: { startDate: Date; endDate: Date }) =>
+      ({
         customer: dto.customer,
         email: dto.email,
         phone: toE164(dto.phone),
@@ -506,8 +508,7 @@ export class BookingsService {
         travelers,
         children,
         notes: dto.notes,
-        startDate,
-        endDate,
+        ...dates,
         guests,
         amount: listAmount,
         listAmount,
@@ -535,10 +536,61 @@ export class BookingsService {
               },
             }
           : {}),
-      },
+      }) satisfies Prisma.BookingUncheckedCreateInput;
+
+    if (dto.departureId) {
+      return this.joinDeparture(dto.departureId, pkg.id, travelers, (start) =>
+        data(datesFrom(start)),
+      );
+    }
+
+    const booking = await this.prisma.booking.create({
+      data: data(datesFrom(new Date(dto.startDate))),
       select: { id: true },
     });
     return booking.id;
+  }
+
+  // Joining a group departure. The departure row is locked while the seats are
+  // counted, so two visitors can never take the last seat at the same time.
+  private joinDeparture(
+    departureId: string,
+    packageId: string,
+    travelers: number,
+    data: (start: Date) => Prisma.BookingUncheckedCreateInput,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Departure" WHERE id = ${departureId}::uuid FOR UPDATE`;
+      const departure = await tx.departure.findUnique({
+        where: { id: departureId },
+      });
+      const today = new Date(new Date().toISOString().slice(0, 10));
+      if (
+        !departure ||
+        !departure.open ||
+        departure.packageId !== packageId ||
+        departure.startDate <= today
+      ) {
+        throw new BadRequestException('This group departure is no longer open');
+      }
+      const { _sum } = await tx.booking.aggregate({
+        where: { departureId, status: { not: 'Cancelled' } },
+        _sum: { travelers: true },
+      });
+      const left = departure.seats - (_sum.travelers ?? 0);
+      if (travelers > left) {
+        throw new BadRequestException(
+          left <= 0
+            ? 'This group departure is full'
+            : `Only ${left} seat${left === 1 ? '' : 's'} left on this departure`,
+        );
+      }
+      const booking = await tx.booking.create({
+        data: { ...data(departure.startDate), departureId },
+        select: { id: true },
+      });
+      return booking.id;
+    });
   }
 
   // The visitor's booking page: /my-booking/<token>

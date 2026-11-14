@@ -20,6 +20,7 @@ import {
   History,
   DatabaseBackup,
   ExternalLink,
+  UsersRound,
   X,
 } from "lucide-react";
 import logo from "@/public/logo2.png";
@@ -49,6 +50,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         // Count = departures, returns and to-dos today (overdue included)
         { name: "Calendar", href: "/admin/calendar", icon: CalendarDays, count: todayCount(bookings, reminders) },
         { name: "Bookings", href: "/admin/bookings", icon: CalendarCheck, count: bookings.filter((b) => b.status === "Pending" || b.needsReply).length },
+        { name: "Departures", href: "/admin/departures", icon: UsersRound },
         { name: "Check-in", href: "/admin/check-in", icon: ScanLine },
         { name: "Customers", href: "/admin/customers", icon: Users },
         { name: "Workers", href: "/admin/workers", icon: UserCog },

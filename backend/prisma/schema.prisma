@@ -42,6 +42,7 @@ model Package {
   perks      String[]
   itinerary  ItineraryDay[] // the number of days = the package duration
   bookings   Booking[]
+  departures Departure[] // group trips on fixed dates that anyone can join
 
   // French and Swahili texts (see src/translations): { fr: { "<key>": { t, src, edited? } }, sw: {...} }
   // Never sent as-is: the website gets the package already in its language (?lang=fr).
@@ -149,6 +150,26 @@ model Role {
   updatedAt   DateTime @updatedAt
 }
 
+// ---------- Group departures ----------
+
+// A package on a fixed date that solo travelers, couples and friends can join, sharing the trip
+// with others (Admin > Departures). Seats taken = travelers of its bookings that are not cancelled.
+model Departure {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  packageId String    @db.Uuid
+  package   Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  startDate DateTime  @db.Date
+  seats     Int // the most travelers on this trip
+  note      String? // shown on the website, e.g. "English & French-speaking guide"
+  open      Boolean   @default(true) // false = hidden from the website, no new travelers
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([packageId, startDate])
+  @@index([startDate])
+}
+
 // ---------- Bookings ----------
 
 model Booking {
@@ -159,6 +180,8 @@ model Booking {
   country      String
   packageId    String?              @db.Uuid // empty when the trip is built from destinations
   package      Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  departureId  String?              @db.Uuid // set when the visitor joined a group departure
+  departure    Departure?           @relation(fields: [departureId], references: [id], onDelete: SetNull)
   destinations BookingDestination[]
   startDate    DateTime
   endDate      DateTime

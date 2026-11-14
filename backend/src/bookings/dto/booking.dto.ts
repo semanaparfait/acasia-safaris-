@@ -81,6 +81,12 @@ export class CreateBookingDto {
   @IsUUID()
   packageId?: string;
 
+  // Joining a group departure: its date is used (startDate is then ignored),
+  // and the booking is refused when there are not enough seats left
+  @IsOptional()
+  @IsUUID()
+  departureId?: string;
+
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)

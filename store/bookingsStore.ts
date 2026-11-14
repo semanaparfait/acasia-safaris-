@@ -12,6 +12,7 @@ export type BookingInput = {
   phone?: string;
   country: string;
   packageId?: string;
+  departureId?: string; // joining a group departure (its date is used)
   destinations?: BookingDestination[];
   startDate: string; // "2026-12-01"
   endDate?: string;

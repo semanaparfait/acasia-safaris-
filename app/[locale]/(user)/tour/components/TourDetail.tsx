@@ -23,6 +23,8 @@ import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
 import QuotationModal from "./QuotationModal";
 import BookPackageModal from "./BookPackageModal";
+import { DepartureList, useOpenDepartures } from "./GroupDepartures";
+import type { Departure } from "@/lib/types";
 
 // The values go to the team in English; the labels are translated (messages: Detail)
 const guestOptions: string[] = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
@@ -60,11 +62,32 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const [sendError, setSendError] = useState("");
   const [quotationOpen, setQuotationOpen] = useState(false);
   const [bookOpen, setBookOpen] = useState(false);
+  // Joining a group departure: the booking uses its date
+  const [joining, setJoining] = useState<Departure | null>(null);
   const closeBooking = useCallback(() => setBookOpen(false), []);
   const openBooking = useCallback(() => {
     setQuotationOpen(false);
+    setJoining(null);
     setBookOpen(true);
   }, []);
+  const joinDeparture = useCallback((d: Departure) => {
+    setQuotationOpen(false);
+    setJoining(d);
+    setBookOpen(true);
+  }, []);
+
+  // /tour/<id>?join=<departure id> (from "Upcoming group departures") opens that booking once
+  const { departures } = useOpenDepartures();
+  const [joinHandled, setJoinHandled] = useState(false);
+  if (!joinHandled && departures.length > 0 && typeof window !== "undefined") {
+    const wanted = new URLSearchParams(window.location.search).get("join");
+    const d = departures.find((x) => x.id === wanted && x.packageId === tour.id && x.seatsLeft > 0);
+    setJoinHandled(true);
+    if (d) {
+      setJoining(d);
+      setBookOpen(true);
+    }
+  }
   const [quotationRequested, setQuotationRequested] = useState(false);
   const closeQuotation = useCallback(() => setQuotationOpen(false), []);
   const markRequested = useCallback(() => setQuotationRequested(true), []);
@@ -247,6 +270,9 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </div>
             </div>
           )}
+
+          {/* Group departures of this package: join one on its fixed date */}
+          <DepartureList tour={tour} onJoin={joinDeparture} />
 
           {/* Book this package: dates, travelers, price (or an offer) */}
           {showInquiry && (
@@ -452,7 +478,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
       </div>
 
       <QuotationModal tour={tour} open={quotationOpen} onClose={closeQuotation} onRequested={markRequested} onBook={openBooking} />
-      <BookPackageModal tour={tour} open={bookOpen} onClose={closeBooking} />
+      <BookPackageModal key={joining?.id ?? "own-date"} tour={tour} open={bookOpen} onClose={closeBooking} departure={joining} />
     </div>
   );
 }

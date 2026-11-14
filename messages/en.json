@@ -104,7 +104,7 @@
     },
     "startDate": "Start date",
     "travelers": "Travelers",
-    "each": "{price} each",
+    "each": "<price></price> each",
     "fewer": "Fewer: {label}",
     "more": "More: {label}",
     "fullName": "Full name",
@@ -138,8 +138,13 @@
       "phone": "Please enter a valid phone or WhatsApp number.",
       "country": "Please tell us which country you are from.",
       "offer": "Please enter the price you would like to pay.",
-      "offerTooHigh": "Your offer must be lower than {price}."
-    }
+      "offerTooHigh": "Your offer must be lower than {price}.",
+      "seats": "{count, plural, one {Only # seat is left on this departure.} other {Only # seats are left on this departure.}}"
+    },
+    "eyebrowGroup": "Join a group departure",
+    "groupDeparture": "Group departure",
+    "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
+    "goingFrom": "travelers from {countries} are going"
   },
   "MyBooking": {
     "notFound": "Booking not found",
@@ -1062,5 +1067,19 @@
     "freeUntil": "Free cancellation until {date} (except permits).",
     "ifNow": "If you cancel now, {percent}% of the total is charged.",
     "fullPolicy": "Full policy"
+  },
+  "Departures": {
+    "eyebrow": "Group departures",
+    "title": "Join a group departure",
+    "text": "Travel solo, as a couple or with friends and share this trip with a small group on a fixed date.",
+    "showcaseTitle": "Upcoming group departures",
+    "showcaseText": "Solo, as a couple or with friends: join a small group on a fixed date, share the adventure and meet travelers from around the world.",
+    "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
+    "fewLeft": "{count, plural, one {Only # seat left!} other {Only # seats left!}}",
+    "full": "Full",
+    "going": "{count, plural, one {# traveler going} other {# travelers going}}",
+    "from": "Travelers from {countries}",
+    "join": "Join this group",
+    "perPerson": "from <price></price> per person"
   }
 }

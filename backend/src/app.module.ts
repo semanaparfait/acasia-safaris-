@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { BackupsModule } from './backups/backups.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { CalendarModule } from './calendar/calendar.module';
+import { DeparturesModule } from './departures/departures.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { LiveModule } from './live/live.module';
@@ -43,6 +44,7 @@ import { WorkersModule } from './workers/workers.module';
     StorageModule,
     TranslationsModule,
     PackagesModule,
+    DeparturesModule,
     DestinationsModule,
     WorkersModule,
     RolesModule,

@@ -12,6 +12,7 @@ import { usePackagesStore } from "@/store/packagesStore";
 import { tourHref } from "@/lib/helpers";
 import GroupVsTailorMade from "@/app/[locale]/(user)/tour/components/GroupVsTailorMade";
 import AllPackages from "@/app/[locale]/(user)/tour/components/AllPackages";
+import { DeparturesShowcase } from "@/app/[locale]/(user)/tour/components/GroupDepartures";
 
 export default function TourPage() {
   return (
@@ -210,8 +211,13 @@ function TourPageContent() {
           onBack={() => navigate(tourHref({ category: activePackage }))}
         />
       ) : activePackage === "Group vs Tailor made" ? (
-        <GroupVsTailorMade />
+        <>
+          <DeparturesShowcase packages={packages} />
+          <GroupVsTailorMade />
+        </>
       ) : (
+        <>
+        {activePackage === "All Packages" && <DeparturesShowcase packages={packages} />}
         <AllPackages
           title={activePackage === "All Packages" ? undefined : t("categoryPackages", { category: categoryName(activePackage) })}
           packages={
@@ -221,6 +227,7 @@ function TourPageContent() {
           }
           onSelectPackage={showPackage}
         />
+        </>
       )}
     </section>
   );

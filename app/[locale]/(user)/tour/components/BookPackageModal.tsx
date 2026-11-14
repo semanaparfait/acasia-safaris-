@@ -1,7 +1,8 @@
 "use client";
 
 // "Book this package" pop-up, in 3 steps:
-//   1. Trip:    start date and travelers per price group (Adult, Teenager, Child, Infant)
+//   1. Trip:    start date and travelers per price group (Adult, Teenager, Child, Infant).
+//               Joining a group departure: the date is fixed and the seats left are the limit.
 //   2. Details: name, email, phone, country
 //   3. Price:   the total, then "Book at this price" or "Ask for a better price"
 // The booking is saved, and the visitor goes to their booking page (/my-booking/<token>),
@@ -23,9 +24,10 @@ import {
   Minus,
   Plus,
   ShieldCheck,
+  Users,
   X,
 } from "lucide-react";
-import type { TourPackage } from "@/lib/types";
+import type { Departure, TourPackage } from "@/lib/types";
 import { DEPOSIT_RATE, packageDays, packageRates } from "@/lib/helpers";
 import { useGroupText } from "@/lib/useGroupText";
 import { CurrencyPicker, Money, useMoneyText } from "@/components/ui/money";
@@ -44,10 +46,12 @@ export default function BookPackageModal({
   tour,
   open,
   onClose,
+  departure,
 }: {
   tour: TourPackage;
   open: boolean;
   onClose: () => void;
+  departure?: Departure | null; // joining a group departure
 }) {
   const t = useTranslations("Book");
   const tc = useTranslations("Common");
@@ -60,8 +64,12 @@ export default function BookPackageModal({
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
   const [step, setStep] = useState(0);
-  const [startDate, setStartDate] = useState("");
-  const [counts, setCounts] = useState<number[]>(() => rates.map((_, i) => (i === 0 ? 2 : 0)));
+  const [chosenDate, setStartDate] = useState("");
+  // A group departure has its own date
+  const startDate = departure ? departure.startDate.slice(0, 10) : chosenDate;
+  const maxTravelers = departure ? departure.seatsLeft : 50;
+  // 2 adults to start (fewer when the group departure has fewer seats left)
+  const [counts, setCounts] = useState<number[]>(() => rates.map((_, i) => (i === 0 ? Math.max(1, Math.min(2, departure?.seatsLeft ?? 2)) : 0)));
   const [details, setDetails] = useState({ name: "", email: "", phone: "", country: "", notes: "" });
   const [bargain, setBargain] = useState(false);
   const [offer, setOffer] = useState("");
@@ -95,6 +103,7 @@ export default function BookPackageModal({
       if (!startDate) return t("errors.date");
       if (startDate < tomorrow) return t("errors.tomorrow");
       if (travelers < 1) return t("errors.travelers");
+      if (departure && travelers > departure.seatsLeft) return t("errors.seats", { count: departure.seatsLeft });
       if (travelers > 50) return t("errors.tooMany");
       return "";
     }
@@ -132,6 +141,7 @@ export default function BookPackageModal({
         notes: details.notes.trim() || undefined,
         packageId: tour.id,
         startDate,
+        departureId: departure?.id,
         travelers,
         children: travelers - counts[0],
         guests: rates.map((r, i) => ({ label: r.label, count: counts[i] })).filter((g) => g.count > 0),
@@ -185,7 +195,7 @@ export default function BookPackageModal({
                 <X size={16} />
               </button>
               <div className="relative">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-1.5">{t("eyebrow")}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c5a86d] mb-1.5">{departure ? t("eyebrowGroup") : t("eyebrow")}</p>
                 <h2 id="book-title" className="font-serif text-xl leading-snug pr-8">{tour.title}</h2>
                 <p className="text-xs text-white/60 mt-1">{daysText} · {tour.location}</p>
 
@@ -214,15 +224,29 @@ export default function BookPackageModal({
               {/* Step 1: date and travelers */}
               {step === 0 && (
                 <div className="space-y-5">
-                  <div>
-                    <label className={labelClass} htmlFor="start">{t("startDate")}</label>
-                    <input id="start" type="date" min={tomorrow} value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
-                    {endDate && (
-                      <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/55 mt-1.5">
-                        <CalendarDays size={13} /> {tripRange(startDate, endDate, locale)} · {daysText}
+                  {departure ? (
+                    <div className="rounded-xl border border-[#c5a86d]/40 bg-[#c5a86d]/[0.07] p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8a6d2f]">{t("groupDeparture")}</p>
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-[#0a120b] mt-1">
+                        <CalendarDays size={14} /> {tripRange(departure.startDate.slice(0, 10), departure.endDate.slice(0, 10), locale)} · {daysText}
                       </p>
-                    )}
-                  </div>
+                      <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/60 mt-1">
+                        <Users size={13} /> {t("seatsLeft", { count: departure.seatsLeft })}
+                        {departure.countries.length > 0 && <> · {t("goingFrom", { countries: departure.countries.join(", ") })}</>}
+                      </p>
+                      {departure.note && <p className="text-xs text-[#0a120b]/60 mt-1">{departure.note}</p>}
+                    </div>
+                  ) : (
+                    <div>
+                      <label className={labelClass} htmlFor="start">{t("startDate")}</label>
+                      <input id="start" type="date" min={tomorrow} value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+                      {endDate && (
+                        <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/55 mt-1.5">
+                          <CalendarDays size={13} /> {tripRange(startDate, endDate, locale)} · {daysText}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <p className={labelClass}>{t("travelers")}</p>
                     <div className="divide-y divide-[#0a120b]/[0.06] rounded-xl border border-[#0a120b]/10">
@@ -237,7 +261,7 @@ export default function BookPackageModal({
                               <Minus size={14} />
                             </Counter>
                             <span className="w-5 text-center text-sm font-semibold tabular-nums">{counts[i]}</span>
-                            <Counter label={t("more", { label: group.label(r.label) })} disabled={travelers >= 50} onClick={() => setCounts(counts.map((c, j) => (j === i ? c + 1 : c)))}>
+                            <Counter label={t("more", { label: group.label(r.label) })} disabled={travelers >= maxTravelers} onClick={() => setCounts(counts.map((c, j) => (j === i ? c + 1 : c)))}>
                               <Plus size={14} />
                             </Counter>
                           </div>

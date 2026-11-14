@@ -104,7 +104,7 @@
     },
     "startDate": "Tarehe ya kuanza",
     "travelers": "Wasafiri",
-    "each": "{price} kila mmoja",
+    "each": "<price></price> kila mmoja",
     "fewer": "Punguza: {label}",
     "more": "Ongeza: {label}",
     "fullName": "Jina kamili",
@@ -138,8 +138,13 @@
       "phone": "Tafadhali andika namba sahihi ya simu au WhatsApp.",
       "country": "Tafadhali tuambie unatoka nchi gani.",
       "offer": "Tafadhali andika bei ungependa kulipa.",
-      "offerTooHigh": "Pendekezo lako liwe chini ya {price}."
-    }
+      "offerTooHigh": "Pendekezo lako liwe chini ya {price}.",
+      "seats": "{count, plural, one {Imebaki nafasi # tu kwenye safari hii.} other {Zimebaki nafasi # tu kwenye safari hii.}}"
+    },
+    "eyebrowGroup": "Jiunge na safari ya kikundi",
+    "groupDeparture": "Safari ya kikundi",
+    "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
+    "goingFrom": "wasafiri kutoka {countries} wanaenda"
   },
   "MyBooking": {
     "notFound": "Safari haikupatikana",
@@ -1062,5 +1067,19 @@
     "freeUntil": "Kughairi bure hadi {date} (isipokuwa vibali).",
     "ifNow": "Ukighairi sasa, {percent}% ya jumla inatozwa.",
     "fullPolicy": "Sera kamili"
+  },
+  "Departures": {
+    "eyebrow": "Safari za vikundi",
+    "title": "Jiunge na safari ya kikundi",
+    "text": "Peke yako, kama wanandoa au na marafiki: shiriki safari hii na kikundi kidogo kwa tarehe maalum.",
+    "showcaseTitle": "Safari za vikundi zijazo",
+    "showcaseText": "Peke yako, kama wanandoa au na marafiki: jiunge na kikundi kidogo kwa tarehe maalum, shiriki matukio na kukutana na wasafiri kutoka kote duniani.",
+    "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
+    "fewLeft": "{count, plural, one {Nafasi # tu imebaki!} other {Nafasi # tu zimebaki!}}",
+    "full": "Imejaa",
+    "going": "{count, plural, one {Msafiri # anaenda} other {Wasafiri # wanaenda}}",
+    "from": "Wasafiri kutoka {countries}",
+    "join": "Jiunge na kikundi hiki",
+    "perPerson": "kuanzia <price></price> kwa kila mtu"
   }
 }
