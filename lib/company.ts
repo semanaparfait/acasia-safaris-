@@ -10,11 +10,11 @@ export const COMPANY = {
 
 // Paste the full profile links, e.g. "https://instagram.com/acaciasafaris". Empty = hidden.
 export const SOCIAL_LINKS = {
-  facebook: "",
-  instagram: "",
-  x: "",
-  youtube: "",
-  tiktok: "",
+  facebook: "https://www.facebook.com/acaciasafaris",
+  instagram: "https://www.instagram.com/acaciasafaris",
+  x: "https://x.com/acaciasafaris",
+  youtube: "https://www.youtube.com/@acaciasafaris",
+  tiktok: "https://www.tiktok.com/@acaciasafaris",
 } as const;
 
 export type SocialName = keyof typeof SOCIAL_LINKS;

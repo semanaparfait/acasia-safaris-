@@ -168,7 +168,7 @@ const Footer = () => {
                   className="flex items-center gap-3 hover:text-white transition-colors"
                 >
                   <Phone size={16} className="text-[#c5a86d] shrink-0" />
-                  +250 798 635 578
+                  +250 798 635 578 | +250 787 113 625
                 </a>
               </li>
               <li>
