@@ -172,6 +172,30 @@ model Departure {
 
 // ---------- Bookings ----------
 
+// Admin > Trips: a special trip the team plans (e.g. a Christmas gorilla trip), with its
+// own page on the website. The "Trips" menu link only shows while one is published.
+model Trip {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  tagline     String? // short line under the title, e.g. "Christmas in the Virunga mountains"
+  location    String
+  description String
+  startDate   DateTime? @db.Date // empty = flexible dates, on request
+  endDate     DateTime? @db.Date
+  duration    String? // e.g. "6 days / 5 nights" (shown when there are no dates)
+  groupSize   String? // e.g. "2 to 12 travelers"
+  images      String[]  @default([]) // the first one is the cover photo
+  highlights  String[]  @default([])
+  itinerary   Json      @default("[]") // [{ title, description }]
+  // Price options: [{ name, price, unit, description, popular, included[], excluded[] }]
+  prices      Json      @default("[]")
+  active      Boolean   @default(true) // false = draft, hidden from the website
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([active, startDate])
+}
+
 model Booking {
   id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customer     String

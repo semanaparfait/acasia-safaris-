@@ -11,16 +11,28 @@ import logo from "@/public/logo2.png";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { COMPANY } from "@/lib/company";
+import { useTripsStore } from "@/store/tripsStore";
 
 // name = the text's key in messages/*.json (Nav)
-const navLinks = [
+const allLinks = [
   { name: "home", href: "/" },
   { name: "destinations", href: "/destination" },
   { name: "gallery", href: "/gallery" },
   { name: "tours", href: "/tour" },
+  { name: "trips", href: "/trips" }, // only while a trip is published (Admin > Trips)
   { name: "about", href: "/aboutus" },
   { name: "contact", href: "/contact" },
 ] as const;
+
+// The menu links: "Trips" only shows while the team has a published trip
+function useNavLinks() {
+  const hasTrips = useTripsStore((s) => s.published.length > 0);
+  const loadPublished = useTripsStore((s) => s.loadPublished);
+  useEffect(() => {
+    loadPublished();
+  }, [loadPublished]);
+  return allLinks.filter((l) => l.name !== "trips" || hasTrips);
+}
 
 const PHONE = "+250 798 635 578";
 const WHATSAPP = COMPANY.whatsapp;
@@ -29,6 +41,7 @@ const EMAIL = "info@acaciasafaris.com";
 export default function Navbar() {
   const t = useTranslations("Nav");
   const pathname = usePathname(); // without the language: "/tour" also on /fr/tour
+  const navLinks = useNavLinks();
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -62,7 +75,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop links */}
-          <ul className="hidden lg:flex items-center gap-10">
+          <ul className="hidden lg:flex items-center gap-6 xl:gap-10">
             {navLinks.map((link) => {
               const active = isActive(link.href);
               return (
@@ -120,6 +133,7 @@ export default function Navbar() {
 // Rendered in <body> so the blurred header cannot cut it off.
 function MobileMenu({ open, onClose, isActive }: { open: boolean; onClose: () => void; isActive: (href: string) => boolean }) {
   const t = useTranslations("Nav");
+  const navLinks = useNavLinks();
   // Esc closes it, and the page behind does not scroll
   useEffect(() => {
     if (!open) return;

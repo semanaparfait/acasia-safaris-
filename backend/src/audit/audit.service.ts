@@ -15,13 +15,21 @@ export type AuditEntry = {
 const SECRET = /password|code|token|secret|hash/i;
 
 // Keeps the log small and free of secrets: no passwords or codes, long text cut
+// (only lists and objects count towards the depth limit: texts and numbers are always kept,
+// e.g. a trip's price options → "included" list → each text)
 export function cleanDetails(value: unknown, depth = 0): unknown {
-  if (value == null || depth > 3) return undefined;
+  if (value == null) return undefined;
   if (typeof value === 'string') {
     return value.length > 200 ? `${value.slice(0, 200)}…` : value;
   }
+  if (typeof value !== 'object') return value;
+  if (depth > 3) return undefined;
   if (Array.isArray(value)) {
-    return value.slice(0, 20).map((v) => cleanDetails(v, depth + 1));
+    // The database refuses empty (undefined) items in a list: leave them out
+    return value
+      .slice(0, 20)
+      .map((v) => cleanDetails(v, depth + 1))
+      .filter((v) => v !== undefined);
   }
   if (typeof value === 'object') {
     const out: Record<string, unknown> = {};

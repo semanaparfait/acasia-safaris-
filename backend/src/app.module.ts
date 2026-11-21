@@ -11,6 +11,7 @@ import { BackupsModule } from './backups/backups.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { DeparturesModule } from './departures/departures.module';
+import { TripsModule } from './trips/trips.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { LiveModule } from './live/live.module';
@@ -45,6 +46,7 @@ import { WorkersModule } from './workers/workers.module';
     TranslationsModule,
     PackagesModule,
     DeparturesModule,
+    TripsModule,
     DestinationsModule,
     WorkersModule,
     RolesModule,

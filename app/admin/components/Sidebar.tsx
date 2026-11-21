@@ -21,6 +21,7 @@ import {
   DatabaseBackup,
   ExternalLink,
   UsersRound,
+  Compass,
   X,
 } from "lucide-react";
 import logo from "@/public/logo2.png";
@@ -62,6 +63,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       label: "Content",
       items: [
         { name: "Tour Packages", href: "/admin/packages", icon: Package },
+        { name: "Trips", href: "/admin/trips", icon: Compass },
         { name: "Destinations", href: "/admin/destinations", icon: MapPinned },
         { name: "Reviews", href: "/admin/reviews", icon: Star, count: reviews.filter((r) => r.status === "Pending").length },
         { name: "Gallery", href: "/admin/gallery", icon: Images },

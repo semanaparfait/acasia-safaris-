@@ -306,3 +306,38 @@ export type AdminReminderInput = {
   notes?: string | null;
   bookingId?: string | null;
 };
+
+// Admin > Trips: a special trip planned by the team, with its own page on the website
+export type TripDay = { title: string; description: string };
+
+// One price option and what it covers, e.g. "Comfort · $2,400 per person"
+export type TripPrice = {
+  name: string;
+  price: number; // USD
+  unit: string; // "per person", "per couple"…
+  description: string;
+  popular: boolean; // highlighted as "Most popular"
+  included: string[];
+  excluded: string[];
+};
+
+export type Trip = {
+  id: string;
+  title: string;
+  tagline: string | null;
+  location: string;
+  description: string;
+  startDate: string | null; // "2026-12-20T00:00:00.000Z", null = flexible dates
+  endDate: string | null;
+  duration: string | null;
+  groupSize: string | null;
+  images: string[]; // the first one is the cover photo
+  highlights: string[];
+  itinerary: TripDay[];
+  prices: TripPrice[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TripInput = Omit<Trip, "id" | "createdAt" | "updatedAt">;
