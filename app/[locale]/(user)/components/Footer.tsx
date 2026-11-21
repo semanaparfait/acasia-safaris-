@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
 import { Link } from "@/i18n/navigation";
 import SocialLinks from "@/components/SocialLinks";
+import PaymentMethods from "@/components/PaymentMethods";
 import { useMessagesStore } from "@/store/messagesStore";
 import { COMPANY } from "@/lib/company";
 
@@ -241,6 +242,16 @@ const Footer = () => {
               {countries.of(country)}
             </Link>
           ))}
+        </div>
+
+        {/* Payment methods */}
+        <div className="py-8 border-b border-white/10">
+          <PaymentMethods
+            title={t("Footer.weAccept")}
+            secureNote={t("Footer.securePayments")}
+            bankTransferLabel={t("Footer.bankTransfer")}
+            cashLabel={t("Footer.cash")}
+          />
         </div>
 
         {/* Bottom bar */}

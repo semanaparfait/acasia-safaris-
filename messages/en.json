@@ -41,7 +41,11 @@
     "rights": "© {year} Acacia Safaris Ltd. All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "weAccept": "We accept",
+    "securePayments": "Secure payments · Deposit confirms your booking",
+    "bankTransfer": "Bank transfer",
+    "cash": "Cash"
   },
   "WhatsApp": {
     "message": "Hello Acacia Safaris! I'd like to plan a trip to Rwanda.",
