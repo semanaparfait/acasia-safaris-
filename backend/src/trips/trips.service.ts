@@ -12,6 +12,7 @@ import { randomBytes, randomInt } from 'crypto';
 import { ticketCodeFrom, ticketQrPng } from '../bookings/bookings.service';
 import { asLang, INTL_LOCALE, type Lang } from '../mail/i18n';
 import { MailService } from '../mail/mail.service';
+import { buildTripTicketPdf } from './trip-ticket-pdf';
 import { toE164 } from '../common/phone';
 import { LiveGateway } from '../live/live.gateway';
 import { PrismaService } from '../prisma/prisma.service';
@@ -569,7 +570,10 @@ export class TripsService {
       try {
         await this.prisma.tripBooking.update({
           where: { id },
-          data: { ticketCode: code },
+          data: {
+            ticketCode: code,
+            ticketToken: randomBytes(18).toString('hex'),
+          },
         });
         return code;
       } catch (error) {
@@ -586,6 +590,56 @@ export class TripsService {
   // Emails the confirmation, QR code ticket and receipt to the traveler.
   // Returns false when the email could not be sent (e.g. SMTP not set up).
   async sendTicket(id: string) {
+    const { email, pdf } = await this.ticketDocuments(id);
+    const ticketCode = email.ticketCode;
+    const sent = await this.mail.sendHtml({
+      to: email.email,
+      subject: tripTicketSubject(email),
+      text: tripTicketText(email),
+      html: tripTicketHtml(email),
+      attachments: [
+        // Inline (cid), because Gmail does not show data: images
+        {
+          filename: `Ticket ${ticketCode}.png`,
+          content: email.qrPng,
+          cid: 'ticket-qr',
+        },
+        // The printable ticket, for travelers without a phone on the day
+        {
+          filename: `Acacia Safaris - Ticket ${ticketCode}.pdf`,
+          content: pdf,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+    if (sent) {
+      await this.prisma.tripBooking.update({
+        where: { id },
+        data: { receiptSentAt: new Date() },
+      });
+      await this.pushBooking(id);
+    }
+    return sent;
+  }
+
+  // The private link to download the PDF ticket (made for older tickets on first use)
+  private async ticketLink(id: string) {
+    let b = await this.prisma.tripBooking.findUniqueOrThrow({
+      where: { id },
+      select: { ticketToken: true, locale: true },
+    });
+    if (!b.ticketToken) {
+      b = await this.prisma.tripBooking.update({
+        where: { id },
+        data: { ticketToken: randomBytes(18).toString('hex') },
+        select: { ticketToken: true, locale: true },
+      });
+    }
+    return `${this.siteUrl}/api/trips/tickets/pdf/${b.ticketToken}`;
+  }
+
+  // Everything the ticket shows, for the email and the PDF, in the traveler's language
+  async ticketDocuments(id: string) {
     const b = await this.prisma.tripBooking.findUnique({
       where: { id },
       include: { trip: true },
@@ -636,29 +690,34 @@ export class TripsService {
       receiptNo: `TR-${b.id.slice(0, 8).toUpperCase()}`,
       paidOn,
       tripUrl: `${this.siteUrl}${lang === 'en' ? '' : `/${lang}`}/trips/${b.tripId}`,
+      pdfUrl: await this.ticketLink(id),
+      qrPng: await ticketQrPng(ticketCode),
     };
-    const sent = await this.mail.sendHtml({
-      to: b.email,
-      subject: tripTicketSubject(email),
-      text: tripTicketText(email),
-      html: tripTicketHtml(email),
-      attachments: [
-        // Inline (cid), because Gmail does not show data: images
-        {
-          filename: `Ticket ${ticketCode}.png`,
-          content: await ticketQrPng(ticketCode),
-          cid: 'ticket-qr',
-        },
-      ],
+    const pdf = await buildTripTicketPdf({
+      ...email,
+      issuedOn: new Date().toLocaleDateString(INTL_LOCALE[lang], {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
     });
-    if (sent) {
-      await this.prisma.tripBooking.update({
-        where: { id },
-        data: { receiptSentAt: new Date() },
-      });
-      await this.pushBooking(id);
-    }
-    return sent;
+    return { email, pdf };
+  }
+
+  // GET /api/trips/tickets/pdf/<token>: the traveler's private download link
+  async ticketPdfByToken(token: string) {
+    const b = await this.prisma.tripBooking.findUnique({
+      where: { ticketToken: token },
+      select: { id: true },
+    });
+    if (!b) throw new NotFoundException('This ticket link is not valid');
+    return this.ticketPdf(b.id);
+  }
+
+  // The PDF and its file name (admin download and the traveler's link)
+  async ticketPdf(id: string) {
+    const { email, pdf } = await this.ticketDocuments(id);
+    return { pdf, fileName: `Acacia Safaris - Ticket ${email.ticketCode}.pdf` };
   }
 
   // Admin > Trips > Bookings: "Resend ticket & receipt"
@@ -892,6 +951,7 @@ export class TripsService {
     });
     for (const b of soon) {
       const lang = asLang(b.locale);
+      const { pdf } = await this.ticketPdf(b.id);
       const mail = tripReminderEmail({
         lang,
         name: b.customer,
@@ -901,6 +961,7 @@ export class TripsService {
         dates: tripDateText(b.trip, lang),
         ticketCode: b.ticketCode!,
         tripUrl: this.tripUrl(b.tripId, lang),
+        pdfUrl: await this.ticketLink(b.id),
       });
       const ok = await this.mail.sendHtml({
         to: b.email,
@@ -910,6 +971,11 @@ export class TripsService {
             filename: `Ticket ${b.ticketCode}.png`,
             content: await ticketQrPng(b.ticketCode!),
             cid: 'ticket-qr',
+          },
+          {
+            filename: `Acacia Safaris - Ticket ${b.ticketCode}.pdf`,
+            content: pdf,
+            contentType: 'application/pdf',
           },
         ],
       });

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { FaWhatsapp } from "react-icons/fa";
-import { ArrowLeft, BellRing, CalendarDays, CheckCircle2, Clock, Download, ExternalLink, Mail, MailCheck, MessageSquareText, Pencil, QrCode, Send, StickyNote, Trash2, Users, Wallet } from "lucide-react";
+import { ArrowLeft, BellRing, CalendarDays, CheckCircle2, Clock, Download, ExternalLink, Mail, MailCheck, MessageSquareText, Pencil, Printer, QrCode, Send, StickyNote, Trash2, Users, Wallet } from "lucide-react";
 import { bookingTotal, formatPrice } from "@/lib/trips";
 import { TRIP_BOOKING_STATUSES, TRIP_PAYMENT_STATUSES, type AdminTrip, type TripBooking, type TripWaitlistEntry } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
@@ -377,9 +377,15 @@ function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; t
               </p>
             </div>
             {b.payment === "Paid" && b.status !== "Cancelled" && (
-              <Button variant="secondary" onClick={resend} disabled={sending}>
-                <Send className="size-4" /> {sending ? "Sending…" : b.receiptSentAt ? "Resend" : "Send"}
-              </Button>
+              <div className="flex flex-col gap-1.5">
+                {/* The printable ticket (opens in a new tab, ready to print) */}
+                <a href={`/api/trips/bookings/${b.id}/ticket.pdf`} target="_blank" rel="noopener noreferrer">
+                  <Button variant="secondary" className="w-full"><Printer className="size-4" /> Print / PDF</Button>
+                </a>
+                <Button variant="secondary" onClick={resend} disabled={sending}>
+                  <Send className="size-4" /> {sending ? "Sending…" : b.receiptSentAt ? "Resend email" : "Send email"}
+                </Button>
+              </div>
             )}
           </div>
         )}

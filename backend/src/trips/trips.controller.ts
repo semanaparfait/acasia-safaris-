@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -40,6 +41,7 @@ import { TripsService } from './trips.service';
 //   DELETE /api/trips/bookings/<bookingId>   admin
 //   POST   /api/trips/bookings/<bookingId>/send-ticket  admin: email the ticket and receipt again
 // Paid bookings get a ticket: GET /api/trips/tickets/<code>, POST /api/trips/tickets/<code>/check-in
+// The PDF ticket: GET /api/trips/tickets/pdf/<token> (traveler), GET /api/trips/bookings/<id>/ticket.pdf (admin)
 // Waitlist, reminders and reviews:
 //   POST   /api/trips/<id>/waitlist              website: wait for a seat (full trips)
 //   GET    /api/trips/all/<id>/waitlist          admin
@@ -114,6 +116,29 @@ export class TripsController {
   @Audit('Emailed a trip ticket and receipt', 'TripBooking')
   sendTicket(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
     return this.trips.resendTicket(bookingId);
+  }
+
+  // The printable PDF ticket. The traveler's private link (from the emails):
+  @Get('tickets/pdf/:token')
+  async ticketPdfByToken(@Param('token') token: string) {
+    return this.pdfFile(await this.trips.ticketPdfByToken(token));
+  }
+
+  // The same PDF for the team (Admin > Trips > Bookings), e.g. to print it at the office
+  @Get('bookings/:bookingId/ticket.pdf')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  async ticketPdf(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
+    return this.pdfFile(await this.trips.ticketPdf(bookingId));
+  }
+
+  // Opens in the browser (ready to print); "Save" keeps the file name
+  private pdfFile({ pdf, fileName }: { pdf: Buffer; fileName: string }) {
+    return new StreamableFile(pdf, {
+      type: 'application/pdf',
+      disposition: `inline; filename="${fileName.replace(/[^\w .-]/g, '')}"`,
+      length: pdf.length,
+    });
   }
 
   // Admin > Check-in: the QR code holds "ACACIA:<code>" (or type the code)

@@ -1,3 +1,5 @@
+import { ticketQrPng } from '../bookings/bookings.service';
+import { buildTripTicketPdf } from './trip-ticket-pdf';
 import { adminTripHtml, tripTicketHtml } from './trip-emails';
 import {
   bookingSubtotal,
@@ -44,6 +46,7 @@ describe('trip receipts', () => {
       receiptNo: 'TR-1',
       paidOn: 'today',
       tripUrl: 'https://x',
+      pdfUrl: 'https://x/ticket.pdf',
     };
     const html = tripTicketHtml(base);
     expect(html).not.toContain('<script>');
@@ -97,5 +100,33 @@ describe('trip discounts', () => {
     const b = { price: 100000, unit: 'per person', travelers: 6 };
     expect(bookingSubtotal(b)).toBe(600000);
     expect(bookingTotal({ ...b, discountPercent: 15 })).toBe(510000);
+  });
+});
+
+describe('PDF ticket', () => {
+  it('makes a one-page PDF with the ticket', async () => {
+    const pdf = await buildTripTicketPdf({
+      lang: 'sw',
+      name: 'Ana',
+      email: 'a@b.c',
+      tripTitle: 'Nyungwe',
+      location: 'Nyungwe',
+      dates: null,
+      option: 'Full',
+      unitPrice: 'RWF 100,000',
+      unit: 'per person',
+      travelers: 2,
+      total: 'RWF 200,000',
+      included: ['Transport'],
+      ticketCode: 'AC7K2M9QXP',
+      receiptNo: 'TR-1',
+      paidOn: 'today',
+      issuedOn: 'today',
+      qrPng: await ticketQrPng('AC7K2M9QXP'),
+    });
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(
+      (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length,
+    ).toBe(1);
   });
 });

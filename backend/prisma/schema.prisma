@@ -229,6 +229,7 @@ model TripBooking {
   // Paid: the booking gets a ticket (QR code + code) and the traveler gets the receipt by email.
   // The team scans the ticket in Admin > Check-in on the day.
   ticketCode    String?   @unique // e.g. "AC7K2M9QXP"
+  ticketToken   String?   @unique // private link to download the PDF ticket: /api/trips/tickets/pdf/<token>
   paidAt        DateTime? // when it was marked as paid (the receipt date)
   receiptSentAt DateTime? // when the receipt and ticket were last emailed
   checkedInAt   DateTime?

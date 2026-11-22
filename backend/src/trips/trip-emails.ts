@@ -68,6 +68,9 @@ const TEXTS = {
       'Water, sunscreen and your camera',
     ],
     viewTrip: 'View the trip page',
+    downloadPdf: 'Download the PDF ticket to print',
+    pdfNote:
+      'No phone on the day? Print the PDF ticket (also attached) and bring it.',
     whatsapp: 'Chat with us on WhatsApp',
     questions:
       'Questions? Reply to this email or message us on WhatsApp: we are happy to help.',
@@ -113,6 +116,9 @@ const TEXTS = {
       'De l’eau, de la crème solaire et votre appareil photo',
     ],
     viewTrip: 'Voir la page du voyage',
+    downloadPdf: 'Télécharger le billet PDF à imprimer',
+    pdfNote:
+      'Pas de téléphone le jour J ? Imprimez le billet PDF (aussi en pièce jointe) et apportez-le.',
     whatsapp: 'Écrivez-nous sur WhatsApp',
     questions:
       'Des questions ? Répondez à cet e-mail ou écrivez-nous sur WhatsApp : nous sommes là pour vous aider.',
@@ -158,6 +164,9 @@ const TEXTS = {
       'Maji, mafuta ya jua na kamera yako',
     ],
     viewTrip: 'Tazama ukurasa wa safari',
+    downloadPdf: 'Pakua tiketi ya PDF uichapishe',
+    pdfNote:
+      'Huna simu siku hiyo? Chapisha tiketi ya PDF (pia imeambatishwa) uilete.',
     whatsapp: 'Ongea nasi kwa WhatsApp',
     questions:
       'Una maswali? Jibu barua pepe hii au tuandikie kwa WhatsApp: tuko tayari kukusaidia.',
@@ -190,6 +199,7 @@ export type TripTicketEmail = {
   receiptNo: string;
   paidOn: string;
   tripUrl: string;
+  pdfUrl: string; // the printable PDF ticket (private link)
 };
 
 export function tripTicketSubject(e: TripTicketEmail) {
@@ -295,9 +305,13 @@ export function tripTicketHtml(e: TripTicketEmail) {
         <p style="margin:16px 0 0;font-family:'Courier New',Courier,monospace;font-size:25px;letter-spacing:6px;font-weight:bold;color:${GOLD}">${h(e.ticketCode)}</p>
       </td></tr>
       <tr><td style="padding:14px 24px 0"><div style="border-top:2px dashed #ffffff2e"></div></td></tr>
-      <tr><td align="center" style="padding:14px 28px 24px">
+      <tr><td align="center" style="padding:14px 28px 10px">
         <p style="margin:0;font-size:14px;line-height:1.6;color:#ffffff"><strong>${h(T.showQr)}</strong></p>
         <p style="margin:4px 0 0;font-size:13px;line-height:1.6;color:#ffffffa6">${h(T.showQrNote)}</p>
+      </td></tr>
+      <tr><td align="center" style="padding:6px 28px 26px">
+        <a href="${h(e.pdfUrl)}" style="display:inline-block;background:${GOLD};color:#0e1d16;text-decoration:none;font-weight:bold;font-size:14px;padding:12px 24px;border-radius:9px">&#128424;&nbsp; ${h(T.downloadPdf)}</a>
+        <p style="margin:10px 0 0;font-size:12px;line-height:1.5;color:#ffffff8c">${h(T.pdfNote)}</p>
       </td></tr>
     </table>
   </td></tr>
@@ -519,6 +533,7 @@ const MORE = {
     reviewIntro: (trip: string) =>
       `Thank you for travelling with us on <strong>${trip}</strong>. Would you share a few words about your experience? It takes one minute and helps other travelers choose.`,
     reviewButton: 'Leave a review',
+    downloadPdf: 'Download the PDF ticket to print',
     waitSubject: (trip: string) => `Good news: seats are free on ${trip}`,
     waitBadge: 'Seats available',
     waitEyebrow: 'You were on the waitlist',
@@ -543,6 +558,7 @@ const MORE = {
     reviewIntro: (trip: string) =>
       `Merci d'avoir voyagé avec nous pour <strong>${trip}</strong>. Pourriez-vous partager quelques mots sur votre expérience ? Cela prend une minute et aide d'autres voyageurs à choisir.`,
     reviewButton: 'Laisser un avis',
+    downloadPdf: 'Télécharger le billet PDF à imprimer',
     waitSubject: (trip: string) =>
       `Bonne nouvelle : des places se libèrent pour ${trip}`,
     waitBadge: 'Places disponibles',
@@ -569,6 +585,7 @@ const MORE = {
     reviewIntro: (trip: string) =>
       `Asante kwa kusafiri nasi kwenye <strong>${trip}</strong>. Je, unaweza kutuandikia maneno machache kuhusu uzoefu wako? Inachukua dakika moja na inasaidia wasafiri wengine kuchagua.`,
     reviewButton: 'Andika maoni',
+    downloadPdf: 'Pakua tiketi ya PDF uichapishe',
     waitSubject: (trip: string) =>
       `Habari njema: nafasi zimepatikana kwenye ${trip}`,
     waitBadge: 'Nafasi zipo',
@@ -673,7 +690,7 @@ const lineOf = (e: TripNoticeEmail) =>
 
 // 7 days before the trip, with the QR code ticket
 export function tripReminderEmail(
-  e: TripNoticeEmail & { ticketCode: string; tripUrl: string },
+  e: TripNoticeEmail & { ticketCode: string; tripUrl: string; pdfUrl: string },
 ) {
   const M = MORE[e.lang];
   const date = e.dates ?? '';
@@ -691,7 +708,7 @@ export function tripReminderEmail(
       greeting: M.hello(e.name),
       intro: M.reminderIntro(h(e.tripTitle), h(date)),
       ticketCode: e.ticketCode,
-      button: null,
+      button: { label: `\u{1F5A8} ${M.downloadPdf}`, href: e.pdfUrl },
     }),
   };
 }
