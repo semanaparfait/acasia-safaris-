@@ -872,20 +872,20 @@ export class TripsService {
 
   // Also started by hand: POST /api/trips/reminders/run (admin)
   async runReminders() {
-    const now = new Date();
     const todayDate = today();
     const inAWeek = new Date(todayDate.getTime() + 7 * 86_400_000);
     const result = { reminders: 0, reviewRequests: 0 };
 
-    // 1. Paid, not cancelled, trip within 7 days, paid more than a day ago
-    //    (someone who just got the ticket does not need it again)
+    // 1. Paid, not cancelled, trip within 7 days, paid on an earlier day
+    //    (someone paid today just got the ticket with the receipt: the reminder
+    //    goes the next morning instead)
     const soon = await this.prisma.tripBooking.findMany({
       where: {
         payment: 'Paid',
         status: { not: 'Cancelled' },
         ticketCode: { not: null },
         reminderSentAt: null,
-        paidAt: { lte: new Date(now.getTime() - 86_400_000) },
+        paidAt: { lt: todayDate },
         trip: { startDate: { gt: todayDate, lte: inAWeek } },
       },
       include: { trip: true },
