@@ -1154,8 +1154,11 @@
       "sending": "Envoi…",
       "sentTitle": "Demande reçue !",
       "sentText": "Merci, {name}. Nous vous répondons sous 24 heures pour confirmer votre place.",
-      "error": "Envoi impossible : {error}"
+      "error": "Envoi impossible : {error}",
+      "total": "Total"
     },
-    "dayLabel": "Jour"
+    "dayLabel": "Jour",
+    "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
+    "full": "Complet"
   }
 }

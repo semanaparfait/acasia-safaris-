@@ -41,6 +41,7 @@ export const blankTrip: TripInput = {
   itinerary: [{ title: "", description: "" }],
   prices: [{ ...blankPrice(), name: "Standard" }],
   currency: "USD",
+  seats: null,
   active: false,
 };
 
@@ -59,6 +60,7 @@ export const toInput = (t: Trip): TripInput => ({
   itinerary: t.itinerary.length ? t.itinerary : [{ title: "", description: "" }],
   prices: t.prices,
   currency: t.currency ?? "USD",
+  seats: t.seats ?? null,
   active: t.active,
 });
 
@@ -217,6 +219,19 @@ export default function TripForm({
               <div>
                 <label className={labelClass}>Group size</label>
                 <input className={inputClass} value={form.groupSize ?? ""} onChange={(e) => set("groupSize", e.target.value || null)} placeholder="e.g. 2 to 12 travelers" />
+              </div>
+              <div>
+                <label className={labelClass}>Seats (optional)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={1000}
+                  className={inputClass}
+                  value={form.seats ?? ""}
+                  onChange={(e) => set("seats", e.target.value ? Math.max(1, Math.round(Number(e.target.value))) : null)}
+                  placeholder="No limit"
+                />
+                <span className="block text-[11px] text-[#0a120b]/45 mt-1">The website shows the seats left and stops bookings when it is full.</span>
               </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Description *</label>

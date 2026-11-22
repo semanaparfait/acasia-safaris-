@@ -97,6 +97,11 @@ function TripCard({ trip, reverse, locale }: { trip: Trip; reverse: boolean; loc
           {dates && trip.duration && <Chip icon={<CalendarDays size={14} />}>{trip.duration}</Chip>}
           {trip.groupSize && <Chip icon={<Users size={14} />}>{trip.groupSize}</Chip>}
           <Chip icon={<Tag size={14} />}>{t("options", { count: trip.prices.length })}</Chip>
+          {trip.seatsLeft != null && (
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold ${trip.seatsLeft === 0 ? "bg-red-50 text-red-700 ring-1 ring-red-200" : "bg-[#c5a86d]/15 text-[#8a6d2f] ring-1 ring-[#c5a86d]/40"}`}>
+              <Users size={14} /> {trip.seatsLeft === 0 ? t("full") : t("seatsLeft", { count: trip.seatsLeft })}
+            </span>
+          )}
         </div>
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-4 border-t border-neutral-100 pt-6">

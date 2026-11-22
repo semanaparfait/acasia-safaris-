@@ -13,7 +13,13 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard } from '../common/admin.guard';
-import { TripActiveDto, TripDto } from './trips.dto';
+import { FormLimit } from '../common/limits';
+import {
+  CreateTripBookingDto,
+  TripActiveDto,
+  TripDto,
+  UpdateTripBookingDto,
+} from './trips.dto';
 import { TripsService } from './trips.service';
 
 // Special trips planned by the team, each with price options and what they cover.
@@ -24,7 +30,12 @@ import { TripsService } from './trips.service';
 //   POST   /api/trips              admin
 //   PUT    /api/trips/<id>         admin: the whole trip
 //   PATCH  /api/trips/<id>/active  admin: publish / hide
-//   DELETE /api/trips/<id>         admin
+//   DELETE /api/trips/<id>         admin (refused once people booked it)
+// Bookings:
+//   POST   /api/trips/<id>/bookings          website: reserve a seat
+//   GET    /api/trips/all/<id>/bookings      admin: who booked
+//   PATCH  /api/trips/bookings/<bookingId>   admin: status, payment, travelers, notes
+//   DELETE /api/trips/bookings/<bookingId>   admin
 @ApiTags('Trips')
 @Controller('trips')
 export class TripsController {
@@ -47,6 +58,41 @@ export class TripsController {
   @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.trips.findOne(id);
+  }
+
+  @Get('all/:id/bookings')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  bookings(@Param('id', ParseUUIDPipe) id: string) {
+    return this.trips.bookings(id);
+  }
+
+  @Post(':id/bookings')
+  @FormLimit()
+  book(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateTripBookingDto,
+  ) {
+    return this.trips.book(id, dto);
+  }
+
+  @Patch('bookings/:bookingId')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Changed a trip booking', 'TripBooking')
+  updateBooking(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Body() dto: UpdateTripBookingDto,
+  ) {
+    return this.trips.updateBooking(bookingId, dto);
+  }
+
+  @Delete('bookings/:bookingId')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Deleted a trip booking', 'TripBooking')
+  removeBooking(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
+    return this.trips.removeBooking(bookingId);
   }
 
   @Get(':id')

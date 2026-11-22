@@ -1154,8 +1154,11 @@
       "sending": "Sending…",
       "sentTitle": "Request received!",
       "sentText": "Thank you, {name}. We will reply within 24 hours to confirm your place.",
-      "error": "Could not send: {error}"
+      "error": "Could not send: {error}",
+      "total": "Total"
     },
-    "dayLabel": "Day"
+    "dayLabel": "Day",
+    "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
+    "full": "Fully booked"
   }
 }

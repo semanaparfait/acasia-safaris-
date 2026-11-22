@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { CalendarDays, ExternalLink, ImageIcon, MapPin, Pencil, Plus, Tag, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronRight, ExternalLink, ImageIcon, MapPin, Pencil, Plus, Tag, Trash2, Users } from "lucide-react";
 import { formatPrice } from "@/lib/trips";
 import type { Trip } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
@@ -121,7 +121,34 @@ export default function TripsPage() {
                     {from > 0 && <span className="text-[#0a120b]"> · from <b>{formatPrice(from, t.currency)}</b></span>}
                   </p>
                   <p className="flex items-center gap-2 text-[#0a120b]/65"><ImageIcon className="size-4 text-[#c5a86d]" /> {t.images.length} photos · {t.itinerary.length} days planned</p>
+                  {t.seats != null && (
+                    <div className="pt-1">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="text-[#0a120b]/55">Seats</span>
+                        <span className={`font-medium tabular-nums ${t.seatsLeft === 0 ? "text-red-700" : "text-[#0a120b]"}`}>
+                          {t.travelers} / {t.seats} {t.seatsLeft === 0 ? "· full" : `· ${t.seatsLeft} left`}
+                        </span>
+                      </div>
+                      <div className="h-1.5 mt-1 rounded-full bg-[#0a120b]/[0.06] overflow-hidden">
+                        <div className={`h-full rounded-full ${t.seatsLeft === 0 ? "bg-red-600" : "bg-[#2E7D5B]"}`} style={{ width: `${Math.min(100, Math.round((t.travelers / t.seats) * 100))}%` }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <Link
+                  href={`/admin/trips/${t.id}/bookings`}
+                  className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl bg-[#f7f5f0] px-3.5 py-2.5 text-sm hover:bg-[#efeadf] transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Users className="size-4 text-[#2E7D5B]" />
+                    <b>{t.bookingCount}</b> {t.bookingCount === 1 ? "booking" : "bookings"}
+                    <span className="text-[#0a120b]/50">· {t.travelers} {t.travelers === 1 ? "traveler" : "travelers"}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    {t.newBookings > 0 && <span className="rounded-full bg-[#c5a86d] px-2 py-0.5 text-[11px] font-bold text-[#0a120b]">{t.newBookings} new</span>}
+                    <ChevronRight className="size-4 text-[#0a120b]/40" />
+                  </span>
+                </Link>
                 <div className="px-4 py-3 border-t border-[#0a120b]/[0.06] flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Toggle
@@ -140,7 +167,12 @@ export default function TripsPage() {
                     <Link href={`/admin/trips/${t.id}`} title="Edit" className="p-1.5 rounded-lg text-[#0a120b]/50 hover:bg-[#0a120b]/5">
                       <Pencil className="size-4" />
                     </Link>
-                    <button onClick={() => setDeleteId(t.id)} title="Delete" className="p-1.5 rounded-lg text-[#0a120b]/50 hover:text-red-600 hover:bg-red-50 cursor-pointer">
+                    <button
+                      onClick={() => setDeleteId(t.id)}
+                      disabled={t.bookingCount > 0}
+                      title={t.bookingCount > 0 ? "People booked this trip: hide it instead" : "Delete"}
+                      className="p-1.5 rounded-lg text-[#0a120b]/50 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    >
                       <Trash2 className="size-4" />
                     </button>
                   </div>

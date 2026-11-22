@@ -4,10 +4,14 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEmail,
+  IsIn,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -137,6 +141,13 @@ export class TripDto {
   })
   currency?: string;
 
+  // The most travelers; null = no limit
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  seats?: number | null;
+
   @IsOptional()
   @IsBoolean()
   active?: boolean;
@@ -145,4 +156,65 @@ export class TripDto {
 export class TripActiveDto {
   @IsBoolean()
   active: boolean;
+}
+
+export const TRIP_BOOKING_STATUSES = ['New', 'Confirmed', 'Cancelled'];
+export const TRIP_PAYMENT_STATUSES = ['Unpaid', 'Deposit', 'Paid', 'Refunded'];
+
+// A visitor reserves a trip from its page
+export class CreateTripBookingDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  customer: string;
+
+  @IsEmail()
+  @MaxLength(200)
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  phone?: string;
+
+  // The price option's name, e.g. "Full package"
+  @IsString()
+  @MaxLength(80)
+  option: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  travelers: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+
+  @IsOptional()
+  @IsIn(['en', 'fr', 'sw'])
+  locale?: string;
+}
+
+// Admin > Trips > Bookings
+export class UpdateTripBookingDto {
+  @IsOptional()
+  @IsIn(TRIP_BOOKING_STATUSES)
+  status?: string;
+
+  @IsOptional()
+  @IsIn(TRIP_PAYMENT_STATUSES)
+  payment?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  notes?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  travelers?: number;
 }

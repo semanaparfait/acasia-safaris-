@@ -336,9 +336,53 @@ export type Trip = {
   itinerary: TripDay[];
   prices: TripPrice[];
   currency: string; // of every price: "RWF", "USD", "EUR"…
+  seats: number | null; // the most travelers; null = no limit
+  seatsLeft?: number | null; // worked out by the server (null = no limit)
   active: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-export type TripInput = Omit<Trip, "id" | "createdAt" | "updatedAt">;
+// Admin > Trips: each trip with its booking numbers (cancelled bookings do not count)
+export type AdminTrip = Trip & {
+  bookingCount: number;
+  newBookings: number; // not handled yet
+  travelers: number;
+  seatsLeft: number | null;
+};
+
+export type TripInput = Omit<Trip, "id" | "createdAt" | "updatedAt" | "seatsLeft">;
+
+export const TRIP_BOOKING_STATUSES = ["New", "Confirmed", "Cancelled"] as const;
+export const TRIP_PAYMENT_STATUSES = ["Unpaid", "Deposit", "Paid", "Refunded"] as const;
+
+// Someone who reserved a trip from its page (Admin > Trips > Bookings)
+export type TripBooking = {
+  id: string;
+  tripId: string;
+  customer: string;
+  email: string;
+  phone: string | null;
+  option: string; // the price option's name
+  price: number; // per traveler, copied when booking
+  unit: string;
+  currency: string;
+  travelers: number;
+  message: string | null;
+  status: (typeof TRIP_BOOKING_STATUSES)[number];
+  payment: (typeof TRIP_PAYMENT_STATUSES)[number];
+  notes: string | null;
+  locale: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TripBookingInput = {
+  customer: string;
+  email: string;
+  phone?: string;
+  option: string;
+  travelers: number;
+  message?: string;
+  locale?: string;
+};

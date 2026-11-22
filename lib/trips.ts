@@ -38,3 +38,11 @@ export function formatPrice(amount: number, currency: string, locale = "en-US") 
     return `${amount.toLocaleString(locale)} ${currency}`; // unknown code: shown as typed
   }
 }
+
+// What a booking costs: "per person" × travelers, "per couple" × couples, "per group" once
+export function bookingTotal(b: { price: number; unit: string; travelers: number }) {
+  const unit = b.unit.toLowerCase();
+  if (unit.includes("group")) return b.price;
+  if (unit.includes("couple")) return b.price * Math.ceil(b.travelers / 2);
+  return b.price * b.travelers;
+}

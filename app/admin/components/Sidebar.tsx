@@ -30,6 +30,7 @@ import { useMessagesStore } from "@/store/messagesStore";
 import { useReviewsStore } from "@/store/reviewsStore";
 import { useAuthStore } from "@/store/authStore";
 import { useCalendarStore } from "@/store/calendarStore";
+import { useTripsStore } from "@/store/tripsStore";
 import { todayCount } from "@/lib/calendar";
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -39,6 +40,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   const reviews = useReviewsStore((s) => s.reviews);
   const me = useAuthStore((s) => s.worker);
   const reminders = useCalendarStore((s) => s.reminders);
+  // Trip bookings nobody has handled yet
+  const newTripBookings = useTripsStore((s) => s.trips.reduce((n, t) => n + (t.newBookings ?? 0), 0));
 
   const groups = [
     {
@@ -63,7 +66,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       label: "Content",
       items: [
         { name: "Tour Packages", href: "/admin/packages", icon: Package },
-        { name: "Trips", href: "/admin/trips", icon: Compass },
+        { name: "Trips", href: "/admin/trips", icon: Compass, count: newTripBookings },
         { name: "Destinations", href: "/admin/destinations", icon: MapPinned },
         { name: "Reviews", href: "/admin/reviews", icon: Star, count: reviews.filter((r) => r.status === "Pending").length },
         { name: "Gallery", href: "/admin/gallery", icon: Images },

@@ -1154,8 +1154,11 @@
       "sending": "Inatuma…",
       "sentTitle": "Ombi limepokelewa!",
       "sentText": "Asante, {name}. Tutakujibu ndani ya saa 24 kuthibitisha nafasi yako.",
-      "error": "Imeshindwa kutuma: {error}"
+      "error": "Imeshindwa kutuma: {error}",
+      "total": "Jumla"
     },
-    "dayLabel": "Siku"
+    "dayLabel": "Siku",
+    "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
+    "full": "Imejaa"
   }
 }

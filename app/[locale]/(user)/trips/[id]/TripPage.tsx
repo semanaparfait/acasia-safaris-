@@ -16,10 +16,10 @@ import { Link } from "@/i18n/navigation";
 import SmartImage from "@/components/ui/smart-image";
 import { TripMoney } from "@/components/ui/money";
 import { PhoneField } from "@/components/ui/phone-field";
-import { formatPrice, fromPrice, tripDates, tripDays } from "@/lib/trips";
+import { bookingTotal, fromPrice, tripDates, tripDays } from "@/lib/trips";
 import { whatsappLink, useWhatsAppTopic } from "@/lib/whatsapp";
 import type { Trip, TripPrice } from "@/lib/types";
-import { useMessagesStore } from "@/store/messagesStore";
+import { useTripsStore } from "@/store/tripsStore";
 
 const GOLD = "text-[#b28236]";
 
@@ -41,6 +41,10 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
   }, [setWhatsAppTopic, trip.title, days, url]);
 
   const defaultOption = (trip.prices.find((p) => p.popular) ?? trip.prices[0])?.name ?? "";
+  const full = trip.seatsLeft === 0;
+  const reserve = (option: string) => {
+    if (!full) setReserving(option);
+  };
   const sections = [
     { id: "overview", label: t("nav.overview"), show: true },
     { id: "photos", label: t("nav.gallery"), show: trip.images.length > 1 },
@@ -78,13 +82,18 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
             {(trip.duration || days > 0) && <HeroChip icon={<Clock size={15} />}>{trip.duration ?? tc("days", { count: days })}</HeroChip>}
             {!dates && <HeroChip icon={<CalendarDays size={15} />}>{t("datesOnRequest")}</HeroChip>}
             {trip.groupSize && <HeroChip icon={<Users size={15} />}>{trip.groupSize}</HeroChip>}
+            {trip.seatsLeft != null && (
+              <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold ${full ? "bg-red-600/90" : "bg-[#c5a86d] text-[#0e1d16]"}`}>
+                {full ? t("full") : t("seatsLeft", { count: trip.seatsLeft })}
+              </span>
+            )}
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8 flex flex-wrap gap-3">
             <a href="#prices" className="inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-7 py-3.5 text-sm font-bold text-[#0e1d16] shadow-lg shadow-black/30 transition-all hover:-translate-y-0.5 hover:bg-[#d4b97f]">
               {t("seePrices")} <ArrowRight size={16} />
             </a>
-            <button onClick={() => setReserving(defaultOption)} className="inline-flex items-center gap-2 rounded-lg border border-white/40 bg-white/10 px-7 py-3.5 text-sm font-semibold backdrop-blur-md transition-colors hover:bg-white/20 cursor-pointer">
-              {t("reserve")}
+            <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 rounded-lg border border-white/40 bg-white/10 px-7 py-3.5 text-sm font-semibold backdrop-blur-md transition-colors hover:bg-white/20 cursor-pointer">
+              {full ? t("full") : t("reserve")}
             </button>
           </motion.div>
         </div>
@@ -108,8 +117,8 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{t("from")}</span>
                 <TripMoney amount={from} currency={trip.currency} className="font-serif text-xl font-bold text-[#0a1811]" />
               </p>
-              <button onClick={() => setReserving(defaultOption)} className="rounded-lg bg-[#0a1811] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#b28236] transition-colors cursor-pointer">
-                {t("reserve")}
+              <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed rounded-lg bg-[#0a1811] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#b28236] transition-colors cursor-pointer">
+                {full ? t("full") : t("reserve")}
               </button>
             </div>
           )}
@@ -240,7 +249,7 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
               }`}
             >
               {trip.prices.map((p, i) => (
-                <PriceCard key={i} option={p} currency={trip.currency} index={i} onReserve={() => setReserving(p.name)} />
+                <PriceCard key={i} option={p} currency={trip.currency} index={i} full={full} onReserve={() => reserve(p.name)} />
               ))}
             </div>
 
@@ -256,8 +265,8 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
           <h2 className="font-serif text-3xl font-bold sm:text-5xl">{t("ctaTitle")}</h2>
           <p className="mx-auto mt-4 max-w-xl text-zinc-300">{t("ctaText")}</p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
-            <button onClick={() => setReserving(defaultOption)} className="inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-8 py-4 text-sm font-bold text-[#0e1d16] shadow-lg hover:bg-[#d4b97f] transition-colors cursor-pointer">
-              {t("reserve")} <ArrowRight size={16} />
+            <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-8 py-4 text-sm font-bold text-[#0e1d16] shadow-lg hover:bg-[#d4b97f] transition-colors cursor-pointer">
+              {full ? t("full") : t("reserve")} <ArrowRight size={16} />
             </button>
             <a
               href={whatsappLink(t("whatsappMessage", { title: trip.title, url }))}
@@ -311,7 +320,7 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
   );
 }
 
-function PriceCard({ option: p, currency, index, onReserve }: { option: TripPrice; currency: string; index: number; onReserve: () => void }) {
+function PriceCard({ option: p, currency, index, full, onReserve }: { option: TripPrice; currency: string; index: number; full: boolean; onReserve: () => void }) {
   const t = useTranslations("Trips");
   const dark = p.popular;
   return (
@@ -372,11 +381,12 @@ function PriceCard({ option: p, currency, index, onReserve }: { option: TripPric
 
       <button
         onClick={onReserve}
-        className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold transition-all cursor-pointer ${
+        disabled={full}
+        className={`disabled:opacity-60 disabled:cursor-not-allowed mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold transition-all cursor-pointer ${
           dark ? "bg-[#c5a86d] text-[#0e1d16] hover:bg-[#d4b97f]" : "bg-[#0a1811] text-white hover:bg-[#b28236]"
         }`}
       >
-        {t("choose", { name: p.name })} <ArrowRight size={16} />
+        {full ? t("full") : t("choose", { name: p.name })} {!full && <ArrowRight size={16} />}
       </button>
     </motion.article>
   );
@@ -486,12 +496,13 @@ function PhotoViewer({ images, index, onChange, onClose }: { images: string[]; i
   );
 }
 
-// "Reserve": saved as a booking request under Admin > Messages
+// "Reserve": saved as a booking of the trip (Admin > Trips > Bookings)
 function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; onClose: () => void }) {
   const t = useTranslations("Trips.form");
   const locale = useLocale();
-  const sendMessage = useMessagesStore((s) => s.sendMessage);
-  const [form, setForm] = useState({ option, name: "", email: "", phone: "", travelers: 2, message: "" });
+  const book = useTripsStore((s) => s.book);
+  const maxTravelers = Math.min(50, trip.seatsLeft ?? 50);
+  const [form, setForm] = useState({ option, name: "", email: "", phone: "", travelers: Math.min(2, maxTravelers), message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -515,20 +526,14 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
     setSending(true);
     setError("");
     try {
-      await sendMessage({
-        name: form.name.trim(),
+      await book(trip.id, {
+        customer: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone || undefined,
-        subject: `Trip reservation: ${trip.title}`,
-        body: [
-          `Trip: ${trip.title}`,
-          `Dates: ${tripDates(trip, "en-GB") ?? trip.duration ?? "On request"}`,
-          `Price option: ${form.option}${chosen ? ` (${formatPrice(chosen.price, trip.currency)} ${chosen.unit})` : ""}`,
-          `Travelers: ${form.travelers}`,
-          `Website language: ${locale}`,
-          form.message.trim() ? `\nMessage:\n${form.message.trim()}` : "",
-        ].filter(Boolean).join("\n"),
-        source: "Booking request",
+        option: form.option,
+        travelers: form.travelers,
+        message: form.message.trim() || undefined,
+        locale,
       });
       setSent(true);
     } catch (err) {
@@ -606,7 +611,7 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
               </label>
               <label className="block">
                 <span className={label}>{t("travelers")}</span>
-                <input required type="number" min={1} max={50} value={form.travelers} onChange={(e) => setForm({ ...form, travelers: Math.max(1, Number(e.target.value) || 1) })} className={input} />
+                <input required type="number" min={1} max={maxTravelers} value={form.travelers} onChange={(e) => setForm({ ...form, travelers: Math.min(maxTravelers, Math.max(1, Number(e.target.value) || 1)) })} className={input} />
               </label>
               <div className="sm:col-span-2">
                 <label htmlFor="trip-phone" className={label}>{t("phone")}</label>
@@ -617,6 +622,12 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
                 <textarea rows={3} maxLength={2000} placeholder={t("messagePlaceholder")} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={input} />
               </label>
             </div>
+            {chosen && (
+              <div className="flex items-center justify-between rounded-xl bg-[#f7f5f0] px-4 py-3 text-sm">
+                <span className="text-neutral-600">{t("total")}</span>
+                <TripMoney amount={bookingTotal({ price: chosen.price, unit: chosen.unit, travelers: form.travelers })} currency={currency} className="text-base font-bold text-[#0a1811]" />
+              </div>
+            )}
             {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{t("error", { error })}</p>}
             <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a1811] py-4 text-sm font-bold text-white transition-colors hover:bg-[#b28236] disabled:opacity-60 cursor-pointer">
               {sending ? t("sending") : t("send")} {!sending && <ArrowRight size={16} />}

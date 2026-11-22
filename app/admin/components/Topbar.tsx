@@ -42,7 +42,7 @@ function pageTitle(pathname: string) {
   const section = Object.keys(titles).filter((p) => p !== "/admin" && pathname.startsWith(p + "/"))[0];
   if (!section) return "Admin";
   const rest = pathname.slice(section.length + 1);
-  const sub = rest === "new" ? "New" : rest.endsWith("/edit") ? "Edit" : "Details";
+  const sub = rest === "new" ? "New" : rest.endsWith("/edit") ? "Edit" : rest.endsWith("/bookings") ? "Bookings" : "Details";
   return `${titles[section]} / ${sub}`;
 }
 

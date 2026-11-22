@@ -190,11 +190,38 @@ model Trip {
   // Price options: [{ name, price, unit, description, popular, included[], excluded[] }]
   prices      Json      @default("[]")
   currency    String    @default("USD") // of every price option, e.g. "RWF", "USD", "EUR"
+  seats       Int? // the most travelers; empty = no limit. The website shows the seats left
+  bookings    TripBooking[]
   active      Boolean   @default(true) // false = draft, hidden from the website
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([active, startDate])
+}
+
+// A reservation for a trip, made on the trip's page (Admin > Trips > Bookings).
+// The price is copied at the time of booking, so later price changes do not alter it.
+model TripBooking {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId    String   @db.Uuid
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  customer  String
+  email     String
+  phone     String?
+  option    String // the price option's name, e.g. "Full package"
+  price     Float // per traveler (or per the option's unit), in the currency below
+  unit      String   @default("per person")
+  currency  String
+  travelers Int
+  message   String? // from the traveler
+  status    String   @default("New") // "New", "Confirmed", "Cancelled"
+  payment   String   @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
+  notes     String? // the team's private notes
+  locale    String   @default("en")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tripId, status])
 }
 
 model Booking {

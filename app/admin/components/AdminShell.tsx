@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { adminLiveAuth, liveSocket } from "@/lib/live";
-import type { Booking } from "@/lib/types";
+import type { Booking, TripBooking } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -12,6 +12,7 @@ import { useReviewsStore } from "@/store/reviewsStore";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useCalendarStore } from "@/store/calendarStore";
+import { useTripsStore } from "@/store/tripsStore";
 
 const noSubscribe = () => () => {};
 
@@ -40,6 +41,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const loadMessages = useMessagesStore((s) => s.load);
   const loadReviews = useReviewsStore((s) => s.loadAll);
   const loadReminders = useCalendarStore((s) => s.load);
+  const loadTrips = useTripsStore((s) => s.loadAll);
   useEffect(() => {
     if (!mounted || !loggedIn || isLoginPage) return;
     const refresh = () => {
@@ -47,12 +49,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       loadMessages();
       loadReviews();
       loadReminders();
+      loadTrips();
     };
     refresh();
     // Coming back to the tab shows anything that arrived from the website meanwhile
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
-  }, [mounted, loggedIn, isLoginPage, loadBookings, loadMessages, loadReviews, loadReminders]);
+  }, [mounted, loggedIn, isLoginPage, loadBookings, loadMessages, loadReviews, loadReminders, loadTrips]);
 
   // Live: bookings, customer messages and offers appear instantly (lib/live.ts)
   useEffect(() => {
@@ -70,6 +73,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       upsertBooking(booking);
     });
     socket.on("booking:deleted", ({ id }: { id: string }) => useBookingsStore.getState().removeBooking(id));
+    // Trip bookings (Admin > Trips > Bookings)
+    socket.on("tripBooking", (booking: TripBooking & { tripTitle?: string }) => {
+      const { bookings, upsertBooking } = useTripsStore.getState();
+      const known = Object.values(bookings).some((list) => list.some((b) => b.id === booking.id));
+      if (!known && booking.status === "New") {
+        toast.success(`${booking.customer} booked ${booking.tripTitle ?? "a trip"} (${booking.travelers} ${booking.travelers === 1 ? "traveler" : "travelers"})`);
+      }
+      const { tripTitle, ...plain } = booking;
+      void tripTitle;
+      upsertBooking(plain);
+    });
+    socket.on("tripBooking:deleted", ({ id, tripId }: { id: string; tripId: string }) => useTripsStore.getState().removeBooking(id, tripId));
     // Back online after a break: load everything once, in case something was missed
     socket.io.on("reconnect", () => loadBookings());
     return () => {
