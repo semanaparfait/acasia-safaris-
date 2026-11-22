@@ -3,6 +3,7 @@
 // Prices on the website. The real price is always in USD (what is charged);
 // in another currency an estimate is added: "$1,450 ≈ €1,330".
 import { useEffect, useSyncExternalStore } from "react";
+import { formatPrice } from "@/lib/trips";
 import { CURRENCIES, CURRENCY_NAMES, guessCurrency, useCurrencyStore, type Currency } from "@/store/currencyStore";
 
 let ratesRequested = false;
@@ -47,6 +48,34 @@ export function Money({ usd: amount, className = "", approxClassName = "" }: { u
       {currency !== "USD" && rate && (
         <span className={`ml-1.5 text-[0.75em] font-normal opacity-60 whitespace-nowrap ${approxClassName}`} title={`Estimate in ${CURRENCY_NAMES[currency]}, at today's rate. You pay in US dollars.`}>
           ≈ {inCurrency(amount, currency, rate)}
+        </span>
+      )}
+    </span>
+  );
+}
+
+// A price in its own currency (Admin > Trips: "RWF 100,000"), plus an estimate in the
+// visitor's currency when it is another one and both rates are known: "RWF 100,000 ≈ $69"
+export function TripMoney({
+  amount,
+  currency,
+  className = "",
+  approxClassName = "",
+}: {
+  amount: number;
+  currency: string;
+  className?: string;
+  approxClassName?: string;
+}) {
+  const { currency: visitor, rate: visitorRate } = useCurrency();
+  const ownRate = useCurrencyStore((s) => s.rates[currency as Currency]);
+  const estimate = visitor !== currency && ownRate && visitorRate ? inCurrency(amount / ownRate, visitor, visitorRate) : null;
+  return (
+    <span className={className}>
+      {formatPrice(amount, currency)}
+      {estimate && (
+        <span className={`ml-1.5 text-[0.75em] font-normal opacity-60 whitespace-nowrap ${approxClassName}`} title={`Estimate in ${CURRENCY_NAMES[visitor]}, at today's rate.`}>
+          ≈ {estimate}
         </span>
       )}
     </span>

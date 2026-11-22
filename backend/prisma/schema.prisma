@@ -189,6 +189,7 @@ model Trip {
   itinerary   Json      @default("[]") // [{ title, description }]
   // Price options: [{ name, price, unit, description, popular, included[], excluded[] }]
   prices      Json      @default("[]")
+  currency    String    @default("USD") // of every price option, e.g. "RWF", "USD", "EUR"
   active      Boolean   @default(true) // false = draft, hidden from the website
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

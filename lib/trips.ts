@@ -21,3 +21,20 @@ export function tripDays(t: Trip) {
 }
 
 export const tripPath = (locale: string, id?: string) => `${locale === "en" ? "" : `/${locale}`}/trips${id ? `/${id}` : ""}`;
+
+// Currencies offered first in Admin > Trips (any other ISO code can be typed)
+export const TRIP_CURRENCIES = ["RWF", "USD", "EUR", "GBP", "UGX", "KES", "TZS", "CAD"] as const;
+
+// "RWF 100,000", "$1,450", "€99.50": in the trip's own currency
+export function formatPrice(amount: number, currency: string, locale = "en-US") {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+      maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${amount.toLocaleString(locale)} ${currency}`; // unknown code: shown as typed
+  }
+}

@@ -6,7 +6,7 @@ import { ArrowRight, CalendarDays, MapPin, Tag, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import SmartImage from "@/components/ui/smart-image";
-import { Money } from "@/components/ui/money";
+import { TripMoney } from "@/components/ui/money";
 import { fromPrice, tripDates } from "@/lib/trips";
 import type { Trip } from "@/lib/types";
 
@@ -103,7 +103,7 @@ function TripCard({ trip, reverse, locale }: { trip: Trip; reverse: boolean; loc
           {from > 0 && (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{t("from")}</p>
-              <Money usd={from} className="font-serif text-3xl font-bold text-[#0a1811]" />
+              <TripMoney amount={from} currency={trip.currency} className="font-serif text-3xl font-bold text-[#0a1811]" />
               <span className="ml-1 text-xs text-neutral-500">{trip.prices.find((p) => p.price === from)?.unit}</span>
             </div>
           )}

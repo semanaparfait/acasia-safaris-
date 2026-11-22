@@ -4,9 +4,10 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsInt,
+  IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -30,8 +31,8 @@ export class TripPriceDto {
   @MaxLength(80)
   name: string;
 
-  // USD
-  @IsInt()
+  // In the trip's currency (up to 2 decimals, e.g. 99.5 EUR)
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   price: number;
 
@@ -128,6 +129,13 @@ export class TripDto {
   @ValidateNested({ each: true })
   @Type(() => TripPriceDto)
   prices: TripPriceDto[];
+
+  // ISO code of the prices' currency: "RWF", "USD", "EUR", "UGX"…
+  @IsOptional()
+  @Matches(/^[A-Z]{3}$/, {
+    message: 'currency must be a 3-letter code such as RWF or USD',
+  })
+  currency?: string;
 
   @IsOptional()
   @IsBoolean()

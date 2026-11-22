@@ -12,7 +12,7 @@ import {
   ArrowDown, ArrowLeft, ArrowUp, CalendarDays, CheckCircle2, Compass, Copy, Eye, ImagePlus, Loader2, Plus, Sparkles, Star, Tag, Trash2, X, XCircle,
 } from "lucide-react";
 import { uploadImage } from "@/lib/api";
-import { money } from "@/lib/helpers";
+import { TRIP_CURRENCIES, formatPrice } from "@/lib/trips";
 import type { Trip, TripInput, TripPrice } from "@/lib/types";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import { ListInput } from "../packages/parts";
@@ -40,6 +40,7 @@ export const blankTrip: TripInput = {
   highlights: [],
   itinerary: [{ title: "", description: "" }],
   prices: [{ ...blankPrice(), name: "Standard" }],
+  currency: "USD",
   active: false,
 };
 
@@ -57,6 +58,7 @@ export const toInput = (t: Trip): TripInput => ({
   highlights: t.highlights,
   itinerary: t.itinerary.length ? t.itinerary : [{ title: "", description: "" }],
   prices: t.prices,
+  currency: t.currency ?? "USD",
   active: t.active,
 });
 
@@ -330,6 +332,7 @@ export default function TripForm({
               </Button>
             }
           >
+            <CurrencyPicker value={form.currency} onChange={(currency) => set("currency", currency)} />
             <div className="space-y-4">
               {form.prices.map((p, i) => (
                 <div key={i} className={`rounded-xl border p-4 ${p.popular ? "border-[#c5a86d] bg-[#c5a86d]/5" : "border-[#0a120b]/10 bg-[#fbfaf7]"}`}>
@@ -348,8 +351,17 @@ export default function TripForm({
                       <input className={inputClass} value={p.name} maxLength={80} onChange={(e) => setPrice(i, { name: e.target.value })} placeholder="e.g. Comfort" />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className={labelClass}>Price (USD) *</label>
-                      <input type="number" min={0} className={inputClass} value={p.price || ""} onChange={(e) => setPrice(i, { price: Math.max(0, Math.round(Number(e.target.value))) })} placeholder="e.g. 2450" />
+                      <label className={labelClass}>Price ({form.currency}) *</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        className={inputClass}
+                        value={p.price || ""}
+                        onChange={(e) => setPrice(i, { price: Math.max(0, Math.round(Number(e.target.value) * 100) / 100) })}
+                        placeholder={form.currency === "RWF" || form.currency === "UGX" || form.currency === "TZS" ? "e.g. 100000" : "e.g. 2450"}
+                      />
+                      {p.price > 0 && <span className="block text-[11px] text-[#0a120b]/50 mt-1">Shown as {formatPrice(p.price, form.currency)}</span>}
                     </div>
                     <div className="sm:col-span-2">
                       <label className={labelClass}>Per</label>
@@ -417,7 +429,7 @@ export default function TripForm({
                     {p.popular && <Star className="size-3.5 text-[#c5a86d] fill-[#c5a86d]" />}
                     {p.name || `Option ${i + 1}`}
                   </span>
-                  <span className="font-semibold tabular-nums">{p.price ? money(p.price) : "—"}</span>
+                  <span className="font-semibold tabular-nums">{p.price ? formatPrice(p.price, form.currency) : "—"}</span>
                 </div>
               ))}
             </div>
@@ -432,5 +444,67 @@ export default function TripForm({
         </div>
       </div>
     </form>
+  );
+}
+
+// The currency of every price option: the usual ones as buttons, any other ISO code typed
+function CurrencyPicker({ value, onChange }: { value: string; onChange: (currency: string) => void }) {
+  const known = (TRIP_CURRENCIES as readonly string[]).includes(value);
+  const [other, setOther] = useState(!known);
+  const [typed, setTyped] = useState(known ? "" : value);
+  const valid = (code: string) => {
+    try {
+      new Intl.NumberFormat("en", { style: "currency", currency: code });
+      return /^[A-Z]{3}$/.test(code);
+    } catch {
+      return false;
+    }
+  };
+  return (
+    <div className="mb-5 rounded-xl border border-[#0a120b]/10 bg-[#fbfaf7] p-4">
+      <p className={labelClass}>Currency of the prices</p>
+      <div className="flex flex-wrap gap-2">
+        {TRIP_CURRENCIES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => {
+              setOther(false);
+              onChange(c);
+            }}
+            className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors cursor-pointer ${
+              !other && value === c ? "bg-[#12231a] text-white" : "bg-white ring-1 ring-[#0a120b]/10 text-[#0a120b]/70 hover:ring-[#c5a86d]"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setOther(true)}
+          className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors cursor-pointer ${
+            other ? "bg-[#12231a] text-white" : "bg-white ring-1 ring-[#0a120b]/10 text-[#0a120b]/70 hover:ring-[#c5a86d]"
+          }`}
+        >
+          Other…
+        </button>
+        {other && (
+          <input
+            value={typed}
+            maxLength={3}
+            placeholder="e.g. ZAR"
+            onChange={(e) => {
+              const code = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+              setTyped(code);
+              if (valid(code)) onChange(code);
+            }}
+            className={`${inputClass} !w-28 uppercase ${typed.length === 3 && !valid(typed) ? "border-red-400" : ""}`}
+          />
+        )}
+      </div>
+      <p className="text-xs text-[#0a120b]/50 mt-2">
+        Every price below is in <b>{value}</b>, e.g. {formatPrice(100000, value)}. Visitors who chose another currency on the website also see an estimate.
+      </p>
+    </div>
   );
 }

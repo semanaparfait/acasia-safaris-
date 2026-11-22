@@ -14,9 +14,9 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import SmartImage from "@/components/ui/smart-image";
-import { Money } from "@/components/ui/money";
+import { TripMoney } from "@/components/ui/money";
 import { PhoneField } from "@/components/ui/phone-field";
-import { fromPrice, tripDates, tripDays } from "@/lib/trips";
+import { formatPrice, fromPrice, tripDates, tripDays } from "@/lib/trips";
 import { whatsappLink, useWhatsAppTopic } from "@/lib/whatsapp";
 import type { Trip, TripPrice } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -106,7 +106,7 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
             <div className="hidden shrink-0 items-center gap-4 md:flex">
               <p className="text-right leading-tight">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{t("from")}</span>
-                <Money usd={from} className="font-serif text-xl font-bold text-[#0a1811]" />
+                <TripMoney amount={from} currency={trip.currency} className="font-serif text-xl font-bold text-[#0a1811]" />
               </p>
               <button onClick={() => setReserving(defaultOption)} className="rounded-lg bg-[#0a1811] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#b28236] transition-colors cursor-pointer">
                 {t("reserve")}
@@ -159,7 +159,7 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
           {from > 0 && (
             <div className="mt-7 border-t border-white/10 pt-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">{t("facts.from")}</p>
-              <Money usd={from} className="font-serif text-4xl font-bold text-[#d4af37]" approxClassName="text-white" />
+              <TripMoney amount={from} currency={trip.currency} className="font-serif text-4xl font-bold text-[#d4af37]" approxClassName="text-white" />
               <p className="text-xs text-white/50 mt-1">{trip.prices.find((p) => p.price === from)?.unit}</p>
             </div>
           )}
@@ -240,11 +240,11 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
               }`}
             >
               {trip.prices.map((p, i) => (
-                <PriceCard key={i} option={p} index={i} onReserve={() => setReserving(p.name)} />
+                <PriceCard key={i} option={p} currency={trip.currency} index={i} onReserve={() => setReserving(p.name)} />
               ))}
             </div>
 
-            {trip.prices.length > 1 && <Comparison prices={trip.prices} />}
+            {trip.prices.length > 1 && <Comparison prices={trip.prices} currency={trip.currency} />}
           </div>
         </section>
       )}
@@ -311,7 +311,7 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
   );
 }
 
-function PriceCard({ option: p, index, onReserve }: { option: TripPrice; index: number; onReserve: () => void }) {
+function PriceCard({ option: p, currency, index, onReserve }: { option: TripPrice; currency: string; index: number; onReserve: () => void }) {
   const t = useTranslations("Trips");
   const dark = p.popular;
   return (
@@ -335,7 +335,7 @@ function PriceCard({ option: p, index, onReserve }: { option: TripPrice; index: 
       {p.description && <p className={`mt-2 text-sm leading-relaxed ${dark ? "text-white/65" : "text-neutral-500"}`}>{p.description}</p>}
 
       <div className={`mt-6 border-y py-6 ${dark ? "border-white/10" : "border-neutral-100"}`}>
-        <Money usd={p.price} className={`font-serif text-5xl font-bold tracking-tight ${dark ? "text-[#d4af37]" : "text-[#0a1811]"}`} approxClassName={dark ? "text-white" : ""} />
+        <TripMoney amount={p.price} currency={currency} className={`font-serif text-5xl font-bold tracking-tight ${dark ? "text-[#d4af37]" : "text-[#0a1811]"}`} approxClassName={dark ? "text-white" : ""} />
         <p className={`mt-1 text-sm ${dark ? "text-white/55" : "text-neutral-500"}`}>{p.unit}</p>
       </div>
 
@@ -383,7 +383,7 @@ function PriceCard({ option: p, index, onReserve }: { option: TripPrice; index: 
 }
 
 // A table of every item, with which option includes it
-function Comparison({ prices }: { prices: TripPrice[] }) {
+function Comparison({ prices, currency }: { prices: TripPrice[]; currency: string }) {
   const t = useTranslations("Trips");
   const items = useMemo(() => {
     const seen = new Map<string, string>();
@@ -409,7 +409,7 @@ function Comparison({ prices }: { prices: TripPrice[] }) {
               {prices.map((p, i) => (
                 <th key={i} className={`px-4 py-4 text-center font-serif text-base font-bold ${p.popular ? "text-[#b28236]" : "text-[#0a1811]"}`}>
                   {p.name}
-                  <Money usd={p.price} className="block font-sans text-xs font-semibold text-neutral-500" />
+                  <TripMoney amount={p.price} currency={currency} className="block font-sans text-xs font-semibold text-neutral-500" />
                 </th>
               ))}
             </tr>
@@ -508,6 +508,7 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
   }, [onClose]);
 
   const chosen = trip.prices.find((p) => p.name === form.option);
+  const currency = trip.currency;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -522,7 +523,7 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
         body: [
           `Trip: ${trip.title}`,
           `Dates: ${tripDates(trip, "en-GB") ?? trip.duration ?? "On request"}`,
-          `Price option: ${form.option}${chosen ? ` (${chosen.price} USD ${chosen.unit})` : ""}`,
+          `Price option: ${form.option}${chosen ? ` (${formatPrice(chosen.price, trip.currency)} ${chosen.unit})` : ""}`,
           `Travelers: ${form.travelers}`,
           `Website language: ${locale}`,
           form.message.trim() ? `\nMessage:\n${form.message.trim()}` : "",
@@ -588,7 +589,7 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
                         <input type="radio" name="option" value={p.name} checked={form.option === p.name} onChange={() => setForm({ ...form, option: p.name })} className="accent-[#b28236]" />
                         <span className="font-semibold text-[#0a1811]">{p.name}</span>
                       </span>
-                      <Money usd={p.price} className="font-semibold text-[#0a1811]" />
+                      <TripMoney amount={p.price} currency={currency} className="font-semibold text-[#0a1811]" />
                     </label>
                   ))}
                 </div>

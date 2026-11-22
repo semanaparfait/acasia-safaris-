@@ -313,7 +313,7 @@ export type TripDay = { title: string; description: string };
 // One price option and what it covers, e.g. "Comfort · $2,400 per person"
 export type TripPrice = {
   name: string;
-  price: number; // USD
+  price: number; // in the trip's currency
   unit: string; // "per person", "per couple"…
   description: string;
   popular: boolean; // highlighted as "Most popular"
@@ -335,6 +335,7 @@ export type Trip = {
   highlights: string[];
   itinerary: TripDay[];
   prices: TripPrice[];
+  currency: string; // of every price: "RWF", "USD", "EUR"…
   active: boolean;
   createdAt: string;
   updatedAt: string;

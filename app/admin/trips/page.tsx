@@ -7,7 +7,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { CalendarDays, ExternalLink, ImageIcon, MapPin, Pencil, Plus, Tag, Trash2 } from "lucide-react";
-import { money } from "@/lib/helpers";
+import { formatPrice } from "@/lib/trips";
 import type { Trip } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
 import { Badge, Button, Card, ConfirmDialog, EmptyState, PageHeader, Tabs, Toggle } from "../components/ui";
@@ -118,7 +118,7 @@ export default function TripsPage() {
                   <p className="flex items-center gap-2 text-[#0a120b]/65">
                     <Tag className="size-4 text-[#c5a86d]" />
                     {t.prices.length} price {t.prices.length === 1 ? "option" : "options"}
-                    {from > 0 && <span className="text-[#0a120b]"> · from <b>{money(from)}</b></span>}
+                    {from > 0 && <span className="text-[#0a120b]"> · from <b>{formatPrice(from, t.currency)}</b></span>}
                   </p>
                   <p className="flex items-center gap-2 text-[#0a120b]/65"><ImageIcon className="size-4 text-[#c5a86d]" /> {t.images.length} photos · {t.itinerary.length} days planned</p>
                 </div>

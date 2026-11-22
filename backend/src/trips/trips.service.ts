@@ -11,6 +11,9 @@ const today = () => new Date(new Date().toISOString().slice(0, 10));
 const day = (d?: string | null) => (d ? new Date(d.slice(0, 10)) : null);
 const clean = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
 
+// Every real currency code ("RWF", "USD", "UGX"…), as known by Node
+const CURRENCIES = new Set(Intl.supportedValuesOf('currency'));
+
 // On the website: published, and not over yet. Trips without dates stay until hidden.
 const onWebsite = (): Prisma.TripWhereInput => ({
   active: true,
@@ -104,6 +107,10 @@ export class TripsService {
         included: clean(p.included),
         excluded: clean(p.excluded),
       }));
+    const currency = dto.currency ?? 'USD';
+    if (!CURRENCIES.has(currency)) {
+      throw new BadRequestException(`Unknown currency: ${currency}`);
+    }
     const active = dto.active ?? true;
     if (active && prices.length === 0) {
       throw new BadRequestException(
@@ -128,6 +135,7 @@ export class TripsService {
           description: d.description?.trim() || '',
         })),
       prices,
+      currency,
       active,
     };
   }
