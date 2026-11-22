@@ -4,7 +4,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { AdminTrip, Trip, TripBooking, TripBookingInput, TripInput } from "@/lib/types";
+import type { AdminTrip, Trip, TripBooking, TripBookingInput, TripInput, TripTicket } from "@/lib/types";
 
 type BookingChanges = Partial<Pick<TripBooking, "status" | "payment" | "notes" | "travelers">>;
 
@@ -29,6 +29,10 @@ type TripsState = {
   loadBookings: (tripId: string) => Promise<void>;
   updateBooking: (booking: TripBooking, changes: BookingChanges) => Promise<void>;
   deleteBooking: (booking: TripBooking) => Promise<void>;
+  sendTicket: (booking: TripBooking) => Promise<void>; // email the ticket + receipt again
+  // Admin > Check-in
+  findTicket: (code: string) => Promise<TripTicket>;
+  checkInTicket: (code: string) => Promise<{ booking: TripTicket; alreadyCheckedIn: boolean }>;
   // Live updates (AdminShell)
   upsertBooking: (booking: TripBooking) => void;
   removeBooking: (id: string, tripId: string) => void;
@@ -103,6 +107,13 @@ export const useTripsStore = create<TripsState>()(
         await api(`/trips/bookings/${booking.id}`, { method: "DELETE", admin: true });
         get().removeBooking(booking.id, booking.tripId);
       },
+      sendTicket: async (booking) => {
+        const saved = await api<TripBooking>(`/trips/bookings/${booking.id}/send-ticket`, { method: "POST", admin: true });
+        get().upsertBooking(saved);
+      },
+      findTicket: (code) => api<TripTicket>(`/trips/tickets/${encodeURIComponent(code)}`, { admin: true }),
+      checkInTicket: (code) =>
+        api<{ booking: TripTicket; alreadyCheckedIn: boolean }>(`/trips/tickets/${encodeURIComponent(code)}/check-in`, { method: "POST", admin: true }),
       // The trip's numbers (seats, new bookings) come from the server: reload them
       upsertBooking: (booking) => {
         set(

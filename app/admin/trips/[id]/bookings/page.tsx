@@ -7,7 +7,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { FaWhatsapp } from "react-icons/fa";
-import { ArrowLeft, CalendarDays, Download, ExternalLink, Mail, MessageSquareText, Pencil, StickyNote, Trash2, Users, Wallet } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Mail, MailCheck, MessageSquareText, Pencil, QrCode, Send, StickyNote, Trash2, Users, Wallet } from "lucide-react";
 import { bookingTotal, formatPrice } from "@/lib/trips";
 import { TRIP_BOOKING_STATUSES, TRIP_PAYMENT_STATUSES, type AdminTrip, type TripBooking } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
@@ -69,8 +69,8 @@ export default function TripBookingsPage({ params }: { params: Promise<{ id: str
 
   const exportCsv = () => {
     const rows = [
-      ["Booked on", "Name", "Email", "Phone", "Option", "Travelers", `Total (${currency})`, "Status", "Payment", "Message", "Notes"],
-      ...list.map((b) => [when(b.createdAt), b.customer, b.email, b.phone ?? "", b.option, String(b.travelers), String(bookingTotal(b)), b.status, b.payment, b.message ?? "", b.notes ?? ""]),
+      ["Booked on", "Name", "Email", "Phone", "Option", "Travelers", `Total (${currency})`, "Status", "Payment", "Ticket", "Checked in", "Message", "Notes"],
+      ...list.map((b) => [when(b.createdAt), b.customer, b.email, b.phone ?? "", b.option, String(b.travelers), String(bookingTotal(b)), b.status, b.payment, b.ticketCode ?? "", b.checkedInAt ? when(b.checkedInAt) : "", b.message ?? "", b.notes ?? ""]),
     ];
     const csv = rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
@@ -206,12 +206,26 @@ export default function TripBookingsPage({ params }: { params: Promise<{ id: str
                     <td className="px-4 py-3">
                       <select
                         value={b.payment}
-                        onChange={(e) => change(b, { payment: e.target.value as TripBooking["payment"] }, `Payment: ${e.target.value}`)}
+                        onChange={(e) =>
+                          change(
+                            b,
+                            { payment: e.target.value as TripBooking["payment"] },
+                            e.target.value === "Paid" && b.payment !== "Paid"
+                              ? `Paid: ticket and receipt are being emailed to ${b.email}`
+                              : `Payment: ${e.target.value}`,
+                          )
+                        }
                         className="rounded-lg border border-[#0a120b]/10 bg-white px-2.5 py-1.5 text-xs font-medium cursor-pointer"
                         aria-label="Payment"
                       >
                         {TRIP_PAYMENT_STATUSES.map((s) => <option key={s}>{s}</option>)}
                       </select>
+                      {b.ticketCode && (
+                        <p className={`mt-1 flex items-center gap-1 text-[11px] ${b.receiptSentAt ? "text-[#2E7D5B]" : "text-amber-700"}`}>
+                          {b.checkedInAt ? <CheckCircle2 className="size-3" /> : b.receiptSentAt ? <MailCheck className="size-3" /> : <QrCode className="size-3" />}
+                          {b.checkedInAt ? "Checked in" : b.receiptSentAt ? "Ticket emailed" : "Ticket not emailed yet"}
+                        </p>
+                      )}
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex justify-end gap-0.5">
@@ -280,6 +294,19 @@ function Stat({ icon: Icon, label, value, hint, bar }: { icon: React.ElementType
 // Everything about one booking, the traveler's message and the team's notes
 function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; trip?: AdminTrip; onClose: () => void }) {
   const updateBooking = useTripsStore((s) => s.updateBooking);
+  const sendTicket = useTripsStore((s) => s.sendTicket);
+  const [sending, setSending] = useState(false);
+  const resend = async () => {
+    setSending(true);
+    try {
+      await sendTicket(b);
+      toast.success(`Ticket and receipt emailed to ${b.email}`);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSending(false);
+    }
+  };
   const [notes, setNotes] = useState(b.notes ?? "");
   const [travelers, setTravelers] = useState(String(b.travelers));
   const [saving, setSaving] = useState(false);
@@ -304,6 +331,7 @@ function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; t
     ["Option", `${b.option} · ${formatPrice(b.price, b.currency)} ${b.unit}`],
     ["Total", formatPrice(bookingTotal(b), b.currency)],
     ["Booked on", when(b.createdAt)],
+    ...(b.paidAt ? ([["Paid on", when(b.paidAt)]] as [string, React.ReactNode][]) : []),
     ["Website language", { en: "English", fr: "French", sw: "Swahili" }[b.locale] ?? b.locale],
   ];
 
@@ -333,6 +361,27 @@ function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; t
             </div>
           ))}
         </dl>
+        {b.ticketCode && (
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#12231a] px-4 py-3.5 text-white">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#c5a86d]">Ticket</p>
+              <p className="font-mono text-lg tracking-[0.25em]">{b.ticketCode}</p>
+              <p className="text-[11px] text-white/60">
+                {b.checkedInAt ? `Checked in ${when(b.checkedInAt)}` : b.receiptSentAt ? `Ticket & receipt emailed ${when(b.receiptSentAt)}` : "Not emailed yet"}
+              </p>
+            </div>
+            {b.payment === "Paid" && b.status !== "Cancelled" && (
+              <Button variant="secondary" onClick={resend} disabled={sending}>
+                <Send className="size-4" /> {sending ? "Sending…" : b.receiptSentAt ? "Resend" : "Send"}
+              </Button>
+            )}
+          </div>
+        )}
+        {b.payment !== "Paid" && b.status !== "Cancelled" && (
+          <p className="rounded-xl bg-[#f7f5f0] px-3.5 py-2.5 text-xs text-[#0a120b]/60">
+            When the money is received, set the payment to <b>Paid</b>: the traveler gets the confirmation, the QR code ticket and the receipt by email, and the admins are told.
+          </p>
+        )}
         {b.message && (
           <div className="rounded-xl bg-[#c5a86d]/10 p-3.5 text-sm">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a6d2f] mb-1">Message from the traveler</p>

@@ -218,6 +218,13 @@ model TripBooking {
   payment   String   @default("Unpaid") // "Unpaid", "Deposit", "Paid", "Refunded"
   notes     String? // the team's private notes
   locale    String   @default("en")
+
+  // Paid: the booking gets a ticket (QR code + code) and the traveler gets the receipt by email.
+  // The team scans the ticket in Admin > Check-in on the day.
+  ticketCode    String?   @unique // e.g. "AC7K2M9QXP"
+  paidAt        DateTime? // when it was marked as paid (the receipt date)
+  receiptSentAt DateTime? // when the receipt and ticket were last emailed
+  checkedInAt   DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

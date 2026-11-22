@@ -24,19 +24,25 @@ import {
 import type { Html5Qrcode } from "html5-qrcode";
 import { Avatar, Button, Card, PageHeader, StatusBadge, inputClass } from "../components/ui";
 import { bookingTitle, money } from "@/lib/helpers";
-import type { Booking } from "@/lib/types";
+import type { Booking, TripTicket } from "@/lib/types";
+import { bookingTotal, formatPrice } from "@/lib/trips";
 import { useBookingsStore } from "@/store/bookingsStore";
+import { useTripsStore } from "@/store/tripsStore";
 
 const READER_ID = "ticket-reader";
 
 type Result =
   | { kind: "found"; booking: Booking }
   | { kind: "checked-in"; booking: Booking; already: boolean }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string }
+  // A ticket of a special trip (Admin > Trips)
+  | { kind: "trip"; ticket: TripTicket; checkedIn?: { already: boolean } };
 
 export default function CheckInPage() {
   const findTicket = useBookingsStore((s) => s.findTicket);
   const checkIn = useBookingsStore((s) => s.checkIn);
+  const findTripTicket = useTripsStore((s) => s.findTicket);
+  const checkInTrip = useTripsStore((s) => s.checkInTicket);
 
   const scanner = useRef<Html5Qrcode | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -63,12 +69,18 @@ export default function CheckInPage() {
         const booking = await findTicket(text.trim());
         setResult({ kind: "found", booking });
       } catch (err) {
-        setResult({ kind: "error", message: (err as Error).message });
+        // Not a package booking: maybe the ticket of a special trip
+        try {
+          const ticket = await findTripTicket(text.trim());
+          setResult({ kind: "trip", ticket });
+        } catch {
+          setResult({ kind: "error", message: (err as Error).message });
+        }
       } finally {
         setBusy(false);
       }
     },
-    [findTicket],
+    [findTicket, findTripTicket],
   );
 
   const startCamera = async () => {
@@ -117,6 +129,20 @@ export default function CheckInPage() {
       const { booking: updated, alreadyCheckedIn } = await checkIn(booking.ticketCode);
       setResult({ kind: "checked-in", booking: updated, already: alreadyCheckedIn });
       if (!alreadyCheckedIn) toast.success(`${updated.customer} checked in`);
+    } catch (err) {
+      setResult({ kind: "error", message: (err as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmTripCheckIn = async (ticket: TripTicket) => {
+    if (!ticket.ticketCode) return;
+    setBusy(true);
+    try {
+      const { booking, alreadyCheckedIn } = await checkInTrip(ticket.ticketCode);
+      setResult({ kind: "trip", ticket: booking, checkedIn: { already: alreadyCheckedIn } });
+      if (!alreadyCheckedIn) toast.success(`${booking.customer} checked in`);
     } catch (err) {
       setResult({ kind: "error", message: (err as Error).message });
     } finally {
@@ -209,6 +235,8 @@ export default function CheckInPage() {
               <p className="text-sm text-[#0a120b]/60 mt-1">{result.message}</p>
               <Button className="mt-5" variant="secondary" onClick={next}><RotateCcw className="size-4" /> Scan again</Button>
             </Card>
+          ) : result?.kind === "trip" ? (
+            <TripTicketResult result={result} busy={busy} onCheckIn={confirmTripCheckIn} onNext={next} />
           ) : result ? (
             <TicketResult result={result} busy={busy} onCheckIn={confirmCheckIn} onNext={next} />
           ) : (
@@ -335,6 +363,120 @@ function TicketResult({
         </div>
         <Link href="/admin/bookings" className="block text-center text-xs text-[#0a120b]/50 hover:text-[#2E7D5B]">
           Open in Bookings
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
+// A special trip's ticket (Admin > Trips): who, which package, how many, paid or not
+function TripTicketResult({
+  result,
+  busy,
+  onCheckIn,
+  onNext,
+}: {
+  result: Extract<Result, { kind: "trip" }>;
+  busy: boolean;
+  onCheckIn: (t: TripTicket) => void;
+  onNext: () => void;
+}) {
+  const b = result.ticket;
+  const valid = b.status !== "Cancelled";
+  const start = b.trip.startDate ? new Date(b.trip.startDate) : null;
+  const end = b.trip.endDate ? new Date(b.trip.endDate) : start;
+  const today = new Date();
+  const onDates = !start || isSameDay(start, today) || (start <= today && end !== null && today <= end);
+
+  return (
+    <Card className="overflow-hidden">
+      {result.checkedIn ? (
+        result.checkedIn.already ? (
+          <div className="bg-amber-50 border-b border-amber-200 px-5 py-4 flex items-center gap-3 text-amber-800">
+            <Clock className="size-6 shrink-0" />
+            <div>
+              <p className="font-semibold">Already checked in</p>
+              <p className="text-sm">This ticket was scanned on {format(new Date(b.checkedInAt!), "d MMM 'at' HH:mm")}.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-emerald-600 px-5 py-4 flex items-center gap-3 text-white">
+            <CheckCircle2 className="size-7 shrink-0" />
+            <div>
+              <p className="font-semibold text-lg">Checked in</p>
+              <p className="text-sm text-white/85">Welcome, {b.customer.split(" ")[0]}! Enjoy the trip.</p>
+            </div>
+          </div>
+        )
+      ) : !valid ? (
+        <div className="bg-red-50 border-b border-red-200 px-5 py-4 flex items-center gap-3 text-red-700">
+          <XCircle className="size-6 shrink-0" />
+          <p className="font-semibold">This booking is cancelled: do not check in</p>
+        </div>
+      ) : b.checkedInAt ? (
+        <div className="bg-amber-50 border-b border-amber-200 px-5 py-4 flex items-center gap-3 text-amber-800">
+          <Clock className="size-6 shrink-0" />
+          <p className="text-sm"><strong>Already checked in</strong> on {format(new Date(b.checkedInAt), "d MMM 'at' HH:mm")}.</p>
+        </div>
+      ) : (
+        <div className="bg-[#12231a] px-5 py-4 flex items-center gap-3 text-white">
+          <ScanLine className="size-6 shrink-0 text-[#c5a86d]" />
+          <p className="font-semibold">Valid trip ticket</p>
+          <span className="ml-auto font-mono text-sm tracking-widest text-[#c5a86d]">{b.ticketCode}</span>
+        </div>
+      )}
+
+      <div className="p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <Avatar name={b.customer} size={48} />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-lg truncate">{b.customer}</p>
+            {b.phone && (
+              <a href={`tel:${b.phone.replace(/\s/g, "")}`} className="flex items-center gap-1 text-sm text-[#2E7D5B] hover:underline">
+                <Phone className="size-3.5" /> {b.phone}
+              </a>
+            )}
+          </div>
+          <StatusBadge status={b.status === "New" ? "Pending" : b.status} />
+        </div>
+
+        <div className="rounded-xl bg-[#f7f5f0] p-4 space-y-2.5 text-sm">
+          <p className="font-semibold">{b.trip.title}</p>
+          <p className="text-[#0a120b]/70">
+            {start ? `${format(start, "EEE d MMM yyyy")}${end && !isSameDay(start, end) ? ` – ${format(end, "EEE d MMM yyyy")}` : ""}` : "Dates on request"} · {b.trip.location}
+          </p>
+          <p className="flex items-center gap-2 text-[#0a120b]/70">
+            <Users className="size-4" /> {b.travelers} traveler{b.travelers > 1 ? "s" : ""} · {b.option}
+          </p>
+          <div className="flex items-center justify-between pt-2.5 border-t border-[#0a120b]/10">
+            <span>{formatPrice(bookingTotal(b), b.currency)}</span>
+            <StatusBadge status={b.payment} />
+          </div>
+        </div>
+
+        {valid && !onDates && !b.checkedInAt && start && (
+          <p className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+            <AlertTriangle className="size-4 shrink-0" /> This trip is not today: it is on {format(start, "d MMM yyyy")}.
+          </p>
+        )}
+        {valid && b.payment !== "Paid" && !b.checkedInAt && (
+          <p className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+            <AlertTriangle className="size-4 shrink-0" /> This booking is not fully paid ({b.payment.toLowerCase()}).
+          </p>
+        )}
+
+        <div className="flex gap-2">
+          {!result.checkedIn && valid && !b.checkedInAt && (
+            <Button className="flex-1 !py-3" onClick={() => onCheckIn(b)} disabled={busy}>
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />} Check in {b.travelers} traveler{b.travelers > 1 ? "s" : ""}
+            </Button>
+          )}
+          <Button variant="secondary" className="flex-1 !py-3" onClick={onNext}>
+            <RotateCcw className="size-4" /> Scan next
+          </Button>
+        </div>
+        <Link href={`/admin/trips/${b.tripId}/bookings`} className="block text-center text-xs text-[#0a120b]/50 hover:text-[#2E7D5B]">
+          Open the trip bookings
         </Link>
       </div>
     </Card>

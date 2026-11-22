@@ -4,7 +4,11 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createTransport, type Transporter } from 'nodemailer';
+import {
+  createTransport,
+  type SendMailOptions,
+  type Transporter,
+} from 'nodemailer';
 import { safeFileName } from '../common/file-name';
 import { EMAIL_TEXTS, type Lang } from './i18n';
 
@@ -203,12 +207,14 @@ export class MailService {
     }
   }
 
-  // An email made elsewhere (e.g. the admins' morning agenda, src/calendar). Returns false if not sent.
+  // An email made elsewhere (e.g. the admins' morning agenda, src/calendar, or a trip
+  // ticket with its QR code attached inline). Returns false if not sent.
   async sendHtml(mail: {
-    to: string;
+    to: string | string[];
     subject: string;
     html: string;
     text: string;
+    attachments?: SendMailOptions['attachments'];
   }) {
     if (!this.transport) {
       this.logger.warn(`Email is not configured: "${mail.subject}" not sent`);

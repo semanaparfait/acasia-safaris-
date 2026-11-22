@@ -373,8 +373,17 @@ export type TripBooking = {
   payment: (typeof TRIP_PAYMENT_STATUSES)[number];
   notes: string | null;
   locale: string;
+  ticketCode: string | null; // given when the booking is paid
+  paidAt: string | null;
+  receiptSentAt: string | null; // the ticket + receipt email was sent
+  checkedInAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+// Admin > Check-in: a scanned trip ticket
+export type TripTicket = TripBooking & {
+  trip: { id: string; title: string; startDate: string | null; endDate: string | null; location: string; images: string[] };
 };
 
 export type TripBookingInput = {

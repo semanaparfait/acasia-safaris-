@@ -36,6 +36,8 @@ import { TripsService } from './trips.service';
 //   GET    /api/trips/all/<id>/bookings      admin: who booked
 //   PATCH  /api/trips/bookings/<bookingId>   admin: status, payment, travelers, notes
 //   DELETE /api/trips/bookings/<bookingId>   admin
+//   POST   /api/trips/bookings/<bookingId>/send-ticket  admin: email the ticket and receipt again
+// Paid bookings get a ticket: GET /api/trips/tickets/<code>, POST /api/trips/tickets/<code>/check-in
 @ApiTags('Trips')
 @Controller('trips')
 export class TripsController {
@@ -93,6 +95,31 @@ export class TripsController {
   @Audit('Deleted a trip booking', 'TripBooking')
   removeBooking(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
     return this.trips.removeBooking(bookingId);
+  }
+
+  // Paid bookings: email the confirmation, QR code ticket and receipt again
+  @Post('bookings/:bookingId/send-ticket')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Emailed a trip ticket and receipt', 'TripBooking')
+  sendTicket(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
+    return this.trips.resendTicket(bookingId);
+  }
+
+  // Admin > Check-in: the QR code holds "ACACIA:<code>" (or type the code)
+  @Get('tickets/:code')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  findTicket(@Param('code') code: string) {
+    return this.trips.findByTicket(code);
+  }
+
+  @Post('tickets/:code/check-in')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Checked in trip travelers', 'TripBooking')
+  checkIn(@Param('code') code: string) {
+    return this.trips.checkIn(code);
   }
 
   @Get(':id')
