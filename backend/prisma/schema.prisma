@@ -192,6 +192,13 @@ model Trip {
   currency    String    @default("USD") // of every price option, e.g. "RWF", "USD", "EUR"
   seats       Int? // the most travelers; empty = no limit. The website shows the seats left
   bookings    TripBooking[]
+  waitlist    TripWaitlist[] // people waiting for a seat while the trip is full
+
+  // Discounts, applied when booking (both can add up):
+  earlyBirdPercent  Int? // e.g. 10 = 10% off for bookings made until earlyBirdUntil
+  earlyBirdUntil    DateTime? @db.Date
+  groupPercent      Int? // e.g. 5 = 5% off for groupMinTravelers travelers or more
+  groupMinTravelers Int?
   active      Boolean   @default(true) // false = draft, hidden from the website
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -225,10 +232,37 @@ model TripBooking {
   paidAt        DateTime? // when it was marked as paid (the receipt date)
   receiptSentAt DateTime? // when the receipt and ticket were last emailed
   checkedInAt   DateTime?
+
+  // Discount given when booking (early bird, group), e.g. 15 and "Early bird -10% · Group -5%"
+  discountPercent Float   @default(0)
+  discountNote    String?
+
+  // Automatic emails (sent every morning): 7 days before the trip, and "How was it?" after.
+  // reviewToken is the traveler's private link to leave a review: /trip-review/<reviewToken>
+  reminderSentAt  DateTime?
+  reviewRequestAt DateTime?
+  reviewToken     String?   @unique
+  reviewedAt      DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([tripId, status])
+}
+
+// Someone waiting for a seat on a full trip. When seats free up, everyone waiting is emailed.
+model TripWaitlist {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId     String    @db.Uuid
+  trip       Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  customer   String
+  email      String
+  phone      String?
+  travelers  Int
+  locale     String    @default("en")
+  notifiedAt DateTime? // when "seats are free" was emailed
+  createdAt  DateTime  @default(now())
+
+  @@unique([tripId, email])
 }
 
 model Booking {

@@ -85,6 +85,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       upsertBooking(plain);
     });
     socket.on("tripBooking:deleted", ({ id, tripId }: { id: string; tripId: string }) => useTripsStore.getState().removeBooking(id, tripId));
+    socket.on("tripWaitlist", ({ tripId }: { tripId: string }) => {
+      const { waitlists, loadWaitlist, loadAll } = useTripsStore.getState();
+      if (waitlists[tripId]) loadWaitlist(tripId).catch(() => {});
+      loadAll();
+    });
     // Back online after a break: load everything once, in case something was missed
     socket.io.on("reconnect", () => loadBookings());
     return () => {

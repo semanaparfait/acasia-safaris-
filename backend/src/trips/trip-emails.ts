@@ -182,6 +182,8 @@ export type TripTicketEmail = {
   unit: string; // "per person"
   travelers: number;
   total: string; // "RWF 200,000"
+  subtotal?: string | null; // before the discount
+  discount?: { label: string; amount: string } | null; // "Early bird -10%", "-RWF 20,000"
   included: string[];
   excluded: string[];
   ticketCode: string;
@@ -332,8 +334,16 @@ export function tripTicketHtml(e: TripTicketEmail) {
               <strong>${h(e.tripTitle)}</strong><br>
               <span style="color:${MUTED};font-size:13px">${h(e.option)} · ${h(e.unitPrice)} ${h(e.unit)} &times; ${e.travelers}</span>
             </td>
-            <td align="right" style="padding:14px 0;font-size:14px;font-weight:bold;color:${INK};white-space:nowrap;vertical-align:top">${h(e.total)}</td>
+            <td align="right" style="padding:14px 0;font-size:14px;font-weight:bold;color:${INK};white-space:nowrap;vertical-align:top">${h(e.subtotal ?? e.total)}</td>
           </tr>
+          ${
+            e.discount
+              ? `<tr>
+            <td style="padding:0 0 14px;font-size:13px;color:${OK}">&#9733; ${h(e.discount.label)}</td>
+            <td align="right" style="padding:0 0 14px;font-size:14px;font-weight:bold;color:${OK};white-space:nowrap">${h(e.discount.amount)}</td>
+          </tr>`
+              : ''
+          }
         </table>
       </td></tr>
       <tr><td style="padding:0 18px"><div style="border-top:1px solid ${LINE}"></div></td></tr>
@@ -492,4 +502,240 @@ export function adminTripHtml(e: AdminTripEmail) {
 </td></tr>
 </table>
 </body></html>`;
+}
+
+// ---------- Traveler: reminder, review request, seats free on the waitlist ----------
+
+const MORE = {
+  en: {
+    reminderSubject: (trip: string) => `See you soon! ${trip} is in a few days`,
+    reminderBadge: 'Trip reminder',
+    reminderEyebrow: 'Almost time',
+    reminderIntro: (trip: string, date: string) =>
+      `Your trip <strong>${trip}</strong> is on <strong>${date}</strong>. We can't wait to welcome you! Here is your ticket again: show the QR code when you arrive.`,
+    reviewSubject: (trip: string) => `How was ${trip}?`,
+    reviewBadge: 'Thank you',
+    reviewEyebrow: 'We hope you loved it',
+    reviewIntro: (trip: string) =>
+      `Thank you for travelling with us on <strong>${trip}</strong>. Would you share a few words about your experience? It takes one minute and helps other travelers choose.`,
+    reviewButton: 'Leave a review',
+    waitSubject: (trip: string) => `Good news: seats are free on ${trip}`,
+    waitBadge: 'Seats available',
+    waitEyebrow: 'You were on the waitlist',
+    waitIntro: (trip: string, left: number) =>
+      `A place just opened on <strong>${trip}</strong>: ${left} ${left === 1 ? 'seat is' : 'seats are'} free now. Seats go to the first people who book, so reserve yours soon.`,
+    waitButton: 'Book my seat',
+    hello: (name: string) => `Hello ${name},`,
+    questions:
+      'Questions? Reply to this email or message us on WhatsApp: we are happy to help.',
+    whatsapp: 'Chat with us on WhatsApp',
+    ticket: 'Your ticket',
+  },
+  fr: {
+    reminderSubject: (trip: string) => `À très bientôt ! ${trip} approche`,
+    reminderBadge: 'Rappel de voyage',
+    reminderEyebrow: "C'est bientôt",
+    reminderIntro: (trip: string, date: string) =>
+      `Votre voyage <strong>${trip}</strong> a lieu le <strong>${date}</strong>. Nous avons hâte de vous accueillir ! Voici à nouveau votre billet : présentez le QR code à votre arrivée.`,
+    reviewSubject: (trip: string) => `Comment s'est passé ${trip} ?`,
+    reviewBadge: 'Merci',
+    reviewEyebrow: 'Nous espérons que vous avez aimé',
+    reviewIntro: (trip: string) =>
+      `Merci d'avoir voyagé avec nous pour <strong>${trip}</strong>. Pourriez-vous partager quelques mots sur votre expérience ? Cela prend une minute et aide d'autres voyageurs à choisir.`,
+    reviewButton: 'Laisser un avis',
+    waitSubject: (trip: string) =>
+      `Bonne nouvelle : des places se libèrent pour ${trip}`,
+    waitBadge: 'Places disponibles',
+    waitEyebrow: "Vous étiez sur la liste d'attente",
+    waitIntro: (trip: string, left: number) =>
+      `Une place vient de se libérer pour <strong>${trip}</strong> : ${left} ${left === 1 ? 'place est libre' : 'places sont libres'}. Les premiers à réserver les obtiennent : réservez vite la vôtre.`,
+    waitButton: 'Réserver ma place',
+    hello: (name: string) => `Bonjour ${name},`,
+    questions:
+      'Des questions ? Répondez à cet e-mail ou écrivez-nous sur WhatsApp : nous sommes là pour vous aider.',
+    whatsapp: 'Écrivez-nous sur WhatsApp',
+    ticket: 'Votre billet',
+  },
+  sw: {
+    reminderSubject: (trip: string) =>
+      `Tutaonana hivi karibuni! ${trip} imekaribia`,
+    reminderBadge: 'Ukumbusho wa safari',
+    reminderEyebrow: 'Imekaribia',
+    reminderIntro: (trip: string, date: string) =>
+      `Safari yako <strong>${trip}</strong> ni tarehe <strong>${date}</strong>. Tunasubiri kwa hamu kukukaribisha! Hii hapa tiketi yako tena: onyesha QR code unapofika.`,
+    reviewSubject: (trip: string) => `${trip} ilikuwaje?`,
+    reviewBadge: 'Asante',
+    reviewEyebrow: 'Tunatumaini uliifurahia',
+    reviewIntro: (trip: string) =>
+      `Asante kwa kusafiri nasi kwenye <strong>${trip}</strong>. Je, unaweza kutuandikia maneno machache kuhusu uzoefu wako? Inachukua dakika moja na inasaidia wasafiri wengine kuchagua.`,
+    reviewButton: 'Andika maoni',
+    waitSubject: (trip: string) =>
+      `Habari njema: nafasi zimepatikana kwenye ${trip}`,
+    waitBadge: 'Nafasi zipo',
+    waitEyebrow: 'Ulikuwa kwenye orodha ya kusubiri',
+    waitIntro: (trip: string, left: number) =>
+      `Nafasi imepatikana kwenye <strong>${trip}</strong>: nafasi ${left} ziko wazi sasa. Wanaohifadhi kwanza ndio wanaozipata, kwa hiyo hifadhi yako mapema.`,
+    waitButton: 'Hifadhi nafasi yangu',
+    hello: (name: string) => `Habari ${name},`,
+    questions:
+      'Una maswali? Jibu barua pepe hii au tuandikie kwa WhatsApp: tuko tayari kukusaidia.',
+    whatsapp: 'Ongea nasi kwa WhatsApp',
+    ticket: 'Tiketi yako',
+  },
+} satisfies Record<Lang, unknown>;
+
+// One layout for the short traveler emails
+function shortEmail(o: {
+  lang: Lang;
+  preheader: string;
+  badge: string;
+  eyebrow: string;
+  title: string;
+  image?: string | null;
+  line?: string | null; // "Wed, 25 Nov 2026 · Nyungwe"
+  greeting: string;
+  intro: string; // HTML (already escaped)
+  ticketCode?: string | null; // shows the QR code (cid:ticket-qr)
+  button?: { label: string; href: string } | null;
+}) {
+  const M = MORE[o.lang];
+  return `<!doctype html>
+<html lang="${o.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${h(o.title)}</title></head>
+<body style="margin:0;padding:0;background:${CREAM}">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${h(o.preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};font-family:Arial,Helvetica,sans-serif;color:${INK}">
+<tr><td align="center" style="padding:28px 10px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 12px 34px rgba(10,18,11,0.10)">
+  <tr><td style="background:${DEEP};padding:22px 32px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="font-family:${SERIF};font-size:18px;letter-spacing:4px;color:#ffffff">ACACIA <span style="color:${GOLD}">SAFARIS</span></td>
+      <td align="right"><span style="display:inline-block;background:${GOLD};color:#0e1d16;font-size:11px;font-weight:bold;letter-spacing:1px;padding:7px 13px;border-radius:20px;white-space:nowrap">${h(o.badge)}</span></td>
+    </tr></table>
+  </td></tr>
+  ${o.image ? `<tr><td style="padding:0;background:${DEEP}"><img src="${h(o.image)}" alt="" width="600" style="display:block;width:100%;height:auto;max-height:260px;object-fit:cover"></td></tr>` : ''}
+  <tr><td style="background:${DEEP};padding:24px 32px 28px">
+    <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD};font-weight:bold">${h(o.eyebrow)}</p>
+    <p style="margin:8px 0 0;font-family:${SERIF};font-size:28px;line-height:1.2;color:#ffffff">${h(o.title)}</p>
+    ${o.line ? `<p style="margin:10px 0 0;font-size:14px;color:#ffffffb3">${h(o.line)}</p>` : ''}
+  </td></tr>
+  <tr><td style="padding:30px 32px 0">
+    <p style="margin:0;font-size:16px;font-weight:bold">${h(o.greeting)}</p>
+    <p style="margin:10px 0 0;font-size:15px;line-height:1.7;color:${MUTED}">${o.intro}</p>
+  </td></tr>
+  ${
+    o.ticketCode
+      ? `<tr><td style="padding:24px 32px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${GREEN};border-radius:18px">
+      <tr><td align="center" style="padding:24px 20px 22px">
+        <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${GOLD};font-weight:bold">${h(M.ticket)}</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px auto 0"><tr><td style="background:#ffffff;border-radius:16px;padding:12px">
+          <img src="cid:ticket-qr" alt="QR code ${h(o.ticketCode)}" width="170" height="170" style="display:block;width:170px;height:170px">
+        </td></tr></table>
+        <p style="margin:14px 0 0;font-family:'Courier New',Courier,monospace;font-size:23px;letter-spacing:6px;font-weight:bold;color:${GOLD}">${h(o.ticketCode)}</p>
+      </td></tr>
+    </table>
+  </td></tr>`
+      : ''
+  }
+  ${
+    o.button
+      ? `<tr><td align="center" style="padding:30px 32px 6px">
+    <a href="${h(o.button.href)}" style="display:inline-block;background:${GOLD};color:#0e1d16;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 34px;border-radius:10px">${h(o.button.label)}</a>
+  </td></tr>`
+      : ''
+  }
+  <tr><td align="center" style="padding:14px 32px 0">
+    <a href="https://wa.me/${WHATSAPP}" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-weight:bold;font-size:13px;padding:10px 20px;border-radius:30px">&#128172;&nbsp; ${h(M.whatsapp)}</a>
+  </td></tr>
+  <tr><td style="padding:30px 32px 26px">
+    <div style="border-top:1px solid ${LINE};padding-top:18px;text-align:center">
+      <p style="margin:0;font-family:${SERIF};font-size:14px;letter-spacing:3px;color:${GREEN}">ACACIA SAFARIS</p>
+      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578 &nbsp;·&nbsp; info@acaciasafaris.com<br>${h(M.questions)}</p>
+    </div>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+}
+
+export type TripNoticeEmail = {
+  lang: Lang;
+  name: string;
+  tripTitle: string;
+  image?: string | null;
+  location: string;
+  dates: string | null;
+};
+
+const lineOf = (e: TripNoticeEmail) =>
+  [e.dates, e.location].filter(Boolean).join('  ·  ');
+
+// 7 days before the trip, with the QR code ticket
+export function tripReminderEmail(
+  e: TripNoticeEmail & { ticketCode: string; tripUrl: string },
+) {
+  const M = MORE[e.lang];
+  const date = e.dates ?? '';
+  return {
+    subject: M.reminderSubject(e.tripTitle),
+    text: `${M.hello(e.name)}\n\n${M.reminderIntro(e.tripTitle, date).replace(/<\/?strong>/g, '')}\n\nTicket: ${e.ticketCode}\n\n${e.tripUrl}\n\nAcacia Safaris`,
+    html: shortEmail({
+      lang: e.lang,
+      preheader: M.reminderSubject(e.tripTitle),
+      badge: M.reminderBadge,
+      eyebrow: M.reminderEyebrow,
+      title: e.tripTitle,
+      image: e.image,
+      line: lineOf(e),
+      greeting: M.hello(e.name),
+      intro: M.reminderIntro(h(e.tripTitle), h(date)),
+      ticketCode: e.ticketCode,
+      button: null,
+    }),
+  };
+}
+
+// After the trip: "How was it?" with the link to the review page
+export function tripReviewEmail(e: TripNoticeEmail & { reviewUrl: string }) {
+  const M = MORE[e.lang];
+  return {
+    subject: M.reviewSubject(e.tripTitle),
+    text: `${M.hello(e.name)}\n\n${M.reviewIntro(e.tripTitle).replace(/<\/?strong>/g, '')}\n\n${e.reviewUrl}\n\nAcacia Safaris`,
+    html: shortEmail({
+      lang: e.lang,
+      preheader: M.reviewSubject(e.tripTitle),
+      badge: M.reviewBadge,
+      eyebrow: M.reviewEyebrow,
+      title: e.tripTitle,
+      image: e.image,
+      line: lineOf(e),
+      greeting: M.hello(e.name),
+      intro: M.reviewIntro(h(e.tripTitle)),
+      button: { label: `★ ${M.reviewButton}`, href: e.reviewUrl },
+    }),
+  };
+}
+
+// Seats are free again: to the people on the waitlist
+export function tripWaitlistEmail(
+  e: TripNoticeEmail & { seatsLeft: number; tripUrl: string },
+) {
+  const M = MORE[e.lang];
+  return {
+    subject: M.waitSubject(e.tripTitle),
+    text: `${M.hello(e.name)}\n\n${M.waitIntro(e.tripTitle, e.seatsLeft).replace(/<\/?strong>/g, '')}\n\n${e.tripUrl}\n\nAcacia Safaris`,
+    html: shortEmail({
+      lang: e.lang,
+      preheader: M.waitSubject(e.tripTitle),
+      badge: M.waitBadge,
+      eyebrow: M.waitEyebrow,
+      title: e.tripTitle,
+      image: e.image,
+      line: lineOf(e),
+      greeting: M.hello(e.name),
+      intro: M.waitIntro(h(e.tripTitle), e.seatsLeft),
+      button: { label: M.waitButton, href: e.tripUrl },
+    }),
+  };
 }

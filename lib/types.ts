@@ -338,6 +338,11 @@ export type Trip = {
   currency: string; // of every price: "RWF", "USD", "EUR"…
   seats: number | null; // the most travelers; null = no limit
   seatsLeft?: number | null; // worked out by the server (null = no limit)
+  // Discounts (both can add up): early bird until a date, and groups from N travelers
+  earlyBirdPercent: number | null;
+  earlyBirdUntil: string | null; // "2026-11-30T00:00:00.000Z": the last day
+  groupPercent: number | null;
+  groupMinTravelers: number | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -347,6 +352,7 @@ export type Trip = {
 export type AdminTrip = Trip & {
   bookingCount: number;
   newBookings: number; // not handled yet
+  waitlist: number; // people waiting for a seat
   travelers: number;
   seatsLeft: number | null;
 };
@@ -377,8 +383,26 @@ export type TripBooking = {
   paidAt: string | null;
   receiptSentAt: string | null; // the ticket + receipt email was sent
   checkedInAt: string | null;
+  discountPercent: number; // early bird + group, given when booking
+  discountNote: string | null; // "Early bird -10% · Group of 6+ -5%"
+  reminderSentAt: string | null; // 7 days before the trip
+  reviewRequestAt: string | null; // "How was it?" after the trip
+  reviewedAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+// Someone waiting for a seat on a full trip
+export type TripWaitlistEntry = {
+  id: string;
+  tripId: string;
+  customer: string;
+  email: string;
+  phone: string | null;
+  travelers: number;
+  locale: string;
+  notifiedAt: string | null; // "seats are free" was emailed
+  createdAt: string;
 };
 
 // Admin > Check-in: a scanned trip ticket

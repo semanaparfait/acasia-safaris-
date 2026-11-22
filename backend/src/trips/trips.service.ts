@@ -6,8 +6,9 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 import { Prisma, Trip } from '@prisma/client';
-import { randomInt } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { ticketCodeFrom, ticketQrPng } from '../bookings/bookings.service';
 import { asLang, INTL_LOCALE, type Lang } from '../mail/i18n';
 import { MailService } from '../mail/mail.service';
@@ -18,14 +19,19 @@ import {
   adminTripHtml,
   adminTripSubject,
   adminTripText,
+  tripReminderEmail,
+  tripReviewEmail,
   tripTicketHtml,
   tripTicketSubject,
   tripTicketText,
+  tripWaitlistEmail,
   type AdminTripEmail,
 } from './trip-emails';
 import {
   CreateTripBookingDto,
+  JoinWaitlistDto,
   TripDto,
+  TripReviewDto,
   UpdateTripBookingDto,
 } from './trips.dto';
 
@@ -72,7 +78,7 @@ export const formatMoney = (amount: number, currency: string) => {
 
 // What a booking costs: "per person" x travelers, "per couple" x couples, "per group" once
 // (same as bookingTotal in lib/trips.ts)
-export const bookingTotal = (b: {
+export const bookingSubtotal = (b: {
   price: number;
   unit: string;
   travelers: number;
@@ -81,6 +87,62 @@ export const bookingTotal = (b: {
   if (unit.includes('group')) return b.price;
   if (unit.includes('couple')) return b.price * Math.ceil(b.travelers / 2);
   return b.price * b.travelers;
+};
+
+// The total after the booking's discount (early bird, group)
+export const bookingTotal = (b: {
+  price: number;
+  unit: string;
+  travelers: number;
+  discountPercent?: number | null;
+}) => {
+  const total = bookingSubtotal(b) * (1 - (b.discountPercent ?? 0) / 100);
+  return Number.isInteger(b.price)
+    ? Math.round(total)
+    : Math.round(total * 100) / 100;
+};
+
+// The discount a booking gets now: early bird (booked by the date) and group (enough
+// travelers) add up, at most 90%. The note is shown on the receipt and in the admin.
+export const tripDiscount = (
+  trip: {
+    earlyBirdPercent: number | null;
+    earlyBirdUntil: Date | null;
+    groupPercent: number | null;
+    groupMinTravelers: number | null;
+  },
+  travelers: number,
+  now = new Date(),
+) => {
+  const parts: { label: string; percent: number }[] = [];
+  if (
+    trip.earlyBirdPercent &&
+    trip.earlyBirdUntil &&
+    now.toISOString().slice(0, 10) <=
+      trip.earlyBirdUntil.toISOString().slice(0, 10)
+  ) {
+    parts.push({ label: 'Early bird', percent: trip.earlyBirdPercent });
+  }
+  if (
+    trip.groupPercent &&
+    trip.groupMinTravelers &&
+    travelers >= trip.groupMinTravelers
+  ) {
+    parts.push({
+      label: `Group of ${trip.groupMinTravelers}+`,
+      percent: trip.groupPercent,
+    });
+  }
+  const percent = Math.min(
+    90,
+    parts.reduce((sum, p) => sum + p.percent, 0),
+  );
+  return {
+    percent,
+    note: parts.length
+      ? parts.map((p) => `${p.label} -${p.percent}%`).join(' · ')
+      : null,
+  };
 };
 
 // "Wed, 25 Nov 2026" or a range, in the traveler's language
@@ -155,10 +217,15 @@ export class TripsService {
   // Admin: the numbers shown on each trip card
   private async withStats(trips: Trip[]) {
     const ids = trips.map((t) => t.id);
-    const [booked, counts] = await Promise.all([
+    const [booked, counts, waiting] = await Promise.all([
       this.booked(ids),
       this.prisma.tripBooking.groupBy({
         by: ['tripId', 'status'],
+        where: { tripId: { in: ids } },
+        _count: { _all: true },
+      }),
+      this.prisma.tripWaitlist.groupBy({
+        by: ['tripId'],
         where: { tripId: { in: ids } },
         _count: { _all: true },
       }),
@@ -176,6 +243,7 @@ export class TripsService {
         ...t,
         bookingCount: count(),
         newBookings: count('New'),
+        waitlist: waiting.find((w) => w.tripId === t.id)?._count._all ?? 0,
         travelers,
         seatsLeft: t.seats == null ? null : Math.max(t.seats - travelers, 0),
       };
@@ -218,13 +286,18 @@ export class TripsService {
     if (trip.seats != null) {
       const left =
         trip.seats - ((await this.booked([trip.id])).get(trip.id) ?? 0);
-      if (left <= 0) throw new BadRequestException('This trip is fully booked');
+      if (left <= 0) {
+        throw new BadRequestException(
+          'This trip is fully booked: join the waitlist and we will email you if a seat frees up',
+        );
+      }
       if (dto.travelers > left) {
         throw new BadRequestException(
           `Only ${left} ${left === 1 ? 'seat is' : 'seats are'} left on this trip`,
         );
       }
     }
+    const discount = tripDiscount(trip, dto.travelers);
     const booking = await this.prisma.tripBooking.create({
       data: {
         tripId: trip.id,
@@ -238,7 +311,13 @@ export class TripsService {
         travelers: dto.travelers,
         message: dto.message?.trim() || null,
         locale: dto.locale ?? 'en',
+        discountPercent: discount.percent,
+        discountNote: discount.note,
       },
+    });
+    // Booked after all: off the waitlist
+    await this.prisma.tripWaitlist.deleteMany({
+      where: { tripId: trip.id, email: dto.email.trim().toLowerCase() },
     });
     // Open admin panels show it at once
     this.live.toAdmins('tripBooking', { ...booking, tripTitle: trip.title });
@@ -280,6 +359,7 @@ export class TripsService {
       where: { id },
       data: this.toData(dto),
     });
+    void this.notifyWaitlist(id); // more seats, or no limit anymore
     return (await this.withStats([trip]))[0];
   }
 
@@ -375,6 +455,7 @@ export class TripsService {
           this.logger.error(`Trip ticket for booking ${id} failed: ${error}`),
         );
     }
+    if (extra < 0) void this.notifyWaitlist(current.tripId); // seats freed
     return this.pushBooking(id);
   }
 
@@ -383,6 +464,8 @@ export class TripsService {
     if (!booking) throw new NotFoundException('Booking not found');
     await this.prisma.tripBooking.delete({ where: { id } });
     this.live.toAdmins('tripBooking:deleted', { id, tripId: booking.tripId });
+    if (booking.status !== 'Cancelled')
+      void this.notifyWaitlist(booking.tripId);
     return { deleted: true };
   }
 
@@ -403,6 +486,18 @@ export class TripsService {
         included: clean(p.included),
         excluded: clean(p.excluded),
       }));
+    const earlyBird = dto.earlyBirdPercent != null || !!dto.earlyBirdUntil;
+    if (earlyBird && (dto.earlyBirdPercent == null || !dto.earlyBirdUntil)) {
+      throw new BadRequestException(
+        'Early bird discount: enter both the percentage and the last day',
+      );
+    }
+    const group = dto.groupPercent != null || dto.groupMinTravelers != null;
+    if (group && (dto.groupPercent == null || dto.groupMinTravelers == null)) {
+      throw new BadRequestException(
+        'Group discount: enter both the percentage and the number of travelers',
+      );
+    }
     const names = prices.map((p) => p.name.toLowerCase());
     if (new Set(names).size !== names.length) {
       throw new BadRequestException('Two price options have the same name');
@@ -437,6 +532,10 @@ export class TripsService {
       prices,
       currency,
       seats: dto.seats ?? null,
+      earlyBirdPercent: earlyBird ? dto.earlyBirdPercent : null,
+      earlyBirdUntil: earlyBird ? day(dto.earlyBirdUntil) : null,
+      groupPercent: group ? dto.groupPercent : null,
+      groupMinTravelers: group ? dto.groupMinTravelers : null,
       active,
     };
   }
@@ -522,6 +621,15 @@ export class TripsService {
       unit: b.unit,
       travelers: b.travelers,
       total: formatMoney(bookingTotal(b), b.currency),
+      subtotal: b.discountPercent
+        ? formatMoney(bookingSubtotal(b), b.currency)
+        : null,
+      discount: b.discountPercent
+        ? {
+            label: b.discountNote ?? `-${b.discountPercent}%`,
+            amount: `-${formatMoney(bookingSubtotal(b) - bookingTotal(b), b.currency)}`,
+          }
+        : null,
       included: option?.included ?? [],
       excluded: option?.excluded ?? [],
       ticketCode,
@@ -649,5 +757,260 @@ export class TripsService {
     });
     await this.pushBooking(booking.id);
     return { booking: await this.findByTicket(text), alreadyCheckedIn: false };
+  }
+
+  // ---------- Waitlist (full trips) ----------
+
+  // A visitor waits for a seat. Joining twice with the same email updates the entry.
+  async joinWaitlist(tripId: string, dto: JoinWaitlistDto) {
+    const trip = await this.prisma.trip.findFirst({
+      where: { id: tripId, ...onWebsite() },
+    });
+    if (!trip) throw new NotFoundException('This trip is not open for booking');
+    const left =
+      trip.seats == null
+        ? null
+        : trip.seats - ((await this.booked([trip.id])).get(trip.id) ?? 0);
+    if (left == null || left >= dto.travelers) {
+      throw new BadRequestException('Seats are available: you can book now');
+    }
+    const email = dto.email.trim().toLowerCase();
+    const data = {
+      customer: dto.customer.trim(),
+      phone: toE164(dto.phone),
+      travelers: dto.travelers,
+      locale: dto.locale ?? 'en',
+      notifiedAt: null,
+    };
+    await this.prisma.tripWaitlist.upsert({
+      where: { tripId_email: { tripId, email } },
+      create: { tripId, email, ...data },
+      update: data,
+    });
+    this.live.toAdmins('tripWaitlist', { tripId });
+    return { waiting: true };
+  }
+
+  async waitlist(tripId: string) {
+    await this.findOne(tripId);
+    return this.prisma.tripWaitlist.findMany({
+      where: { tripId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async removeFromWaitlist(id: string) {
+    const entry = await this.prisma.tripWaitlist.findUnique({ where: { id } });
+    if (!entry) throw new NotFoundException('Not on the waitlist');
+    await this.prisma.tripWaitlist.delete({ where: { id } });
+    this.live.toAdmins('tripWaitlist', { tripId: entry.tripId });
+    return { deleted: true };
+  }
+
+  // Seats freed up: emails everyone waiting who has not been told yet.
+  // First come, first served: they book on the website like anyone else.
+  // Never throws (called after a change that already succeeded).
+  async notifyWaitlist(tripId: string) {
+    try {
+      const trip = await this.prisma.trip.findFirst({
+        where: { id: tripId, ...onWebsite() },
+      });
+      if (!trip) return 0;
+      const left =
+        trip.seats == null
+          ? 1000
+          : trip.seats - ((await this.booked([trip.id])).get(trip.id) ?? 0);
+      if (left <= 0) return 0;
+      const waiting = await this.prisma.tripWaitlist.findMany({
+        where: { tripId, notifiedAt: null },
+        orderBy: { createdAt: 'asc' },
+      });
+      let sent = 0;
+      for (const w of waiting) {
+        const lang = asLang(w.locale);
+        const mail = tripWaitlistEmail({
+          lang,
+          name: w.customer,
+          tripTitle: trip.title,
+          image: trip.images[0] ?? null,
+          location: trip.location,
+          dates: tripDateText(trip, lang),
+          seatsLeft: trip.seats == null ? w.travelers : left,
+          tripUrl: this.tripUrl(trip.id, lang),
+        });
+        const ok = await this.mail.sendHtml({ to: w.email, ...mail });
+        if (ok) {
+          sent++;
+          await this.prisma.tripWaitlist.update({
+            where: { id: w.id },
+            data: { notifiedAt: new Date() },
+          });
+        }
+      }
+      if (sent) this.live.toAdmins('tripWaitlist', { tripId });
+      return sent;
+    } catch (error) {
+      this.logger.error(`Waitlist emails for trip ${tripId} failed: ${error}`);
+      return 0;
+    }
+  }
+
+  private tripUrl(tripId: string, lang: Lang) {
+    return `${this.siteUrl}${lang === 'en' ? '' : `/${lang}`}/trips/${tripId}`;
+  }
+
+  // ---------- Automatic emails, every morning (8:05 Kigali time) ----------
+  //  1. Reminder 7 days before the trip (or less, when paid later), with the QR code
+  //  2. After the trip: "How was it?" with the link to leave a review
+
+  @Cron('5 8 * * *', { name: 'trip-reminders', timeZone: 'Africa/Kigali' })
+  async daily() {
+    await this.runReminders().catch((error) =>
+      this.logger.error(`Trip reminders failed: ${error}`),
+    );
+  }
+
+  // Also started by hand: POST /api/trips/reminders/run (admin)
+  async runReminders() {
+    const now = new Date();
+    const todayDate = today();
+    const inAWeek = new Date(todayDate.getTime() + 7 * 86_400_000);
+    const result = { reminders: 0, reviewRequests: 0 };
+
+    // 1. Paid, not cancelled, trip within 7 days, paid more than a day ago
+    //    (someone who just got the ticket does not need it again)
+    const soon = await this.prisma.tripBooking.findMany({
+      where: {
+        payment: 'Paid',
+        status: { not: 'Cancelled' },
+        ticketCode: { not: null },
+        reminderSentAt: null,
+        paidAt: { lte: new Date(now.getTime() - 86_400_000) },
+        trip: { startDate: { gt: todayDate, lte: inAWeek } },
+      },
+      include: { trip: true },
+    });
+    for (const b of soon) {
+      const lang = asLang(b.locale);
+      const mail = tripReminderEmail({
+        lang,
+        name: b.customer,
+        tripTitle: b.trip.title,
+        image: b.trip.images[0] ?? null,
+        location: b.trip.location,
+        dates: tripDateText(b.trip, lang),
+        ticketCode: b.ticketCode!,
+        tripUrl: this.tripUrl(b.tripId, lang),
+      });
+      const ok = await this.mail.sendHtml({
+        to: b.email,
+        ...mail,
+        attachments: [
+          {
+            filename: `Ticket ${b.ticketCode}.png`,
+            content: await ticketQrPng(b.ticketCode!),
+            cid: 'ticket-qr',
+          },
+        ],
+      });
+      if (ok) {
+        result.reminders++;
+        await this.prisma.tripBooking.update({
+          where: { id: b.id },
+          data: { reminderSentAt: new Date() },
+        });
+      }
+    }
+
+    // 2. The trip is over (its last day was before today), the traveler paid or came
+    const done = await this.prisma.tripBooking.findMany({
+      where: {
+        status: { not: 'Cancelled' },
+        OR: [{ payment: 'Paid' }, { checkedInAt: { not: null } }],
+        reviewRequestAt: null,
+        reviewedAt: null,
+        trip: {
+          OR: [
+            { endDate: { lt: todayDate } },
+            { endDate: null, startDate: { lt: todayDate } },
+          ],
+        },
+      },
+      include: { trip: true },
+    });
+    for (const b of done) {
+      const lang = asLang(b.locale);
+      const reviewToken = b.reviewToken ?? randomBytes(18).toString('hex');
+      const mail = tripReviewEmail({
+        lang,
+        name: b.customer,
+        tripTitle: b.trip.title,
+        image: b.trip.images[0] ?? null,
+        location: b.trip.location,
+        dates: tripDateText(b.trip, lang),
+        reviewUrl: `${this.siteUrl}${lang === 'en' ? '' : `/${lang}`}/trip-review/${reviewToken}`,
+      });
+      if (!b.reviewToken) {
+        await this.prisma.tripBooking.update({
+          where: { id: b.id },
+          data: { reviewToken },
+        });
+      }
+      const ok = await this.mail.sendHtml({ to: b.email, ...mail });
+      if (ok) {
+        result.reviewRequests++;
+        await this.prisma.tripBooking.update({
+          where: { id: b.id },
+          data: { reviewRequestAt: new Date() },
+        });
+      }
+    }
+
+    this.logger.log(`Trip emails sent: ${JSON.stringify(result)}`);
+    return result;
+  }
+
+  // ---------- Reviews (/trip-review/<token>) ----------
+
+  async reviewInfo(token: string) {
+    const b = await this.prisma.tripBooking.findUnique({
+      where: { reviewToken: token },
+      include: { trip: { select: { title: true, images: true } } },
+    });
+    if (!b) throw new NotFoundException('This review link is not valid');
+    return {
+      customer: b.customer,
+      tripTitle: b.trip.title,
+      image: b.trip.images[0] ?? null,
+      reviewed: !!b.reviewedAt,
+    };
+  }
+
+  // Saved as a review the team publishes in Admin > Reviews
+  async submitReview(token: string, dto: TripReviewDto) {
+    const b = await this.prisma.tripBooking.findUnique({
+      where: { reviewToken: token },
+      include: { trip: { select: { title: true } } },
+    });
+    if (!b) throw new NotFoundException('This review link is not valid');
+    if (b.reviewedAt) {
+      throw new BadRequestException('Thank you: you already left a review');
+    }
+    await this.prisma.$transaction([
+      this.prisma.review.create({
+        data: {
+          name: b.customer,
+          country: dto.country.trim(),
+          rating: dto.rating,
+          packageTitle: b.trip.title,
+          text: dto.text.trim(),
+        },
+      }),
+      this.prisma.tripBooking.update({
+        where: { id: b.id },
+        data: { reviewedAt: new Date() },
+      }),
+    ]);
+    return { thanks: true };
   }
 }

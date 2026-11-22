@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { CalendarDays, ChevronRight, ExternalLink, ImageIcon, MapPin, Pencil, Plus, Tag, Trash2, Users } from "lucide-react";
+import { BellRing, CalendarDays, ChevronRight, ExternalLink, ImageIcon, MapPin, Pencil, Plus, Tag, Trash2, Users } from "lucide-react";
 import { formatPrice } from "@/lib/trips";
 import type { Trip } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
@@ -34,6 +34,7 @@ export default function TripsPage() {
   const loadAll = useTripsStore((s) => s.loadAll);
   const setActive = useTripsStore((s) => s.setActive);
   const deleteTrip = useTripsStore((s) => s.deleteTrip);
+  const runReminders = useTripsStore((s) => s.runReminders);
 
   const [filter, setFilter] = useState<Filter>("Upcoming");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -62,9 +63,23 @@ export default function TripsPage() {
         title="Trips"
         subtitle="Special trips with their own page on the website: photos, the plan, and price options with what each one covers."
         actions={
-          <Link href="/admin/trips/new">
-            <Button><Plus className="size-4" /> Plan a trip</Button>
-          </Link>
+          <>
+            <Button
+              variant="secondary"
+              title="Reminders (7 days before) and review requests (after the trip) are sent every morning at 8:05. Send today's now."
+              onClick={() =>
+                run(async () => {
+                  const r = await runReminders();
+                  toast.success(`${r.reminders} ${r.reminders === 1 ? "reminder" : "reminders"} and ${r.reviewRequests} review ${r.reviewRequests === 1 ? "request" : "requests"} sent`);
+                }, "Trip emails checked")
+              }
+            >
+              <BellRing className="size-4" /> Send reminders now
+            </Button>
+            <Link href="/admin/trips/new">
+              <Button><Plus className="size-4" /> Plan a trip</Button>
+            </Link>
+          </>
         }
       />
 
@@ -145,6 +160,7 @@ export default function TripsPage() {
                     <span className="text-[#0a120b]/50">· {t.travelers} {t.travelers === 1 ? "traveler" : "travelers"}</span>
                   </span>
                   <span className="flex items-center gap-1.5">
+                    {t.waitlist > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">{t.waitlist} waiting</span>}
                     {t.newBookings > 0 && <span className="rounded-full bg-[#c5a86d] px-2 py-0.5 text-[11px] font-bold text-[#0a120b]">{t.newBookings} new</span>}
                     <ChevronRight className="size-4 text-[#0a120b]/40" />
                   </span>

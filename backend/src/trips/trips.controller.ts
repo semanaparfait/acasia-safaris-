@@ -16,8 +16,10 @@ import { AdminGuard } from '../common/admin.guard';
 import { FormLimit } from '../common/limits';
 import {
   CreateTripBookingDto,
+  JoinWaitlistDto,
   TripActiveDto,
   TripDto,
+  TripReviewDto,
   UpdateTripBookingDto,
 } from './trips.dto';
 import { TripsService } from './trips.service';
@@ -38,6 +40,14 @@ import { TripsService } from './trips.service';
 //   DELETE /api/trips/bookings/<bookingId>   admin
 //   POST   /api/trips/bookings/<bookingId>/send-ticket  admin: email the ticket and receipt again
 // Paid bookings get a ticket: GET /api/trips/tickets/<code>, POST /api/trips/tickets/<code>/check-in
+// Waitlist, reminders and reviews:
+//   POST   /api/trips/<id>/waitlist              website: wait for a seat (full trips)
+//   GET    /api/trips/all/<id>/waitlist          admin
+//   POST   /api/trips/all/<id>/waitlist/notify   admin: email the people waiting (if seats are free)
+//   DELETE /api/trips/waitlist/<entryId>         admin
+//   POST   /api/trips/reminders/run              admin: send today's reminders and review requests now
+//   GET    /api/trips/review/<token>             website: the review page
+//   POST   /api/trips/review/<token>             website: send the review
 @ApiTags('Trips')
 @Controller('trips')
 export class TripsController {
@@ -120,6 +130,57 @@ export class TripsController {
   @Audit('Checked in trip travelers', 'TripBooking')
   checkIn(@Param('code') code: string) {
     return this.trips.checkIn(code);
+  }
+
+  @Post(':id/waitlist')
+  @FormLimit()
+  joinWaitlist(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: JoinWaitlistDto,
+  ) {
+    return this.trips.joinWaitlist(id, dto);
+  }
+
+  @Get('all/:id/waitlist')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  waitlist(@Param('id', ParseUUIDPipe) id: string) {
+    return this.trips.waitlist(id);
+  }
+
+  @Post('all/:id/waitlist/notify')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Emailed the waitlist of a trip', 'Trip')
+  async notifyWaitlist(@Param('id', ParseUUIDPipe) id: string) {
+    return { sent: await this.trips.notifyWaitlist(id) };
+  }
+
+  @Delete('waitlist/:entryId')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Removed someone from a trip waitlist', 'Trip')
+  removeFromWaitlist(@Param('entryId', ParseUUIDPipe) entryId: string) {
+    return this.trips.removeFromWaitlist(entryId);
+  }
+
+  @Post('reminders/run')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Audit('Sent the trip reminders')
+  runReminders() {
+    return this.trips.runReminders();
+  }
+
+  @Get('review/:token')
+  reviewInfo(@Param('token') token: string) {
+    return this.trips.reviewInfo(token);
+  }
+
+  @Post('review/:token')
+  @FormLimit()
+  submitReview(@Param('token') token: string, @Body() dto: TripReviewDto) {
+    return this.trips.submitReview(token, dto);
   }
 
   @Get(':id')

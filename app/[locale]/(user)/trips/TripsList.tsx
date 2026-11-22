@@ -2,12 +2,12 @@
 
 // The visible part of /trips: a banner, then one large card per trip.
 import { motion } from "framer-motion";
-import { ArrowRight, CalendarDays, MapPin, Tag, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, Gift, MapPin, Tag, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import SmartImage from "@/components/ui/smart-image";
 import { TripMoney } from "@/components/ui/money";
-import { fromPrice, tripDates } from "@/lib/trips";
+import { earlyBird, fromPrice, tripDates } from "@/lib/trips";
 import type { Trip } from "@/lib/types";
 
 const HERO = "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=2200&auto=format&fit=crop&q=85";
@@ -97,6 +97,11 @@ function TripCard({ trip, reverse, locale }: { trip: Trip; reverse: boolean; loc
           {dates && trip.duration && <Chip icon={<CalendarDays size={14} />}>{trip.duration}</Chip>}
           {trip.groupSize && <Chip icon={<Users size={14} />}>{trip.groupSize}</Chip>}
           <Chip icon={<Tag size={14} />}>{t("options", { count: trip.prices.length })}</Chip>
+          {earlyBird(trip) && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0a1811] px-3 py-1.5 font-semibold text-[#d4af37]">
+              <Gift size={14} /> {t("deals.earlyShort", { percent: trip.earlyBirdPercent ?? 0, date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(trip.earlyBirdUntil!)) })}
+            </span>
+          )}
           {trip.seatsLeft != null && (
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold ${trip.seatsLeft === 0 ? "bg-red-50 text-red-700 ring-1 ring-red-200" : "bg-[#c5a86d]/15 text-[#8a6d2f] ring-1 ring-[#c5a86d]/40"}`}>
               <Users size={14} /> {trip.seatsLeft === 0 ? t("full") : t("seatsLeft", { count: trip.seatsLeft })}

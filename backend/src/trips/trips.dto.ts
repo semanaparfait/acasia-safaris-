@@ -148,6 +148,30 @@ export class TripDto {
   @Max(1000)
   seats?: number | null;
 
+  // Early bird: earlyBirdPercent % off for bookings made until earlyBirdUntil (both or neither)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(90)
+  earlyBirdPercent?: number | null;
+
+  @IsOptional()
+  @IsDateString()
+  earlyBirdUntil?: string | null;
+
+  // Groups: groupPercent % off from groupMinTravelers travelers (both or neither)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(90)
+  groupPercent?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2)
+  @Max(100)
+  groupMinTravelers?: number | null;
+
   @IsOptional()
   @IsBoolean()
   active?: boolean;
@@ -217,4 +241,48 @@ export class UpdateTripBookingDto {
   @Min(1)
   @Max(50)
   travelers?: number;
+}
+
+// A visitor joins the waitlist of a full trip
+export class JoinWaitlistDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  customer: string;
+
+  @IsEmail()
+  @MaxLength(200)
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  phone?: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  travelers: number;
+
+  @IsOptional()
+  @IsIn(['en', 'fr', 'sw'])
+  locale?: string;
+}
+
+// After the trip: the traveler's review from /trip-review/<token>
+export class TripReviewDto {
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating: number;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(80)
+  country: string;
+
+  @IsString()
+  @MinLength(10)
+  @MaxLength(2000)
+  text: string;
 }

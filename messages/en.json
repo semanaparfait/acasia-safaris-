@@ -1155,10 +1155,48 @@
       "sentTitle": "Request received!",
       "sentText": "Thank you, {name}. We will reply within 24 hours to confirm your place.",
       "error": "Could not send: {error}",
-      "total": "Total"
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "earlyDiscount": "Early bird discount",
+      "groupDiscount": "Group discount",
+      "groupHint": "Book for {min} or more travelers and save {percent}%"
     },
     "dayLabel": "Day",
     "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
-    "full": "Fully booked"
+    "full": "Fully booked",
+    "deals": {
+      "earlyBird": "Early bird: {percent}% off if you book by {date}",
+      "earlyShort": "{percent}% off until {date}",
+      "group": "Groups of {min}+: extra {percent}% off"
+    },
+    "waitlist": {
+      "join": "Join the waitlist",
+      "title": "Join the waitlist",
+      "subtitle": "{title} is fully booked. Leave your details and we will email you as soon as a seat frees up.",
+      "send": "Notify me",
+      "note": "No payment now. When seats free up, the first people to book get them.",
+      "doneTitle": "You're on the list!",
+      "doneText": "Thank you, {name}. We will email you as soon as a seat frees up."
+    }
+  },
+  "TripReview": {
+    "metaTitle": "Leave a review | Acacia Safaris",
+    "eyebrow": "Your review",
+    "title": "How was {trip}?",
+    "intro": "Thank you for travelling with us, {name}! Your words help other travelers choose, and help us do even better.",
+    "rating": "Your rating",
+    "stars": "{count, plural, one {# star} other {# stars}}",
+    "country": "Where are you from?",
+    "countryPlaceholder": "e.g. Rwanda, Belgium, Kenya",
+    "text": "Your experience",
+    "textPlaceholder": "What did you enjoy most? What would you tell a friend?",
+    "send": "Send my review",
+    "sending": "Sending…",
+    "thanksTitle": "Thank you!",
+    "thanksText": "Your review was received. Once our team checks it, it appears on our website.",
+    "already": "You already left a review for this trip. Thank you!",
+    "invalid": "This review link is not valid or has expired.",
+    "error": "Could not send: {error}",
+    "home": "Back to the website"
   }
 }

@@ -1155,10 +1155,48 @@
       "sentTitle": "Demande reçue !",
       "sentText": "Merci, {name}. Nous vous répondons sous 24 heures pour confirmer votre place.",
       "error": "Envoi impossible : {error}",
-      "total": "Total"
+      "total": "Total",
+      "subtotal": "Sous-total",
+      "earlyDiscount": "Remise réservation anticipée",
+      "groupDiscount": "Remise de groupe",
+      "groupHint": "Réservez pour {min} voyageurs ou plus et économisez {percent}%"
     },
     "dayLabel": "Jour",
     "seatsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
-    "full": "Complet"
+    "full": "Complet",
+    "deals": {
+      "earlyBird": "Réservation anticipée : -{percent}% si vous réservez avant le {date}",
+      "earlyShort": "-{percent}% jusqu'au {date}",
+      "group": "Groupes de {min}+ : -{percent}% en plus"
+    },
+    "waitlist": {
+      "join": "Rejoindre la liste d'attente",
+      "title": "Liste d'attente",
+      "subtitle": "{title} est complet. Laissez vos coordonnées : nous vous écrivons dès qu'une place se libère.",
+      "send": "Me prévenir",
+      "note": "Aucun paiement maintenant. Quand des places se libèrent, les premiers à réserver les obtiennent.",
+      "doneTitle": "Vous êtes sur la liste !",
+      "doneText": "Merci, {name}. Nous vous écrivons dès qu'une place se libère."
+    }
+  },
+  "TripReview": {
+    "metaTitle": "Laisser un avis | Acacia Safaris",
+    "eyebrow": "Votre avis",
+    "title": "Comment s'est passé {trip} ?",
+    "intro": "Merci d'avoir voyagé avec nous, {name} ! Vos mots aident d'autres voyageurs à choisir, et nous aident à faire encore mieux.",
+    "rating": "Votre note",
+    "stars": "{count, plural, one {# étoile} other {# étoiles}}",
+    "country": "D'où venez-vous ?",
+    "countryPlaceholder": "ex. Rwanda, Belgique, Kenya",
+    "text": "Votre expérience",
+    "textPlaceholder": "Qu'avez-vous préféré ? Que diriez-vous à un ami ?",
+    "send": "Envoyer mon avis",
+    "sending": "Envoi…",
+    "thanksTitle": "Merci !",
+    "thanksText": "Votre avis a bien été reçu. Il apparaîtra sur notre site après vérification par notre équipe.",
+    "already": "Vous avez déjà laissé un avis pour ce voyage. Merci !",
+    "invalid": "Ce lien d'avis n'est pas valide ou a expiré.",
+    "error": "Envoi impossible : {error}",
+    "home": "Retour au site"
   }
 }

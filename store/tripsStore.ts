@@ -4,7 +4,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { AdminTrip, Trip, TripBooking, TripBookingInput, TripInput, TripTicket } from "@/lib/types";
+import type { AdminTrip, Trip, TripBooking, TripBookingInput, TripInput, TripTicket, TripWaitlistEntry } from "@/lib/types";
 
 type BookingChanges = Partial<Pick<TripBooking, "status" | "payment" | "notes" | "travelers">>;
 
@@ -13,6 +13,7 @@ type TripsState = {
   publishedLoaded: boolean;
   loadPublished: () => Promise<void>;
   book: (tripId: string, input: TripBookingInput) => Promise<void>; // website
+  joinWaitlist: (tripId: string, input: Omit<TripBookingInput, "option" | "message">) => Promise<void>; // website (full trips)
 
   trips: AdminTrip[]; // admin: every trip with its booking numbers
   loading: boolean;
@@ -33,6 +34,12 @@ type TripsState = {
   // Admin > Check-in
   findTicket: (code: string) => Promise<TripTicket>;
   checkInTicket: (code: string) => Promise<{ booking: TripTicket; alreadyCheckedIn: boolean }>;
+  // Admin: people waiting for a seat, by trip id
+  waitlists: Record<string, TripWaitlistEntry[]>;
+  loadWaitlist: (tripId: string) => Promise<void>;
+  removeFromWaitlist: (entry: TripWaitlistEntry) => Promise<void>;
+  notifyWaitlist: (tripId: string) => Promise<number>; // emails sent
+  runReminders: () => Promise<{ reminders: number; reviewRequests: number }>;
   // Live updates (AdminShell)
   upsertBooking: (booking: TripBooking) => void;
   removeBooking: (id: string, tripId: string) => void;
@@ -60,6 +67,9 @@ export const useTripsStore = create<TripsState>()(
       },
       book: async (tripId, input) => {
         await api(`/trips/${tripId}/bookings`, { method: "POST", body: input });
+      },
+      joinWaitlist: async (tripId, input) => {
+        await api(`/trips/${tripId}/waitlist`, { method: "POST", body: input });
       },
 
       trips: [],
@@ -114,6 +124,22 @@ export const useTripsStore = create<TripsState>()(
       findTicket: (code) => api<TripTicket>(`/trips/tickets/${encodeURIComponent(code)}`, { admin: true }),
       checkInTicket: (code) =>
         api<{ booking: TripTicket; alreadyCheckedIn: boolean }>(`/trips/tickets/${encodeURIComponent(code)}/check-in`, { method: "POST", admin: true }),
+      waitlists: {},
+      loadWaitlist: async (tripId) => {
+        const list = await api<TripWaitlistEntry[]>(`/trips/all/${tripId}/waitlist`, { admin: true });
+        set((s) => ({ waitlists: { ...s.waitlists, [tripId]: list } }), false, "trips/loadWaitlist");
+      },
+      removeFromWaitlist: async (entry) => {
+        await api(`/trips/waitlist/${entry.id}`, { method: "DELETE", admin: true });
+        await get().loadWaitlist(entry.tripId);
+        get().loadAll();
+      },
+      notifyWaitlist: async (tripId) => {
+        const { sent } = await api<{ sent: number }>(`/trips/all/${tripId}/waitlist/notify`, { method: "POST", admin: true });
+        await get().loadWaitlist(tripId);
+        return sent;
+      },
+      runReminders: () => api(`/trips/reminders/run`, { method: "POST", admin: true }),
       // The trip's numbers (seats, new bookings) come from the server: reload them
       upsertBooking: (booking) => {
         set(

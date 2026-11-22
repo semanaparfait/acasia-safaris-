@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, ChevronLeft, ChevronRight, Clock, Expand, MapPin, Minus, Sparkles, Star, Tag, Users, X,
+  ArrowLeft, ArrowRight, BellRing, CalendarDays, Gift, Check, CheckCircle2, ChevronLeft, ChevronRight, Clock, Expand, MapPin, Minus, Sparkles, Star, Tag, Users, X,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useLocale, useTranslations } from "next-intl";
@@ -16,7 +16,7 @@ import { Link } from "@/i18n/navigation";
 import SmartImage from "@/components/ui/smart-image";
 import { TripMoney } from "@/components/ui/money";
 import { PhoneField } from "@/components/ui/phone-field";
-import { bookingTotal, fromPrice, tripDates, tripDays } from "@/lib/trips";
+import { bookingSubtotal, bookingTotal, earlyBird, fromPrice, tripDates, tripDays, tripDiscount } from "@/lib/trips";
 import { whatsappLink, useWhatsAppTopic } from "@/lib/whatsapp";
 import type { Trip, TripPrice } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
@@ -42,9 +42,12 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
 
   const defaultOption = (trip.prices.find((p) => p.popular) ?? trip.prices[0])?.name ?? "";
   const full = trip.seatsLeft === 0;
-  const reserve = (option: string) => {
-    if (!full) setReserving(option);
-  };
+  const [waiting, setWaiting] = useState(false); // the waitlist form
+  // Full: "Reserve" becomes "Join the waitlist"
+  const reserve = (option: string) => (full ? setWaiting(true) : setReserving(option));
+  const early = earlyBird(trip);
+  const group = trip.groupPercent && trip.groupMinTravelers ? { percent: trip.groupPercent, min: trip.groupMinTravelers } : null;
+  const dealDate = early ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(early.until)) : "";
   const sections = [
     { id: "overview", label: t("nav.overview"), show: true },
     { id: "photos", label: t("nav.gallery"), show: trip.images.length > 1 },
@@ -82,6 +85,11 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
             {(trip.duration || days > 0) && <HeroChip icon={<Clock size={15} />}>{trip.duration ?? tc("days", { count: days })}</HeroChip>}
             {!dates && <HeroChip icon={<CalendarDays size={15} />}>{t("datesOnRequest")}</HeroChip>}
             {trip.groupSize && <HeroChip icon={<Users size={15} />}>{trip.groupSize}</HeroChip>}
+            {early && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#0a1811]/80 px-4 py-2 font-semibold text-[#d4af37] ring-1 ring-[#d4af37]/50 backdrop-blur-md">
+                <Gift size={15} /> {t("deals.earlyShort", { percent: early.percent, date: dealDate })}
+              </span>
+            )}
             {trip.seatsLeft != null && (
               <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold ${full ? "bg-red-600/90" : "bg-[#c5a86d] text-[#0e1d16]"}`}>
                 {full ? t("full") : t("seatsLeft", { count: trip.seatsLeft })}
@@ -92,8 +100,8 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
             <a href="#prices" className="inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-7 py-3.5 text-sm font-bold text-[#0e1d16] shadow-lg shadow-black/30 transition-all hover:-translate-y-0.5 hover:bg-[#d4b97f]">
               {t("seePrices")} <ArrowRight size={16} />
             </a>
-            <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 rounded-lg border border-white/40 bg-white/10 px-7 py-3.5 text-sm font-semibold backdrop-blur-md transition-colors hover:bg-white/20 cursor-pointer">
-              {full ? t("full") : t("reserve")}
+            <button onClick={() => reserve(defaultOption)} className="inline-flex items-center gap-2 rounded-lg border border-white/40 bg-white/10 px-7 py-3.5 text-sm font-semibold backdrop-blur-md transition-colors hover:bg-white/20 cursor-pointer">
+              {full ? t("waitlist.join") : t("reserve")}
             </button>
           </motion.div>
         </div>
@@ -117,8 +125,8 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{t("from")}</span>
                 <TripMoney amount={from} currency={trip.currency} className="font-serif text-xl font-bold text-[#0a1811]" />
               </p>
-              <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed rounded-lg bg-[#0a1811] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#b28236] transition-colors cursor-pointer">
-                {full ? t("full") : t("reserve")}
+              <button onClick={() => reserve(defaultOption)} className="rounded-lg bg-[#0a1811] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#b28236] transition-colors cursor-pointer">
+                {full ? t("waitlist.join") : t("reserve")}
               </button>
             </div>
           )}
@@ -241,6 +249,20 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
               <span className={`text-xs font-semibold uppercase tracking-[0.35em] ${GOLD}`}>{t("pricesEyebrow")}</span>
               <h2 className="mt-3 font-serif text-3xl font-bold text-[#0a1811] sm:text-5xl">{t("pricesTitle")}</h2>
               <p className="mt-4 text-neutral-500">{t("pricesSubtitle")}</p>
+              {(early || group) && (
+                <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+                  {early && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[#0a1811] px-4 py-2 text-sm font-semibold text-white shadow-md">
+                      <Gift size={15} className="text-[#d4af37]" /> {t("deals.earlyBird", { percent: early.percent, date: dealDate })}
+                    </span>
+                  )}
+                  {group && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[#c5a86d] px-4 py-2 text-sm font-semibold text-[#0e1d16] shadow-md">
+                      <Users size={15} /> {t("deals.group", { percent: group.percent, min: group.min })}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div
@@ -249,7 +271,7 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
               }`}
             >
               {trip.prices.map((p, i) => (
-                <PriceCard key={i} option={p} currency={trip.currency} index={i} full={full} onReserve={() => reserve(p.name)} />
+                <PriceCard key={i} option={p} currency={trip.currency} index={i} full={full} earlyPercent={early?.percent ?? 0} onReserve={() => reserve(p.name)} />
               ))}
             </div>
 
@@ -265,8 +287,8 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
           <h2 className="font-serif text-3xl font-bold sm:text-5xl">{t("ctaTitle")}</h2>
           <p className="mx-auto mt-4 max-w-xl text-zinc-300">{t("ctaText")}</p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
-            <button disabled={full} onClick={() => reserve(defaultOption)} className="disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-8 py-4 text-sm font-bold text-[#0e1d16] shadow-lg hover:bg-[#d4b97f] transition-colors cursor-pointer">
-              {full ? t("full") : t("reserve")} <ArrowRight size={16} />
+            <button onClick={() => reserve(defaultOption)} className="inline-flex items-center gap-2 rounded-lg bg-[#c5a86d] px-8 py-4 text-sm font-bold text-[#0e1d16] shadow-lg hover:bg-[#d4b97f] transition-colors cursor-pointer">
+              {full ? t("waitlist.join") : t("reserve")} <ArrowRight size={16} />
             </button>
             <a
               href={whatsappLink(t("whatsappMessage", { title: trip.title, url }))}
@@ -282,6 +304,7 @@ export default function TripPage({ trip, url }: { trip: Trip; url: string }) {
 
       <AnimatePresence>
         {reserving !== null && <ReserveModal trip={trip} option={reserving} onClose={() => setReserving(null)} />}
+        {waiting && <WaitlistModal trip={trip} onClose={() => setWaiting(false)} />}
       </AnimatePresence>
       {photo !== null && <PhotoViewer images={trip.images} index={photo} onChange={setPhoto} onClose={() => setPhoto(null)} />}
     </div>
@@ -320,7 +343,7 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
   );
 }
 
-function PriceCard({ option: p, currency, index, full, onReserve }: { option: TripPrice; currency: string; index: number; full: boolean; onReserve: () => void }) {
+function PriceCard({ option: p, currency, index, full, earlyPercent, onReserve }: { option: TripPrice; currency: string; index: number; full: boolean; earlyPercent: number; onReserve: () => void }) {
   const t = useTranslations("Trips");
   const dark = p.popular;
   return (
@@ -344,7 +367,18 @@ function PriceCard({ option: p, currency, index, full, onReserve }: { option: Tr
       {p.description && <p className={`mt-2 text-sm leading-relaxed ${dark ? "text-white/65" : "text-neutral-500"}`}>{p.description}</p>}
 
       <div className={`mt-6 border-y py-6 ${dark ? "border-white/10" : "border-neutral-100"}`}>
-        <TripMoney amount={p.price} currency={currency} className={`font-serif text-5xl font-bold tracking-tight ${dark ? "text-[#d4af37]" : "text-[#0a1811]"}`} approxClassName={dark ? "text-white" : ""} />
+        {earlyPercent > 0 && (
+          <p className={`mb-1 flex items-center gap-2 text-sm ${dark ? "text-white/55" : "text-neutral-400"}`}>
+            <TripMoney amount={p.price} currency={currency} className="line-through" />
+            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white no-underline">-{earlyPercent}%</span>
+          </p>
+        )}
+        <TripMoney
+          amount={bookingTotal({ price: p.price, unit: "per person", travelers: 1, discountPercent: earlyPercent })}
+          currency={currency}
+          className={`font-serif text-5xl font-bold tracking-tight ${dark ? "text-[#d4af37]" : "text-[#0a1811]"}`}
+          approxClassName={dark ? "text-white" : ""}
+        />
         <p className={`mt-1 text-sm ${dark ? "text-white/55" : "text-neutral-500"}`}>{p.unit}</p>
       </div>
 
@@ -381,12 +415,11 @@ function PriceCard({ option: p, currency, index, full, onReserve }: { option: Tr
 
       <button
         onClick={onReserve}
-        disabled={full}
-        className={`disabled:opacity-60 disabled:cursor-not-allowed mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold transition-all cursor-pointer ${
+        className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold transition-all cursor-pointer ${
           dark ? "bg-[#c5a86d] text-[#0e1d16] hover:bg-[#d4b97f]" : "bg-[#0a1811] text-white hover:bg-[#b28236]"
         }`}
       >
-        {full ? t("full") : t("choose", { name: p.name })} {!full && <ArrowRight size={16} />}
+        {full ? t("waitlist.join") : t("choose", { name: p.name })} <ArrowRight size={16} />
       </button>
     </motion.article>
   );
@@ -622,16 +655,158 @@ function ReserveModal({ trip, option, onClose }: { trip: Trip; option: string; o
                 <textarea rows={3} maxLength={2000} placeholder={t("messagePlaceholder")} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={input} />
               </label>
             </div>
-            {chosen && (
-              <div className="flex items-center justify-between rounded-xl bg-[#f7f5f0] px-4 py-3 text-sm">
-                <span className="text-neutral-600">{t("total")}</span>
-                <TripMoney amount={bookingTotal({ price: chosen.price, unit: chosen.unit, travelers: form.travelers })} currency={currency} className="text-base font-bold text-[#0a1811]" />
-              </div>
-            )}
+            {chosen && <ReserveTotal trip={trip} price={chosen.price} unit={chosen.unit} travelers={form.travelers} />}
             {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{t("error", { error })}</p>}
             <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a1811] py-4 text-sm font-bold text-white transition-colors hover:bg-[#b28236] disabled:opacity-60 cursor-pointer">
               {sending ? t("sending") : t("send")} {!sending && <ArrowRight size={16} />}
             </button>
+          </form>
+        )}
+      </motion.div>
+    </motion.div>,
+    document.body,
+  );
+}
+
+// The reservation total, with the early bird and group discounts the traveler gets now
+function ReserveTotal({ trip, price, unit, travelers }: { trip: Trip; price: number; unit: string; travelers: number }) {
+  const t = useTranslations("Trips.form");
+  const d = tripDiscount(trip, travelers);
+  const subtotal = bookingSubtotal({ price, unit, travelers });
+  const total = bookingTotal({ price, unit, travelers, discountPercent: d.percent });
+  const groupHint = trip.groupPercent && trip.groupMinTravelers && !d.group ? t("groupHint", { min: trip.groupMinTravelers, percent: trip.groupPercent }) : null;
+  return (
+    <div className="space-y-1.5 rounded-xl bg-[#f7f5f0] px-4 py-3 text-sm">
+      {d.percent > 0 && (
+        <>
+          <div className="flex items-center justify-between text-neutral-500">
+            <span>{t("subtotal")}</span>
+            <TripMoney amount={subtotal} currency={trip.currency} />
+          </div>
+          {d.early > 0 && (
+            <div className="flex items-center justify-between font-medium text-emerald-700">
+              <span>{t("earlyDiscount", { percent: d.early })}</span>
+              <span>−{d.early}%</span>
+            </div>
+          )}
+          {d.group > 0 && (
+            <div className="flex items-center justify-between font-medium text-emerald-700">
+              <span>{t("groupDiscount", { percent: d.group })}</span>
+              <span>−{d.group}%</span>
+            </div>
+          )}
+        </>
+      )}
+      <div className={`flex items-center justify-between ${d.percent > 0 ? "border-t border-neutral-200 pt-1.5" : ""}`}>
+        <span className="text-neutral-600">{t("total")}</span>
+        <TripMoney amount={total} currency={trip.currency} className="text-base font-bold text-[#0a1811]" />
+      </div>
+      {groupHint && <p className="text-xs text-[#8a6d2f]">{groupHint}</p>}
+    </div>
+  );
+}
+
+// The trip is full: wait for a seat. Everyone waiting is emailed when seats free up.
+function WaitlistModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
+  const t = useTranslations("Trips.waitlist");
+  const tf = useTranslations("Trips.form");
+  const locale = useLocale();
+  const joinWaitlist = useTripsStore((s) => s.joinWaitlist);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", travelers: 2 });
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    setError("");
+    try {
+      await joinWaitlist(trip.id, {
+        customer: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone || undefined,
+        travelers: form.travelers,
+        locale,
+      });
+      setDone(true);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const input = "w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#c5a86d] focus:ring-4 focus:ring-[#c5a86d]/15";
+  const label = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500";
+
+  return createPortal(
+    <motion.div className="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("title")}
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
+        transition={{ type: "spring", damping: 30, stiffness: 320 }}
+        className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+      >
+        <div className="relative bg-[#0a1811] px-6 pb-6 pt-7 text-white">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-[#c5a86d]/15 text-[#d4af37]">
+            <BellRing size={22} />
+          </span>
+          <p className="mt-4 font-serif text-2xl font-bold">{t("title")}</p>
+          <p className="mt-1.5 text-sm text-white/65">{t("subtitle", { title: trip.title })}</p>
+          <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 cursor-pointer">
+            <X size={18} />
+          </button>
+        </div>
+        {done ? (
+          <div className="p-8 text-center">
+            <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <CheckCircle2 size={34} />
+            </span>
+            <h3 className="mt-5 font-serif text-2xl font-bold text-[#0a1811]">{t("doneTitle")}</h3>
+            <p className="mt-2 text-neutral-600">{t("doneText", { name: form.name.split(" ")[0] })}</p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-4 p-6">
+            <label className="block">
+              <span className={label}>{tf("name")}</span>
+              <input required minLength={2} autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={input} />
+            </label>
+            <div className="grid gap-4 sm:grid-cols-[1fr_110px]">
+              <label className="block">
+                <span className={label}>{tf("email")}</span>
+                <input required type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={input} />
+              </label>
+              <label className="block">
+                <span className={label}>{tf("travelers")}</span>
+                <input required type="number" min={1} max={50} value={form.travelers} onChange={(e) => setForm({ ...form, travelers: Math.min(50, Math.max(1, Number(e.target.value) || 1)) })} className={input} />
+              </label>
+            </div>
+            <div>
+              <label htmlFor="wait-phone" className={label}>{tf("phone")}</label>
+              <PhoneField id="wait-phone" value={form.phone} onChange={(phone) => setForm({ ...form, phone })} className={input} />
+            </div>
+            {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{tf("error", { error })}</p>}
+            <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a1811] py-4 text-sm font-bold text-white transition-colors hover:bg-[#b28236] disabled:opacity-60 cursor-pointer">
+              <BellRing size={16} /> {sending ? tf("sending") : t("send")}
+            </button>
+            <p className="text-center text-xs text-neutral-400">{t("note")}</p>
           </form>
         )}
       </motion.div>

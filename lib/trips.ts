@@ -39,10 +39,31 @@ export function formatPrice(amount: number, currency: string, locale = "en-US") 
   }
 }
 
-// What a booking costs: "per person" × travelers, "per couple" × couples, "per group" once
-export function bookingTotal(b: { price: number; unit: string; travelers: number }) {
+// What a booking costs before discounts: "per person" × travelers, "per couple" × couples, "per group" once
+export function bookingSubtotal(b: { price: number; unit: string; travelers: number }) {
   const unit = b.unit.toLowerCase();
   if (unit.includes("group")) return b.price;
   if (unit.includes("couple")) return b.price * Math.ceil(b.travelers / 2);
   return b.price * b.travelers;
+}
+
+// The total after the discount (same as bookingTotal in backend/src/trips/trips.service.ts)
+export function bookingTotal(b: { price: number; unit: string; travelers: number; discountPercent?: number | null }) {
+  const total = bookingSubtotal(b) * (1 - (b.discountPercent ?? 0) / 100);
+  return Number.isInteger(b.price) ? Math.round(total) : Math.round(total * 100) / 100;
+}
+
+type DiscountTrip = Pick<Trip, "earlyBirdPercent" | "earlyBirdUntil" | "groupPercent" | "groupMinTravelers">;
+
+// The early bird deal while it lasts (the last day included), or null
+export function earlyBird(trip: DiscountTrip, now = new Date()) {
+  if (!trip.earlyBirdPercent || !trip.earlyBirdUntil) return null;
+  return now.toISOString().slice(0, 10) <= trip.earlyBirdUntil.slice(0, 10) ? { percent: trip.earlyBirdPercent, until: trip.earlyBirdUntil } : null;
+}
+
+// The discount a booking would get now (the server works it out again when booking)
+export function tripDiscount(trip: DiscountTrip, travelers: number, now = new Date()) {
+  const early = earlyBird(trip, now);
+  const group = trip.groupPercent && trip.groupMinTravelers && travelers >= trip.groupMinTravelers ? trip.groupPercent : 0;
+  return { early: early?.percent ?? 0, group, percent: Math.min(90, (early?.percent ?? 0) + group) };
 }

@@ -7,9 +7,9 @@ import Link from "next/link";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { FaWhatsapp } from "react-icons/fa";
-import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Mail, MailCheck, MessageSquareText, Pencil, QrCode, Send, StickyNote, Trash2, Users, Wallet } from "lucide-react";
+import { ArrowLeft, BellRing, CalendarDays, CheckCircle2, Clock, Download, ExternalLink, Mail, MailCheck, MessageSquareText, Pencil, QrCode, Send, StickyNote, Trash2, Users, Wallet } from "lucide-react";
 import { bookingTotal, formatPrice } from "@/lib/trips";
-import { TRIP_BOOKING_STATUSES, TRIP_PAYMENT_STATUSES, type AdminTrip, type TripBooking } from "@/lib/types";
+import { TRIP_BOOKING_STATUSES, TRIP_PAYMENT_STATUSES, type AdminTrip, type TripBooking, type TripWaitlistEntry } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
 import { Badge, Button, Card, ConfirmDialog, EmptyState, Modal, SearchInput, Tabs, inputClass, labelClass, type Tone } from "../../../components/ui";
 
@@ -69,8 +69,8 @@ export default function TripBookingsPage({ params }: { params: Promise<{ id: str
 
   const exportCsv = () => {
     const rows = [
-      ["Booked on", "Name", "Email", "Phone", "Option", "Travelers", `Total (${currency})`, "Status", "Payment", "Ticket", "Checked in", "Message", "Notes"],
-      ...list.map((b) => [when(b.createdAt), b.customer, b.email, b.phone ?? "", b.option, String(b.travelers), String(bookingTotal(b)), b.status, b.payment, b.ticketCode ?? "", b.checkedInAt ? when(b.checkedInAt) : "", b.message ?? "", b.notes ?? ""]),
+      ["Booked on", "Name", "Email", "Phone", "Option", "Travelers", `Total (${currency})`, "Discount", "Status", "Payment", "Ticket", "Checked in", "Message", "Notes"],
+      ...list.map((b) => [when(b.createdAt), b.customer, b.email, b.phone ?? "", b.option, String(b.travelers), String(bookingTotal(b)), b.discountNote ?? "", b.status, b.payment, b.ticketCode ?? "", b.checkedInAt ? when(b.checkedInAt) : "", b.message ?? "", b.notes ?? ""]),
     ];
     const csv = rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
@@ -192,6 +192,7 @@ export default function TripBookingsPage({ params }: { params: Promise<{ id: str
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <p className="font-semibold tabular-nums">{formatPrice(bookingTotal(b), b.currency)}</p>
                       <p className="text-[11px] text-[#0a120b]/45">{formatPrice(b.price, b.currency)} {b.unit}</p>
+                      {b.discountPercent > 0 && <p className="text-[11px] font-medium text-[#2E7D5B]">{b.discountNote ?? `-${b.discountPercent}%`}</p>}
                     </td>
                     <td className="px-4 py-3">
                       <select
@@ -252,6 +253,8 @@ export default function TripBookingsPage({ params }: { params: Promise<{ id: str
           </div>
         )}
       </Card>
+
+      <WaitlistPanel tripId={id} seatsLeft={trip?.seatsLeft ?? null} />
 
       {open && <BookingDetails key={open.id} booking={list.find((b) => b.id === open.id) ?? open} trip={trip} onClose={() => setOpen(null)} />}
 
@@ -330,6 +333,9 @@ function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; t
     ["Phone", b.phone ? <a key="p" href={`https://wa.me/${digits(b.phone)}`} target="_blank" rel="noopener noreferrer" className="text-[#2E7D5B] hover:underline">{b.phone} (WhatsApp)</a> : "—"],
     ["Option", `${b.option} · ${formatPrice(b.price, b.currency)} ${b.unit}`],
     ["Total", formatPrice(bookingTotal(b), b.currency)],
+    ...(b.discountPercent > 0 ? ([["Discount", b.discountNote ?? `-${b.discountPercent}%`]] as [string, React.ReactNode][]) : []),
+    ...(b.reminderSentAt ? ([["Reminder", `Emailed ${when(b.reminderSentAt)}`]] as [string, React.ReactNode][]) : []),
+    ...(b.reviewRequestAt || b.reviewedAt ? ([["Review", b.reviewedAt ? `Left a review ${when(b.reviewedAt)} (see Admin > Reviews)` : `Asked ${when(b.reviewRequestAt!)}`]] as [string, React.ReactNode][]) : []),
     ["Booked on", when(b.createdAt)],
     ...(b.paidAt ? ([["Paid on", when(b.paidAt)]] as [string, React.ReactNode][]) : []),
     ["Website language", { en: "English", fr: "French", sw: "Swahili" }[b.locale] ?? b.locale],
@@ -398,5 +404,87 @@ function BookingDetails({ booking: b, trip, onClose }: { booking: TripBooking; t
         </label>
       </div>
     </Modal>
+  );
+}
+
+// People waiting for a seat. When seats free up they are emailed automatically;
+// "Email the waitlist" does it by hand (only while seats are free).
+function WaitlistPanel({ tripId, seatsLeft }: { tripId: string; seatsLeft: number | null }) {
+  const list = useTripsStore((s) => s.waitlists[tripId]);
+  const loadWaitlist = useTripsStore((s) => s.loadWaitlist);
+  const removeFromWaitlist = useTripsStore((s) => s.removeFromWaitlist);
+  const notifyWaitlist = useTripsStore((s) => s.notifyWaitlist);
+  const [sending, setSending] = useState(false);
+  const [removing, setRemoving] = useState<TripWaitlistEntry | null>(null);
+
+  useEffect(() => {
+    loadWaitlist(tripId).catch(() => {});
+  }, [tripId, loadWaitlist]);
+
+  if (!list || list.length === 0) return null;
+  const waiting = list.filter((w) => !w.notifiedAt).length;
+
+  const notify = async () => {
+    setSending(true);
+    try {
+      const sent = await notifyWaitlist(tripId);
+      toast.success(sent ? `Emailed ${sent} ${sent === 1 ? "person" : "people"} on the waitlist` : "Nobody to email: no free seats, or everyone was already told");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Card className="mt-5 overflow-hidden">
+      <div className="p-4 border-b border-[#0a120b]/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-[15px] font-semibold flex items-center gap-2"><Clock className="size-4 text-[#c5a86d]" /> Waitlist · {list.length}</h2>
+          <p className="text-xs text-[#0a120b]/50 mt-0.5">
+            When seats free up (a cancellation, or more seats), everyone waiting is emailed automatically. First to book gets the seat.
+          </p>
+        </div>
+        <Button variant="secondary" onClick={notify} disabled={sending || waiting === 0 || seatsLeft === 0}>
+          <BellRing className="size-4" /> {sending ? "Sending…" : "Email the waitlist"}
+        </Button>
+      </div>
+      <div className="divide-y divide-[#0a120b]/[0.05]">
+        {list.map((w, i) => (
+          <div key={w.id} className="px-5 py-3 flex items-center gap-4 text-sm">
+            <span className="size-7 shrink-0 rounded-full bg-[#f7f5f0] text-xs font-semibold flex items-center justify-center">{i + 1}</span>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{w.customer} <span className="text-[#0a120b]/45 font-normal">· {w.travelers} {w.travelers === 1 ? "traveler" : "travelers"}</span></p>
+              <p className="text-xs text-[#0a120b]/50 truncate">{w.email}{w.phone ? ` · ${w.phone}` : ""} · waiting since {when(w.createdAt)}</p>
+            </div>
+            {w.notifiedAt ? <Badge tone="green">Emailed {format(new Date(w.notifiedAt), "d MMM")}</Badge> : <Badge tone="amber">Waiting</Badge>}
+            <div className="flex gap-0.5">
+              {w.phone && (
+                <a href={`https://wa.me/${digits(w.phone)}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="p-1.5 rounded-lg text-[#25D366] hover:bg-[#25D366]/10">
+                  <FaWhatsapp className="size-4" />
+                </a>
+              )}
+              <a href={`mailto:${w.email}`} title="Email" className="p-1.5 rounded-lg text-[#0a120b]/50 hover:bg-[#0a120b]/5"><Mail className="size-4" /></a>
+              <button onClick={() => setRemoving(w)} title="Remove" className="p-1.5 rounded-lg text-[#0a120b]/50 hover:text-red-600 hover:bg-red-50 cursor-pointer"><Trash2 className="size-4" /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={async () => {
+          if (!removing) return;
+          try {
+            await removeFromWaitlist(removing);
+            toast.success("Removed from the waitlist");
+          } catch (err) {
+            toast.error((err as Error).message);
+          }
+        }}
+        title="Remove from waitlist"
+        message="Remove this person from the waitlist? They will not be emailed when seats free up."
+      />
+    </Card>
   );
 }

@@ -1,5 +1,10 @@
 import { adminTripHtml, tripTicketHtml } from './trip-emails';
-import { bookingTotal, formatMoney } from './trips.service';
+import {
+  bookingSubtotal,
+  bookingTotal,
+  formatMoney,
+  tripDiscount,
+} from './trips.service';
 
 describe('trip receipts', () => {
   it('works out the total from the unit', () => {
@@ -56,5 +61,41 @@ describe('trip receipts', () => {
       link: 'https://x',
     });
     expect(admin).not.toContain('<img src=x');
+  });
+});
+
+describe('trip discounts', () => {
+  const trip = {
+    earlyBirdPercent: 10,
+    earlyBirdUntil: new Date('2026-11-30'),
+    groupPercent: 5,
+    groupMinTravelers: 6,
+  };
+
+  it('gives the early bird discount until the last day (included)', () => {
+    expect(
+      tripDiscount(trip, 2, new Date('2026-11-30T20:00:00Z')).percent,
+    ).toBe(10);
+    expect(
+      tripDiscount(trip, 2, new Date('2026-12-01T08:00:00Z')).percent,
+    ).toBe(0);
+  });
+
+  it('adds the group discount from the minimum number of travelers', () => {
+    const d = tripDiscount(trip, 6, new Date('2026-11-01'));
+    expect(d.percent).toBe(15);
+    expect(d.note).toBe('Early bird -10% · Group of 6+ -5%');
+    expect(tripDiscount(trip, 5, new Date('2026-12-05')).percent).toBe(0);
+  });
+
+  it('never gives more than 90% off', () => {
+    const big = { ...trip, earlyBirdPercent: 80, groupPercent: 50 };
+    expect(tripDiscount(big, 10, new Date('2026-11-01')).percent).toBe(90);
+  });
+
+  it('applies the discount to the total', () => {
+    const b = { price: 100000, unit: 'per person', travelers: 6 };
+    expect(bookingSubtotal(b)).toBe(600000);
+    expect(bookingTotal({ ...b, discountPercent: 15 })).toBe(510000);
   });
 });

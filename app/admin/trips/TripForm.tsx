@@ -9,7 +9,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
-  ArrowDown, ArrowLeft, ArrowUp, CalendarDays, CheckCircle2, Compass, Copy, Eye, ImagePlus, Loader2, Plus, Sparkles, Star, Tag, Trash2, X, XCircle,
+  ArrowDown, ArrowLeft, ArrowUp, CalendarDays, CheckCircle2, Compass, Copy, Eye, ImagePlus, Loader2, Percent, Plus, Sparkles, Star, Tag, Trash2, X, XCircle,
 } from "lucide-react";
 import { uploadImage } from "@/lib/api";
 import { TRIP_CURRENCIES, formatPrice } from "@/lib/trips";
@@ -42,6 +42,10 @@ export const blankTrip: TripInput = {
   prices: [{ ...blankPrice(), name: "Standard" }],
   currency: "USD",
   seats: null,
+  earlyBirdPercent: null,
+  earlyBirdUntil: null,
+  groupPercent: null,
+  groupMinTravelers: null,
   active: false,
 };
 
@@ -61,6 +65,10 @@ export const toInput = (t: Trip): TripInput => ({
   prices: t.prices,
   currency: t.currency ?? "USD",
   seats: t.seats ?? null,
+  earlyBirdPercent: t.earlyBirdPercent ?? null,
+  earlyBirdUntil: t.earlyBirdUntil?.slice(0, 10) ?? null,
+  groupPercent: t.groupPercent ?? null,
+  groupMinTravelers: t.groupMinTravelers ?? null,
   active: t.active,
 });
 
@@ -163,6 +171,8 @@ export default function TripForm({
     form.description.trim().length < 10 && "a description (10 characters or more)",
     !pricesOk && "a name and a price for each price option",
     datesWrong && "an end date after the start date",
+    (form.earlyBirdPercent == null) !== (form.earlyBirdUntil == null) && "both the % and the last day of the early bird discount",
+    (form.groupPercent == null) !== (form.groupMinTravelers == null) && "both the % and the number of travelers of the group discount",
   ].filter(Boolean) as string[];
 
   const submit = async (e: React.FormEvent) => {
@@ -409,6 +419,47 @@ export default function TripForm({
               <option value="per group" />
               <option value="per child" />
             </datalist>
+          </Section>
+
+          <Section
+            icon={Percent}
+            title="Discounts"
+            subtitle="Optional. Shown on the trip page and taken off the total when booking. Both can add up (at most 90%)."
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-[#0a120b]/10 bg-[#fbfaf7] p-4 space-y-3">
+                <p className="text-sm font-semibold">Early bird</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className={labelClass}>% off</span>
+                    <input type="number" min={1} max={90} className={inputClass} value={form.earlyBirdPercent ?? ""} onChange={(e) => set("earlyBirdPercent", e.target.value ? Math.min(90, Math.max(1, Math.round(Number(e.target.value)))) : null)} placeholder="e.g. 10" />
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>Until (last day)</span>
+                    <input type="date" className={inputClass} max={form.startDate ?? undefined} value={form.earlyBirdUntil ?? ""} onChange={(e) => set("earlyBirdUntil", e.target.value || null)} />
+                  </label>
+                </div>
+                <p className="text-xs text-[#0a120b]/50">
+                  {form.earlyBirdPercent && form.earlyBirdUntil ? `${form.earlyBirdPercent}% off for bookings made until ${form.earlyBirdUntil}.` : "Rewards people who book early."}
+                </p>
+              </div>
+              <div className="rounded-xl border border-[#0a120b]/10 bg-[#fbfaf7] p-4 space-y-3">
+                <p className="text-sm font-semibold">Group</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className={labelClass}>% off</span>
+                    <input type="number" min={1} max={90} className={inputClass} value={form.groupPercent ?? ""} onChange={(e) => set("groupPercent", e.target.value ? Math.min(90, Math.max(1, Math.round(Number(e.target.value)))) : null)} placeholder="e.g. 5" />
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>From travelers</span>
+                    <input type="number" min={2} max={100} className={inputClass} value={form.groupMinTravelers ?? ""} onChange={(e) => set("groupMinTravelers", e.target.value ? Math.max(2, Math.round(Number(e.target.value))) : null)} placeholder="e.g. 6" />
+                  </label>
+                </div>
+                <p className="text-xs text-[#0a120b]/50">
+                  {form.groupPercent && form.groupMinTravelers ? `${form.groupPercent}% off for ${form.groupMinTravelers} travelers or more in one booking.` : "Rewards families and friends booking together."}
+                </p>
+              </div>
+            </div>
           </Section>
         </div>
 

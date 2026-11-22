@@ -1155,10 +1155,48 @@
       "sentTitle": "Ombi limepokelewa!",
       "sentText": "Asante, {name}. Tutakujibu ndani ya saa 24 kuthibitisha nafasi yako.",
       "error": "Imeshindwa kutuma: {error}",
-      "total": "Jumla"
+      "total": "Jumla",
+      "subtotal": "Jumla ndogo",
+      "earlyDiscount": "Punguzo la kuhifadhi mapema",
+      "groupDiscount": "Punguzo la kundi",
+      "groupHint": "Hifadhi kwa wasafiri {min} au zaidi upate punguzo la {percent}%"
     },
     "dayLabel": "Siku",
     "seatsLeft": "{count, plural, one {Nafasi # imebaki} other {Nafasi # zimebaki}}",
-    "full": "Imejaa"
+    "full": "Imejaa",
+    "deals": {
+      "earlyBird": "Hifadhi mapema: punguzo la {percent}% ukihifadhi kabla ya {date}",
+      "earlyShort": "Punguzo {percent}% hadi {date}",
+      "group": "Makundi ya {min}+: punguzo la ziada {percent}%"
+    },
+    "waitlist": {
+      "join": "Jiunge na orodha ya kusubiri",
+      "title": "Orodha ya kusubiri",
+      "subtitle": "{title} imejaa. Acha maelezo yako na tutakutumia barua pepe nafasi ikipatikana.",
+      "send": "Nijulishe",
+      "note": "Hakuna malipo sasa. Nafasi zikipatikana, wanaohifadhi kwanza ndio wanaozipata.",
+      "doneTitle": "Uko kwenye orodha!",
+      "doneText": "Asante, {name}. Tutakutumia barua pepe nafasi ikipatikana."
+    }
+  },
+  "TripReview": {
+    "metaTitle": "Andika maoni | Acacia Safaris",
+    "eyebrow": "Maoni yako",
+    "title": "{trip} ilikuwaje?",
+    "intro": "Asante kwa kusafiri nasi, {name}! Maneno yako yanasaidia wasafiri wengine kuchagua, na yanatusaidia kuboresha zaidi.",
+    "rating": "Alama yako",
+    "stars": "{count, plural, one {nyota #} other {nyota #}}",
+    "country": "Unatoka wapi?",
+    "countryPlaceholder": "mf. Rwanda, Ubelgiji, Kenya",
+    "text": "Uzoefu wako",
+    "textPlaceholder": "Ulifurahia nini zaidi? Ungemwambia nini rafiki?",
+    "send": "Tuma maoni yangu",
+    "sending": "Inatuma…",
+    "thanksTitle": "Asante!",
+    "thanksText": "Maoni yako yamepokelewa. Yataonekana kwenye tovuti yetu baada ya timu yetu kuyakagua.",
+    "already": "Tayari umeandika maoni ya safari hii. Asante!",
+    "invalid": "Kiungo hiki cha maoni si sahihi au kimeisha muda.",
+    "error": "Imeshindwa kutuma: {error}",
+    "home": "Rudi kwenye tovuti"
   }
 }
