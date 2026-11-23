@@ -59,7 +59,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         { name: "Customers", href: "/admin/customers", icon: Users },
         { name: "Workers", href: "/admin/workers", icon: UserCog },
         { name: "Roles", href: "/admin/roles", icon: BriefcaseBusiness },
-        { name: "Messages", href: "/admin/messages", icon: Mail, count: messages.filter((m) => !m.read).length },
+        // Count = unread contact messages + booking chats waiting for a reply
+        { name: "Messages", href: "/admin/messages", icon: Mail, count: messages.filter((m) => !m.read).length + bookings.filter((b) => b.needsReply).length },
       ],
     },
     {

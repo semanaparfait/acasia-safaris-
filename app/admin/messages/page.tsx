@@ -3,11 +3,24 @@
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import toast from "react-hot-toast";
-import { Star, Trash2, Reply, Inbox, MailOpen, Send, ArrowLeft } from "lucide-react";
+import { Star, Trash2, Reply, Inbox, MailOpen, Send, ArrowLeft, MessageCircle, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useMessagesStore } from "@/store/messagesStore";
+import { useBookingsStore } from "@/store/bookingsStore";
+import type { Booking, Message } from "@/lib/types";
+import BookingConversation from "../bookings/BookingConversation";
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchInput, Tabs, inputClass } from "../components/ui";
 
-type Filter = "all" | "unread" | "starred";
+type Filter = "all" | "unread" | "chats" | "starred";
+
+// Booking conversations (customers writing from their booking page) are listed here too,
+// so a new message is seen at once. "Unread" = the customer wrote last (needsReply).
+const tripName = (b: Booking) => b.package?.title ?? (b.destinations.map((d) => d.title).join(", ") || "Custom trip");
+const lastChat = (b: Booking) => [...b.messages].reverse().find((m) => !m.event) ?? b.messages.at(-1);
+
+type Row =
+  | { kind: "mail"; id: string; at: string; m: Message }
+  | { kind: "chat"; id: string; at: string; unread: boolean; b: Booking };
 
 export default function MessagesPage() {
   // Messages are loaded by AdminShell; this page reads and updates them
@@ -20,13 +33,28 @@ export default function MessagesPage() {
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  const bookings = useBookingsStore((s) => s.bookings);
 
-  const list = messages.filter(
-    (m) =>
-      (filter === "all" || (filter === "unread" ? !m.read : m.starred)) &&
-      (m.name + m.subject + m.body).toLowerCase().includes(query.toLowerCase())
-  );
+  const q = query.toLowerCase();
+  const chats = bookings.filter((b) => b.messages?.some((m) => m.sender === "customer"));
+  const unreadChats = chats.filter((b) => b.needsReply).length;
+
+  // One list, newest first: contact messages and booking chats
+  const rows: Row[] = [
+    ...(filter === "chats"
+      ? []
+      : messages
+          .filter((m) => (filter === "all" || (filter === "unread" ? !m.read : m.starred)) && (m.name + m.subject + m.body).toLowerCase().includes(q))
+          .map((m): Row => ({ kind: "mail", id: m.id, at: m.receivedAt, m }))),
+    ...(filter === "starred"
+      ? []
+      : chats
+          .filter((b) => (filter !== "unread" || b.needsReply) && (b.customer + tripName(b) + b.messages.map((m) => m.text).join(" ")).toLowerCase().includes(q))
+          .map((b): Row => ({ kind: "chat", id: `chat:${b.id}`, at: lastChat(b)?.createdAt ?? b.createdAt, unread: !!b.needsReply, b }))),
+  ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+
   const active = messages.find((m) => m.id === activeId);
+  const activeChat = activeId?.startsWith("chat:") ? bookings.find((b) => `chat:${b.id}` === activeId) : undefined;
 
   // Saves read / starred; shows an error if saving fails
   const change = (id: string, changes: { read?: boolean; starred?: boolean }) =>
@@ -64,30 +92,65 @@ export default function MessagesPage() {
 
   return (
     <>
-      <PageHeader title="Messages" subtitle="Enquiries from the contact form, booking requests and WhatsApp." />
+      <PageHeader title="Messages" subtitle="Enquiries from the contact form, booking requests, WhatsApp and booking chats." />
 
       <Card className="overflow-hidden grid grid-cols-1 lg:grid-cols-[380px_1fr] min-h-[620px]">
         {/* List */}
-        <div className={`border-r border-[#0a120b]/[0.06] flex flex-col ${active ? "hidden lg:flex" : "flex"}`}>
+        <div className={`border-r border-[#0a120b]/[0.06] flex flex-col ${active || activeChat ? "hidden lg:flex" : "flex"}`}>
           <div className="p-4 space-y-3 border-b border-[#0a120b]/[0.06]">
             <SearchInput value={query} onChange={setQuery} placeholder="Search messages…" />
             <Tabs
               value={filter}
               onChange={setFilter}
               tabs={[
-                { value: "all", label: "All", count: messages.length },
-                { value: "unread", label: "Unread", count: messages.filter((m) => !m.read).length },
+                { value: "all", label: "All", count: messages.length + chats.length },
+                { value: "unread", label: "Unread", count: messages.filter((m) => !m.read).length + unreadChats },
+                { value: "chats", label: "Booking chats", count: chats.length },
                 { value: "starred", label: "Starred", count: messages.filter((m) => m.starred).length },
               ]}
             />
           </div>
           {error ? (
             <p className="p-5 text-sm text-red-700">Could not load messages: {error}</p>
-          ) : list.length === 0 ? (
+          ) : rows.length === 0 ? (
             <EmptyState title="Nothing here" text="No messages match this view." />
           ) : (
             <ul className="flex-1 overflow-y-auto divide-y divide-[#0a120b]/[0.05]">
-              {list.map((m) => (
+              {rows.map((row) => {
+                if (row.kind === "chat") {
+                  const last = lastChat(row.b);
+                  return (
+                    <li key={row.id}>
+                      <button
+                        onClick={() => setActiveId(row.id)}
+                        className={`w-full text-left flex gap-3 px-4 py-3.5 transition-colors cursor-pointer ${
+                          activeId === row.id ? "bg-[#2E7D5B]/[0.07]" : "hover:bg-[#f7f5f0]"
+                        }`}
+                      >
+                        <span className="relative shrink-0">
+                          <Avatar name={row.b.customer} size={38} />
+                          <span className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-[#c5a86d] text-[#12231a] flex items-center justify-center ring-2 ring-white">
+                            <MessageCircle className="size-2.5" />
+                          </span>
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className={`text-sm truncate ${row.unread ? "font-semibold" : "text-[#0a120b]/75"}`}>{row.b.customer}</p>
+                            <span className="text-[11px] text-[#0a120b]/40 shrink-0">{formatDistanceToNow(new Date(row.at), { addSuffix: false })}</span>
+                          </div>
+                          <p className={`text-sm truncate ${row.unread ? "text-[#0a120b]" : "text-[#0a120b]/60"}`}>Booking chat · {tripName(row.b)}</p>
+                          <p className="text-xs text-[#0a120b]/45 truncate mt-0.5">
+                            {last?.sender === "team" ? "You: " : ""}
+                            {last?.text}
+                          </p>
+                        </div>
+                        {row.unread && <span className="mt-2 size-2 rounded-full bg-[#c5a86d] shrink-0" aria-label="Waiting for a reply" />}
+                      </button>
+                    </li>
+                  );
+                }
+                const m = row.m;
+                return (
                 <li key={m.id}>
                   <button
                     onClick={() => open(m.id)}
@@ -107,14 +170,46 @@ export default function MessagesPage() {
                     {!m.read && <span className="mt-2 size-2 rounded-full bg-[#2E7D5B] shrink-0" aria-label="Unread" />}
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </div>
 
         {/* Reader */}
-        <div className={`flex-col ${active ? "flex" : "hidden lg:flex"}`}>
-          {active ? (
+        <div className={`flex-col ${active || activeChat ? "flex" : "hidden lg:flex"}`}>
+          {activeChat ? (
+            <>
+              <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#0a120b]/[0.06]">
+                <button onClick={() => setActiveId(null)} className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-[#0a120b]/5" aria-label="Back">
+                  <ArrowLeft className="size-4" />
+                </button>
+                <Badge tone="gold" dot={false}>Booking chat</Badge>
+                <Link
+                  href={`/admin/bookings?open=${activeChat.id}`}
+                  className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-[#2E7D5B] hover:underline"
+                >
+                  Open booking <ExternalLink className="size-3.5" />
+                </Link>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 py-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <Avatar name={activeChat.customer} size={40} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{activeChat.customer}</p>
+                    <p className="text-xs text-[#0a120b]/50 truncate">
+                      {tripName(activeChat)} · {format(new Date(activeChat.startDate), "d MMM yyyy")} · {activeChat.status}
+                    </p>
+                    <p className="text-xs text-[#0a120b]/50">
+                      {activeChat.email}
+                      {activeChat.phone ? ` · ${activeChat.phone}` : ""}
+                    </p>
+                  </div>
+                </div>
+                <BookingConversation key={activeChat.id} booking={activeChat} />
+              </div>
+            </>
+          ) : active ? (
             <>
               <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#0a120b]/[0.06]">
                 <button onClick={() => setActiveId(null)} className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-[#0a120b]/5" aria-label="Back">
