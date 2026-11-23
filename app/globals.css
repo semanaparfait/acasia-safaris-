@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  
 
   --primary-color: #2E7D5B;        
   --primary-dark: #1F5A42;         
@@ -40,10 +41,16 @@
 .acacia-phone .PhoneInputCountry { margin-right: 0.25rem; }
 .acacia-phone .PhoneInputCountryIcon { width: 1.4em; height: 1em; box-shadow: none; border-radius: 2px; overflow: hidden; }
 .acacia-phone .PhoneInputCountrySelectArrow { opacity: 0.45; margin-left: 0.35em; }
-.acacia-phone input:focus { box-shadow: none; }
+.acacia-phone input:focus,
+.acacia-phone input:focus-visible { box-shadow: none; outline: none; }
 
 /* Keyboard users always see where they are (mouse clicks keep the clean look) */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+/* Form fields show focus with their own border instead of an outline */
+input:focus, input:focus-visible,
+select:focus, select:focus-visible,
+textarea:focus, textarea:focus-visible { outline: none; }
+
+:where(a, button, [tabindex]):focus-visible {
   outline: 2px solid #c5a86d;
   outline-offset: 2px;
 }

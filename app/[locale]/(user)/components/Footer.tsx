@@ -205,15 +205,17 @@ const Footer = () => {
                   <label htmlFor="footer-email" className="sr-only">
                     {t("Footer.emailLabel")}
                   </label>
-                  <input
-                    id="footer-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("Footer.emailPlaceholder")}
-                    className="w-full bg-white/5 border border-white/10 rounded-md py-3.5 pl-5 pr-14 text-sm placeholder:text-zinc-500 outline-none focus:border-[#c5a86d] transition-colors"
-                  />
+<input
+  id="footer-email"
+  type="email"
+  required
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder={t("Footer.emailPlaceholder")}
+  className="w-full bg-white/5 border border-white/10 rounded-md py-3.5 pl-5 pr-14 text-sm placeholder:text-zinc-500 !outline-none focus:!outline-none focus-visible:!outline-none focus:!ring-0 focus:!shadow-none focus:!border-white/10 transition-colors"
+/>
+
+
                   <button
                     type="submit"
                     disabled={subscribing}

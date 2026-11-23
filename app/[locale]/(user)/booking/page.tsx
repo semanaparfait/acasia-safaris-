@@ -80,7 +80,7 @@ const process = ["1", "2", "3", "4"] as const;
 const faqs = ["1", "2", "3", "4"] as const;
 
 const inputClass =
-  "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all";
+  "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none! focus:border-[#c5a86d] focus:bg-white transition-all";
 const labelClass =
   "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
@@ -487,7 +487,7 @@ export default function BookingPage({
               <select
                 value={heroValue}
                 onChange={(e) => setHeroDestination(e.target.value)}
-                className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
+                className="w-full bg-transparent text-sm font-medium outline-none! appearance-none cursor-pointer pt-0.5"
               >
                 <option value="">{t("whereTo")}</option>
                 {destinations.map((d) => (
@@ -519,7 +519,7 @@ export default function BookingPage({
               <select
                 value={adults}
                 onChange={(e) => setAdults(Number(e.target.value))}
-                className="w-full bg-transparent text-sm font-medium outline-none appearance-none cursor-pointer pt-0.5"
+                className="w-full bg-transparent text-sm font-medium outline-none! appearance-none cursor-pointer pt-0.5"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
