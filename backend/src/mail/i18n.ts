@@ -81,6 +81,8 @@ const en = {
       `We hope you loved ${title}. Thank you for travelling with Acacia Safaris.`,
     ask: 'Would you share a few words about your experience? It takes one minute and helps other travelers choose their trip.',
     button: 'Leave a review',
+    google: (url: string) =>
+      `Loved your trip? A review on Google helps us more than anything: ${url}`,
   },
   confirm: {
     subject: (title: string, dates: string) => `Confirmed: ${title} · ${dates}`,
@@ -223,6 +225,8 @@ const fr: EmailTexts = {
       `Nous espérons que vous avez adoré ${title}. Merci d'avoir voyagé avec Acacia Safaris.`,
     ask: 'Pourriez-vous partager quelques mots sur votre expérience ? Cela prend une minute et aide d’autres voyageurs à choisir leur voyage.',
     button: 'Laisser un avis',
+    google: (url) =>
+      `Vous avez aimé votre voyage ? Un avis sur Google nous aide énormément : ${url}`,
   },
   confirm: {
     subject: (title, dates) => `Confirmé : ${title} · ${dates}`,
@@ -362,6 +366,8 @@ const sw: EmailTexts = {
       `Tunatumaini ulifurahia ${title}. Asante kwa kusafiri na Acacia Safaris.`,
     ask: 'Je, ungependa kutuandikia maneno machache kuhusu uzoefu wako? Inachukua dakika moja na inasaidia wasafiri wengine kuchagua safari yao.',
     button: 'Andika maoni',
+    google: (url) =>
+      `Ulifurahia safari yako? Maoni yako kwenye Google yanatusaidia sana: ${url}`,
   },
   confirm: {
     subject: (title, dates) => `Imethibitishwa: ${title} · ${dates}`,

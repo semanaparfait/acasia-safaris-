@@ -13,6 +13,7 @@ type ReviewsState = {
   loadAll: () => Promise<void>; // admin
   setStatus: (id: string, status: ReviewStatus) => Promise<void>; // admin
   deleteReview: (id: string) => Promise<void>; // admin
+  addGoogleReview: (input: { name: string; rating: number; text: string; sourceUrl?: string; postedAt?: string }) => Promise<void>; // admin
 };
 
 export const useReviewsStore = create<ReviewsState>()(
@@ -49,6 +50,11 @@ export const useReviewsStore = create<ReviewsState>()(
           false,
           "reviews/setStatus",
         );
+      },
+
+      addGoogleReview: async (input) => {
+        const created = await api<Review>("/reviews/google", { method: "POST", body: input, admin: true });
+        set((state) => ({ reviews: [created, ...state.reviews] }), false, "reviews/addGoogle");
       },
 
       deleteReview: async (id) => {

@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { GoogleRatingBadge } from "@/components/GoogleRating";
 import { useWhatsAppTopic } from "@/lib/whatsapp";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -318,6 +319,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   {t("bookNow")}
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
+                <GoogleRatingBadge dark className="mt-3" />
               </div>
             </div>
           )}

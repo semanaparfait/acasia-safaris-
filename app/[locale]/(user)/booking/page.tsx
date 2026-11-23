@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
+import { GoogleRatingBadge } from "@/components/GoogleRating";
 import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
 import { getCountries } from "react-phone-number-input";
 import {
@@ -1222,6 +1223,9 @@ export default function BookingPage({
               >
                 <MessageCircle size={16} /> {t("chatWhatsapp")}
               </a>
+            </div>
+            <div className="flex justify-center">
+              <GoogleRatingBadge />
             </div>
           </aside>
         </div>

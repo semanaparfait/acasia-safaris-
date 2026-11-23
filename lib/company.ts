@@ -1,6 +1,9 @@
 // The company's contact details and social profiles, in one place for the whole website.
 // A social network only appears on the website once its link is filled in here.
 
+// "Write a review" on our Google profile (from Google Business Profile > Ask for reviews)
+export const GOOGLE_REVIEW_URL = "https://g.page/r/CY9bcVmibpwmEBE/review";
+
 export const COMPANY = {
   phone: "+250 798 635 578",
   phoneLink: "tel:+250798635578",

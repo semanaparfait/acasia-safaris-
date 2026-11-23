@@ -156,6 +156,8 @@
     "goingFrom": "des voyageurs de {countries} participent"
   },
   "MyBooking": {
+    "googleAsk": "Encore un petit service ? Un avis sur Google aide énormément d'autres voyageurs à nous trouver.",
+    "googleButton": "Laisser un avis sur Google",
     "autoReplyShortNamed": "Bien reçu, merci ! 👍 Je vous réponds ici très vite. – {name}",
     "autoReplyShort": "Bien reçu, merci ! 👍 Nous vous répondons ici très vite.",
     "seenBy": "Vu par {name}",
@@ -1212,5 +1214,15 @@
     "invalid": "Ce lien d'avis n'est pas valide ou a expiré.",
     "error": "Envoi impossible : {error}",
     "home": "Retour au site"
+  },
+  "GoogleReviews": {
+    "count": "{count, plural, one {# avis} other {# avis}} sur Google",
+    "badge": "{count, plural, one {# avis Google} other {# avis Google}}",
+    "seeAll": "Tout voir sur Google",
+    "write": "Laisser un avis",
+    "more": "Lire la suite",
+    "less": "Réduire",
+    "postedOn": "Publié sur Google",
+    "verified": "A voyagé avec nous"
   }
 }

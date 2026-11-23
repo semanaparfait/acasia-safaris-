@@ -156,6 +156,8 @@
     "goingFrom": "travelers from {countries} are going"
   },
   "MyBooking": {
+    "googleAsk": "One more favour? A review on Google helps other travelers find us more than anything else.",
+    "googleButton": "Review us on Google",
     "autoReplyShortNamed": "Got it, thank you! 👍 I'll reply here shortly. – {name}",
     "autoReplyShort": "Got it, thank you! 👍 We'll reply here shortly.",
     "seenBy": "Seen by {name}",
@@ -1212,5 +1214,15 @@
     "invalid": "This review link is not valid or has expired.",
     "error": "Could not send: {error}",
     "home": "Back to the website"
+  },
+  "GoogleReviews": {
+    "count": "{count, plural, one {# review} other {# reviews}} on Google",
+    "badge": "{count, plural, one {# Google review} other {# Google reviews}}",
+    "seeAll": "See all on Google",
+    "write": "Write a review",
+    "more": "Read more",
+    "less": "Show less",
+    "postedOn": "Posted on Google",
+    "verified": "Booked with us"
   }
 }

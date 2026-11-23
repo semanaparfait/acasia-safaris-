@@ -32,11 +32,16 @@ export class RemindersService {
   private siteUrl: string;
   private running = false;
 
+  private googleReviewUrl: string; // "Review us on Google" in the after-trip email
+
   constructor(
     private prisma: PrismaService,
     private mail: MailService,
     config: ConfigService,
   ) {
+    this.googleReviewUrl =
+      config.get<string>('GOOGLE_REVIEW_URL') ??
+      'https://g.page/r/CY9bcVmibpwmEBE/review';
     this.siteUrl = (
       config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000'
     )
@@ -196,7 +201,11 @@ export class RemindersService {
         name: b.customer,
         subject: T.subject,
         heading: T.heading,
-        paragraphs: [T.intro(this.title(b)), T.ask],
+        paragraphs: [
+          T.intro(this.title(b)),
+          T.ask,
+          T.google(this.googleReviewUrl),
+        ],
         link: this.link(b.accessToken, b.locale, '#review'),
         button: T.button,
       });

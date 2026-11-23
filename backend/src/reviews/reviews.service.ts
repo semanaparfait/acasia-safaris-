@@ -1,15 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
+import {
+  CreateReviewDto,
+  GoogleReviewDto,
+  UpdateReviewDto,
+} from './dto/review.dto';
 
 @Injectable()
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  // Website: only published reviews
+  // Website: only published reviews from travelers (Google ones come with /google-reviews)
   findPublished() {
     return this.prisma.review.findMany({
-      where: { status: 'Published' },
+      where: { status: 'Published', source: 'Website' },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -27,6 +31,22 @@ export class ReviewsService {
 
   create(dto: CreateReviewDto) {
     return this.prisma.review.create({ data: { ...dto, status: 'Pending' } });
+  }
+
+  // Admin: a review copied from Google, published at once
+  createGoogle(dto: GoogleReviewDto) {
+    return this.prisma.review.create({
+      data: {
+        name: dto.name.trim(),
+        country: '',
+        rating: dto.rating,
+        text: dto.text.trim(),
+        source: 'Google',
+        sourceUrl: dto.sourceUrl || null,
+        status: 'Published',
+        ...(dto.postedAt ? { createdAt: new Date(dto.postedAt) } : {}),
+      },
+    });
   }
 
   async update(id: string, dto: UpdateReviewDto) {

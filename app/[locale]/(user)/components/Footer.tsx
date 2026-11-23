@@ -16,6 +16,7 @@ import SocialLinks from "@/components/SocialLinks";
 import PaymentMethods from "@/components/PaymentMethods";
 import { useMessagesStore } from "@/store/messagesStore";
 import { COMPANY } from "@/lib/company";
+import { GoogleRatingBadge } from "@/components/GoogleRating";
 
 
 // name = the text's key in messages/*.json ("Nav.home", "Footer.bookSafari"…)
@@ -248,6 +249,7 @@ const Footer = () => {
 
         {/* Payment methods */}
         <div className="py-8 border-b border-white/10">
+          <GoogleRatingBadge dark className="mb-5" />
           <PaymentMethods
             title={t("Footer.weAccept")}
             secureNote={t("Footer.securePayments")}

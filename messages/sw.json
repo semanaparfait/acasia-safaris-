@@ -156,6 +156,8 @@
     "goingFrom": "wasafiri kutoka {countries} wanaenda"
   },
   "MyBooking": {
+    "googleAsk": "Ombi moja zaidi? Maoni kwenye Google yanasaidia wasafiri wengine kutupata kuliko kitu kingine chochote.",
+    "googleButton": "Tupe maoni kwenye Google",
     "autoReplyShortNamed": "Nimepokea, asante! 👍 Nitakujibu hapa hivi karibuni. – {name}",
     "autoReplyShort": "Tumepokea, asante! 👍 Tutakujibu hapa hivi karibuni.",
     "seenBy": "Imeonwa na {name}",
@@ -1212,5 +1214,15 @@
     "invalid": "Kiungo hiki cha maoni si sahihi au kimeisha muda.",
     "error": "Imeshindwa kutuma: {error}",
     "home": "Rudi kwenye tovuti"
+  },
+  "GoogleReviews": {
+    "count": "{count, plural, one {Maoni #} other {Maoni #}} kwenye Google",
+    "badge": "{count, plural, one {Maoni # ya Google} other {Maoni # ya Google}}",
+    "seeAll": "Ona yote kwenye Google",
+    "write": "Andika maoni",
+    "more": "Soma zaidi",
+    "less": "Punguza",
+    "postedOn": "Imechapishwa kwenye Google",
+    "verified": "Alisafiri nasi"
   }
 }

@@ -7,6 +7,8 @@ import { Star, Check, EyeOff, Trash2, Quote } from "lucide-react";
 import { Avatar, Button, Card, EmptyState, PageHeader, StatusBadge, Tabs } from "../components/ui";
 import type { Review } from "@/lib/types";
 import { useReviewsStore } from "@/store/reviewsStore";
+import { GoogleG } from "@/components/GoogleRating";
+import GoogleSection from "./GoogleSection";
 
 type Filter = "All" | Review["status"];
 
@@ -52,6 +54,8 @@ export default function ReviewsPage() {
   return (
     <>
       <PageHeader title="Reviews" subtitle="Approve guest testimonials before they appear on the website." />
+
+      <GoogleSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <Card className="p-6 flex items-center gap-6">
@@ -111,10 +115,23 @@ export default function ReviewsPage() {
                 <Avatar name={r.name} size={40} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-medium">{r.name}</p>
+                    <p className="font-medium flex items-center gap-1.5">
+                      {r.name}
+                      {r.source === "Google" && <GoogleG className="size-4" />}
+                    </p>
                     <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-xs text-[#0a120b]/50">{r.country} · {format(new Date(r.createdAt), "d MMM yyyy")}</p>
+                  <p className="text-xs text-[#0a120b]/50">
+                    {r.source === "Google" ? "From Google" : r.country} · {format(new Date(r.createdAt), "d MMM yyyy")}
+                    {r.sourceUrl && (
+                      <>
+                        {" · "}
+                        <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                          view
+                        </a>
+                      </>
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-2">
