@@ -429,6 +429,7 @@ function Row({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
 function Conversation({ booking, token, onChange }: { booking: PublicBooking; token: string; onChange: (b: PublicBooking) => void }) {
   const t = useTranslations("MyBooking");
   const moneyText = useMoneyText();
+  const locale = useLocale();
   const [text, setText] = useState("");
   const [withOffer, setWithOffer] = useState(false);
   const [offer, setOffer] = useState("");
@@ -516,10 +517,18 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
             <TypingDots label={member ? t("typingNamed", { name: firstName }) : t("typing")} className="bg-white border border-[#0a120b]/[0.08]" />
           </div>
         )}
-        {waiting && !typing && count > 0 && (
-          <p className="text-center text-[11px] text-[#0a120b]/40 pt-1">
-            {member ? t("replySoonNamed", { name: firstName }) : t("replySoon")}
-          </p>
+        {/* After the dots: a quick "got it" from the team member (shown here only, not saved) */}
+        {waiting && !typing && lastChat && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] sm:max-w-[75%] flex flex-col items-start">
+              <span className="text-[11px] text-[#0a120b]/45 mb-1 px-1">
+                {t("fromTeam", { name: member?.name ?? "Acacia Safaris" })} · {moment(lastChat.createdAt, locale)}
+              </span>
+              <div className="rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed bg-white border border-[#0a120b]/[0.08] text-[#0a120b] shadow-sm">
+                {member ? t("autoReplyNamed", { name: firstName }) : t("autoReply")}
+              </div>
+            </div>
+          </div>
         )}
         <div ref={end} />
       </div>
