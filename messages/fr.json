@@ -55,6 +55,10 @@
     "title": "Acacia Safaris",
     "status": "Réponses sur WhatsApp · lun–sam, heure de Kigali",
     "greeting": "Muraho ! 👋 Comment pouvons-nous vous aider à préparer votre safari ?",
+    "greetingNamed": "Muraho ! 👋 Je suis {name}, d'Acacia Safaris. Comment puis-je vous aider à préparer votre safari ?",
+    "typing": "écrit…",
+    "typingNamed": "{name} écrit…",
+    "online": "En ligne",
     "choose": "Choisissez un sujet, ou dites simplement bonjour :",
     "topics": {
       "trip": "Question sur {title}",

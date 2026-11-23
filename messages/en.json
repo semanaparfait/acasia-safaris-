@@ -55,6 +55,10 @@
     "title": "Acacia Safaris",
     "status": "Replies on WhatsApp · Mon–Sat, Kigali time",
     "greeting": "Muraho! 👋 How can we help you plan your safari?",
+    "greetingNamed": "Muraho! 👋 I'm {name} from Acacia Safaris. How can I help you plan your safari?",
+    "typing": "typing…",
+    "typingNamed": "{name} is typing…",
+    "online": "Online",
     "choose": "Pick a topic, or just say hello:",
     "topics": {
       "trip": "Ask about {title}",

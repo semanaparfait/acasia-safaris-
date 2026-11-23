@@ -55,6 +55,10 @@
     "title": "Acacia Safaris",
     "status": "Tunajibu kwenye WhatsApp · Jumatatu–Jumamosi, saa za Kigali",
     "greeting": "Muraho! 👋 Tukusaidieje kupanga safari yako?",
+    "greetingNamed": "Muraho! 👋 Mimi ni {name} wa Acacia Safaris. Nikusaidieje kupanga safari yako?",
+    "typing": "anaandika…",
+    "typingNamed": "{name} anaandika…",
+    "online": "Yuko mtandaoni",
     "choose": "Chagua mada, au tusalimie tu:",
     "topics": {
       "trip": "Uliza kuhusu {title}",
