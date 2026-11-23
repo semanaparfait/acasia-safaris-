@@ -11,7 +11,9 @@ import toast from "react-hot-toast";
 import { AlertTriangle, CalendarDays, CheckCircle2, HandCoins, KeyRound, Loader2, Lock, Send, Users } from "lucide-react";
 import { api } from "@/lib/api";
 import { money } from "@/lib/helpers";
-import type { BookingMessage } from "@/lib/types";
+import type { BookingMessage, SavedReply } from "@/lib/types";
+import { insertReply } from "@/lib/useSavedReplies";
+import { SavedReplyChips } from "@/components/ui/saved-reply-chips";
 
 type ReplyBooking = {
   id: string;
@@ -33,7 +35,7 @@ type ReplyBooking = {
 
 type Opened =
   | { trusted: false; workerName: string; pinSet: boolean }
-  | { trusted: true; workerName: string; booking: ReplyBooking };
+  | { trusted: true; workerName: string; booking: ReplyBooking; savedReplies: SavedReply[] };
 
 const POLL_MS = 15_000; // new customer messages show up without a reload
 
@@ -76,7 +78,17 @@ export default function QuickReplyPage({ params }: { params: Promise<{ token: st
     );
   }
   if (!state.trusted) return <PinStep base={base} name={state.workerName} pinSet={state.pinSet} onUnlocked={setState} />;
-  return <Conversation base={base} name={state.workerName} booking={state.booking} onChange={setState} onExpired={setError} error={error} />;
+  return (
+    <Conversation
+      base={base}
+      name={state.workerName}
+      booking={state.booking}
+      savedReplies={state.savedReplies}
+      onChange={setState}
+      onExpired={setError}
+      error={error}
+    />
+  );
 }
 
 // ---------- Link expired / not valid ----------
@@ -192,6 +204,7 @@ function Conversation({
   base,
   name,
   booking: b,
+  savedReplies,
   onChange,
   onExpired,
   error,
@@ -199,6 +212,7 @@ function Conversation({
   base: string;
   name: string;
   booking: ReplyBooking;
+  savedReplies: SavedReply[];
   onChange: (s: Opened) => void;
   onExpired: (message: string) => void;
   error: string;
@@ -324,6 +338,7 @@ function Conversation({
               />
             </div>
           )}
+          <SavedReplyChips replies={savedReplies} onPick={(reply) => setText((current) => insertReply(current, reply))} />
           <div className="flex items-end gap-2">
             <textarea
               rows={2}

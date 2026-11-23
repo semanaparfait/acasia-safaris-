@@ -10,7 +10,11 @@ import { AlertTriangle, CheckCircle2, HandCoins, Loader2, MessageCircle, Send } 
 import { money } from "@/lib/helpers";
 import type { Booking, BookingMessage } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
-import { sendTyping } from "@/lib/live";
+import { sendTyping, useCustomerTyping } from "@/lib/live";
+import { api } from "@/lib/api";
+import { insertReply, useSavedReplies } from "@/lib/useSavedReplies";
+import { SavedReplyChips } from "@/components/ui/saved-reply-chips";
+import { TypingDots } from "@/components/ui/chat-bits";
 import { Button } from "../components/ui";
 
 export default function BookingConversation({ booking }: { booking: Booking }) {
@@ -21,6 +25,20 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   const [offer, setOffer] = useState("");
   const [busy, setBusy] = useState(false);
   const thread = useRef<HTMLDivElement>(null);
+  const customerTyping = useCustomerTyping((s) => Boolean(s.typing[booking.id]));
+  const savedReplies = useSavedReplies((s) => s.replies);
+  const loadSavedReplies = useSavedReplies((s) => s.load);
+  useEffect(() => {
+    loadSavedReplies();
+  }, [loadSavedReplies]);
+
+  // Opening the conversation: the customer sees "Seen by <your name>" (only if there is
+  // something new from them; the server checks)
+  const lastCustomerId = [...(booking.messages ?? [])].reverse().find((m) => m.sender === "customer")?.id;
+  useEffect(() => {
+    if (!lastCustomerId) return;
+    api(`/bookings/${booking.id}/seen`, { method: "POST", admin: true }).catch(() => {});
+  }, [booking.id, lastCustomerId]);
 
   // Tell the customer's page "<name> is typing…": at most every 2 s while typing,
   // and "stopped" after 3 s without a key, on send, or when the drawer closes
@@ -56,7 +74,7 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   useEffect(() => {
     // Show the latest message (scrolls the thread only, not the whole panel)
     if (thread.current) thread.current.scrollTop = thread.current.scrollHeight;
-  }, [messages.length]);
+  }, [messages.length, customerTyping]);
 
   const run = async (action: () => Promise<unknown>, success: string) => {
     setBusy(true);
@@ -130,6 +148,11 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
         ) : (
           messages.map((m) => <Bubble key={m.id} message={m} />)
         )}
+        {customerTyping && (
+          <div className="flex justify-start">
+            <TypingDots label={`${booking.customer} is typing…`} className="bg-white border border-[#0a120b]/10" />
+          </div>
+        )}
       </div>
 
       {/* Reply */}
@@ -158,6 +181,13 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
               )}
             </div>
           )}
+          <SavedReplyChips
+            replies={savedReplies ?? []}
+            onPick={(reply) => {
+              setText((current) => insertReply(current, reply));
+              onTyping();
+            }}
+          />
           <textarea
             rows={3}
             value={text}

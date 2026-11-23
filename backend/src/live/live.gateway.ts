@@ -19,6 +19,7 @@ import { PrismaService } from '../prisma/prisma.service';
 //    ("booking" with the public view) whenever the team answers or something changes.
 //  - An admin writing a reply sends "typing" { bookingId, typing }; the visitor gets
 //    "typing" { name, typing } so their page shows "<name> is typing…".
+//  - The visitor sends "customerTyping" { typing }; admins get "customerTyping" { bookingId, typing }.
 @WebSocketGateway({ namespace: 'live' })
 export class LiveGateway implements OnGatewayConnection {
   private readonly logger = new Logger(LiveGateway.name);
@@ -46,9 +47,10 @@ export class LiveGateway implements OnGatewayConnection {
       if (typeof booking === 'string' && booking) {
         const found = await this.prisma.booking.findUnique({
           where: { accessToken: booking },
-          select: { endDate: true },
+          select: { id: true, endDate: true },
         });
         if (found && !linkExpired(found.endDate)) {
+          (client.data as { bookingId?: string }).bookingId = found.id;
           await client.join(`booking:${booking}`);
           return;
         }
@@ -83,6 +85,20 @@ export class LiveGateway implements OnGatewayConnection {
       this.tokens.set(body.bookingId, token);
     }
     this.toVisitor(token, 'typing', { name, typing: body.typing === true });
+  }
+
+  // The visitor is (or stopped) writing on their booking page: admins see "<name> is typing…"
+  @SubscribeMessage('customerTyping')
+  customerTyping(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { typing?: unknown },
+  ) {
+    const bookingId = (client.data as { bookingId?: string }).bookingId;
+    if (!bookingId) return;
+    this.toAdmins('customerTyping', {
+      bookingId,
+      typing: body?.typing === true,
+    });
   }
 
   // Every admin panel that is open

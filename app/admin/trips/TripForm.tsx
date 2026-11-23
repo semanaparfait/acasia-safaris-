@@ -22,7 +22,6 @@ import {
   Percent,
   Plus,
   Star,
-  Star,
   Tag,
   Trash2,
   X,

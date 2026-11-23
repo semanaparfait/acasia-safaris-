@@ -136,7 +136,17 @@ send no new alert. Code: `src/bookings/quick-reply.*`, PIN and links in `AuthSer
 - Replies, prices and accepted prices go into the normal conversation (the customer is emailed)
   and into Admin > Activity as "... (quick reply)".
 
-After pulling this change: `npx prisma migrate deploy` (adds the PIN columns to Worker), then restart.
+Also in the booking conversations:
+
+- **Reminder:** still no answer 3 hours after the customer's last message → one "Still waiting" email
+  with fresh links (checked every 15 minutes, `chat-reply-reminders`).
+- **Seen:** opening a conversation (admin panel or quick reply) shows "Seen by <name>" to the customer.
+- **Typing, both ways:** live `typing` (team → customer) and `customerTyping` (customer → team).
+- **Saved replies:** ready answers (Admin > Settings > Saved replies, `/api/saved-replies`), shown
+  as buttons above every reply box.
+
+After pulling these changes: `npx prisma migrate deploy` (PIN columns, seen/reminder columns and
+the SavedReply table with 4 starter replies), then restart.
 
 ## Database commands
 

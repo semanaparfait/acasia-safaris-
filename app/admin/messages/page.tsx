@@ -7,6 +7,7 @@ import { Star, Trash2, Reply, Inbox, MailOpen, Send, ArrowLeft, MessageCircle, E
 import Link from "next/link";
 import { useMessagesStore } from "@/store/messagesStore";
 import { useBookingsStore } from "@/store/bookingsStore";
+import { useCustomerTyping } from "@/lib/live";
 import type { Booking, Message } from "@/lib/types";
 import BookingConversation from "../bookings/BookingConversation";
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchInput, Tabs, inputClass } from "../components/ui";
@@ -34,6 +35,7 @@ export default function MessagesPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const bookings = useBookingsStore((s) => s.bookings);
+  const typingNow = useCustomerTyping((s) => s.typing);
 
   const q = query.toLowerCase();
   const chats = bookings.filter((b) => b.messages?.some((m) => m.sender === "customer"));
@@ -139,10 +141,14 @@ export default function MessagesPage() {
                             <span className="text-[11px] text-[#0a120b]/40 shrink-0">{formatDistanceToNow(new Date(row.at), { addSuffix: false })}</span>
                           </div>
                           <p className={`text-sm truncate ${row.unread ? "text-[#0a120b]" : "text-[#0a120b]/60"}`}>Booking chat · {tripName(row.b)}</p>
-                          <p className="text-xs text-[#0a120b]/45 truncate mt-0.5">
-                            {last?.sender === "team" ? "You: " : ""}
-                            {last?.text}
-                          </p>
+                          {typingNow[row.b.id] ? (
+                            <p className="text-xs text-[#2E7D5B] italic mt-0.5">typing…</p>
+                          ) : (
+                            <p className="text-xs text-[#0a120b]/45 truncate mt-0.5">
+                              {last?.sender === "team" ? "You: " : ""}
+                              {last?.text}
+                            </p>
+                          )}
                         </div>
                         {row.unread && <span className="mt-2 size-2 rounded-full bg-[#c5a86d] shrink-0" aria-label="Waiting for a reply" />}
                       </button>

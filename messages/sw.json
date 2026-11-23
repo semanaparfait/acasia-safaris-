@@ -156,6 +156,9 @@
     "goingFrom": "wasafiri kutoka {countries} wanaenda"
   },
   "MyBooking": {
+    "autoReplyShortNamed": "Nimepokea, asante! 👍 Nitakujibu hapa hivi karibuni. – {name}",
+    "autoReplyShort": "Tumepokea, asante! 👍 Tutakujibu hapa hivi karibuni.",
+    "seenBy": "Imeonwa na {name}",
     "notFound": "Safari haikupatikana",
     "notFoundText": "Kiungo hiki si sahihi. Tafadhali tumia kiungo kilicho kwenye barua pepe tuliyokutumia, au wasiliana nasi.",
     "contactUs": "Wasiliana nasi",
@@ -877,6 +880,8 @@
     "contactUs": "Wasiliana Nasi"
   },
   "Planner": {
+    "draftRestored": "Tumehifadhi ulichojaza mara ya mwisho.",
+    "startOver": "Anza upya",
     "steps": {
       "1": {
         "title": "Vivutio",

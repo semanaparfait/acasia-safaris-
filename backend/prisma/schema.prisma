@@ -299,6 +299,10 @@ model Booking {
   offer       Int? // a price proposal waiting for an answer
   offerBy     String? // who made it: "customer" or "team"
   needsReply  Boolean @default(false) // the customer wrote last and the team has not answered
+  // "Seen by Jean" on the customer's page: when someone in the team last opened the conversation
+  teamSeenAt      DateTime?
+  teamSeenBy      String?
+  replyReminderAt DateTime? // last "still waiting for an answer" reminder emailed to the team
 
   // The visitor's private link to their booking: /my-booking/<accessToken>
   // The website's language when booking ("en", "fr", "sw"): every email to the visitor uses it
@@ -445,4 +449,14 @@ model AdminReminder {
   updatedAt DateTime  @updatedAt
 
   @@index([date])
+}
+
+// ---------- Saved replies (Admin > Settings > Saved replies) ----------
+// Ready answers the team inserts in a conversation with one click (admin panel and quick reply)
+model SavedReply {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String // the button, e.g. "Deposit"
+  text      String // what is inserted in the reply box
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

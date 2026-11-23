@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { adminLiveAuth, liveSocket, setAdminSocket } from "@/lib/live";
+import { adminLiveAuth, liveSocket, setAdminSocket, setCustomerTyping } from "@/lib/live";
 import type { Booking, TripBooking } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingsStore } from "@/store/bookingsStore";
@@ -71,8 +71,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       } else if (last && last.sender === "customer" && !before.messages?.some((m) => m.id === last.id)) {
         toast(last.event === "accepted" ? `${booking.customer} accepted the price` : `New message from ${booking.customer}`, { icon: "💬" });
       }
+      if (last?.sender === "customer") setCustomerTyping(booking.id, false); // their message arrived
       upsertBooking(booking);
     });
+    socket.on("customerTyping", ({ bookingId, typing }: { bookingId: string; typing: boolean }) =>
+      setCustomerTyping(bookingId, typing),
+    );
     socket.on("booking:deleted", ({ id }: { id: string }) => useBookingsStore.getState().removeBooking(id));
     // Trip bookings (Admin > Trips > Bookings)
     socket.on("tripBooking", (booking: TripBooking & { tripTitle?: string }) => {

@@ -68,6 +68,8 @@ const publicSelect = {
   ticketCode: true, // only once confirmed: shown as a QR code on the booking page
   checkedInAt: true,
   reviewedAt: true, // after the trip: the review form is shown until it is sent
+  teamSeenAt: true, // "Seen by <name>" under the visitor's last message
+  teamSeenBy: true,
   package: {
     select: {
       id: true,
@@ -303,6 +305,34 @@ export class BookingsService {
         };
     this.emailCustomer(booking, email);
     return this.changed(id);
+  }
+
+  // Someone in the team opened the conversation: the visitor sees "Seen by <name>".
+  // Only when there is something new from the customer since the last time.
+  async markSeen(id: string, name: string) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      select: {
+        teamSeenAt: true,
+        messages: {
+          where: { sender: 'customer' },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { createdAt: true },
+        },
+      },
+    });
+    if (!booking) throw new NotFoundException(`Booking ${id} not found`);
+    const last = booking.messages[0]?.createdAt;
+    if (!last || (booking.teamSeenAt && booking.teamSeenAt >= last)) {
+      return { seen: false };
+    }
+    await this.prisma.booking.update({
+      where: { id },
+      data: { teamSeenAt: new Date(), teamSeenBy: name },
+    });
+    await this.changed(id);
+    return { seen: true };
   }
 
   // The team accepts the visitor's price proposal

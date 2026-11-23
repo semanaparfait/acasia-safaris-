@@ -156,6 +156,9 @@
     "goingFrom": "des voyageurs de {countries} participent"
   },
   "MyBooking": {
+    "autoReplyShortNamed": "Bien reçu, merci ! 👍 Je vous réponds ici très vite. – {name}",
+    "autoReplyShort": "Bien reçu, merci ! 👍 Nous vous répondons ici très vite.",
+    "seenBy": "Vu par {name}",
     "notFound": "Réservation introuvable",
     "notFoundText": "Ce lien n'est pas valide. Utilisez le lien de l'e-mail que nous vous avons envoyé, ou contactez-nous.",
     "contactUs": "Nous contacter",
@@ -877,6 +880,8 @@
     "contactUs": "Nous contacter"
   },
   "Planner": {
+    "draftRestored": "Nous avons gardé ce que vous aviez rempli la dernière fois.",
+    "startOver": "Recommencer",
     "steps": {
       "1": {
         "title": "Destinations",

@@ -22,7 +22,6 @@ import {
   MapPin,
   Minus,
   Star,
-  Star,
   Tag,
   Users,
   X,

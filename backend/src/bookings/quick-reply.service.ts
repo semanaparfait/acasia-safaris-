@@ -1,9 +1,11 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 import { AuditService } from '../audit/audit.service';
 import { AuthService } from '../auth/auth.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SavedRepliesService } from '../saved-replies/saved-replies.service';
 import { escapeHtml as h } from '../trips/trip-emails';
 import { BookingsService } from './bookings.service';
 import type { BookingMessageDto } from './dto/booking.dto';
@@ -12,6 +14,8 @@ import type { BookingMessageDto } from './dto/booking.dto';
 // with a personal link to answer without logging in.
 // The link opens /reply/<token> on the website; a new device must type the admin's PIN.
 // Replies go into the same conversation as the admin panel (and the activity log).
+// Still no answer after REMIND_AFTER_HOURS: one reminder email.
+const REMIND_AFTER_HOURS = 3;
 @Injectable()
 export class QuickReplyService {
   private readonly logger = new Logger(QuickReplyService.name);
@@ -23,6 +27,7 @@ export class QuickReplyService {
     private bookings: BookingsService,
     private mail: MailService,
     private audit: AuditService,
+    private savedReplies: SavedRepliesService,
     config: ConfigService,
   ) {
     this.siteUrl = (
@@ -47,11 +52,7 @@ export class QuickReplyService {
       const { set } = await this.auth.hasReplyPin(worker.id);
       return { trusted: false as const, workerName: worker.name, pinSet: set };
     }
-    return {
-      trusted: true as const,
-      workerName: worker.name,
-      booking: await this.view(bookingId),
-    };
+    return this.trusted(worker.name, bookingId);
   }
 
   // Checks the PIN -> the device token (for the cookie) and the conversation
@@ -60,11 +61,7 @@ export class QuickReplyService {
     const deviceToken = await this.auth.checkReplyPin(worker, pin, ip);
     return {
       deviceToken,
-      result: {
-        trusted: true as const,
-        workerName: worker.name,
-        booking: await this.view(bookingId),
-      },
+      result: await this.trusted(worker.name, bookingId),
     };
   }
 
@@ -91,11 +88,7 @@ export class QuickReplyService {
       details: dto,
       ip,
     });
-    return {
-      trusted: true as const,
-      workerName: worker.name,
-      booking: await this.view(bookingId),
-    };
+    return this.trusted(worker.name, bookingId);
   }
 
   // Accept the customer's price proposal
@@ -109,11 +102,7 @@ export class QuickReplyService {
       target: `Booking #${booking.id.slice(0, 8).toUpperCase()} (${booking.customer})`,
       ip,
     });
-    return {
-      trusted: true as const,
-      workerName: worker.name,
-      booking: await this.view(bookingId),
-    };
+    return this.trusted(worker.name, bookingId);
   }
 
   private async requireDevice(
@@ -123,6 +112,17 @@ export class QuickReplyService {
     if (!(await this.auth.isReplyDevice(deviceToken, workerId))) {
       throw new UnauthorizedException('Please type your PIN again');
     }
+  }
+
+  // The conversation for an admin who passed the PIN; opening it counts as "seen"
+  private async trusted(workerName: string, bookingId: string) {
+    await this.bookings.markSeen(bookingId, workerName).catch(() => null);
+    return {
+      trusted: true as const,
+      workerName,
+      booking: await this.view(bookingId),
+      savedReplies: await this.savedReplies.findAll(),
+    };
   }
 
   // What the link page shows: the trip and the conversation (no payments or notes)
@@ -151,7 +151,49 @@ export class QuickReplyService {
 
   // ---------- The alert ----------
 
-  private async alertTeam(bookingId: string, dto: BookingMessageDto) {
+  // Every 15 minutes: a conversation still waiting 3 hours after the customer's last
+  // message gets one reminder (a new customer message starts the 3 hours again)
+  @Cron('*/15 * * * *', { name: 'chat-reply-reminders' })
+  async remindTeam() {
+    const before = new Date(Date.now() - REMIND_AFTER_HOURS * 3_600_000);
+    const waiting = await this.prisma.booking.findMany({
+      where: {
+        needsReply: true,
+        status: { notIn: ['Completed', 'Cancelled'] },
+      },
+      select: {
+        id: true,
+        replyReminderAt: true,
+        messages: {
+          where: { sender: 'customer' },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { createdAt: true, text: true, offer: true },
+        },
+      },
+    });
+    for (const b of waiting) {
+      const last = b.messages[0];
+      if (!last || last.createdAt > before) continue;
+      if (b.replyReminderAt && b.replyReminderAt >= last.createdAt) continue;
+      await this.prisma.booking.update({
+        where: { id: b.id },
+        data: { replyReminderAt: new Date() },
+      });
+      await this.alertTeam(
+        b.id,
+        { text: last.text, offer: last.offer ?? undefined },
+        last.createdAt,
+      );
+    }
+  }
+
+  // waitingSince: set for a reminder ("still waiting since ...")
+  private async alertTeam(
+    bookingId: string,
+    dto: BookingMessageDto,
+    waitingSince?: Date,
+  ) {
     try {
       const booking = await this.bookings.findOne(bookingId);
       const admins = await this.prisma.worker.findMany({
@@ -182,14 +224,24 @@ export class QuickReplyService {
           const link = `${this.siteUrl}/reply/${token}`;
           const to = admin.personalEmail || admin.email;
           if (!to) return;
-          const subject = offer
-            ? `💬 ${booking.customer} proposes ${offer} for ${trip}`
-            : `💬 ${booking.customer} wrote about ${trip}`;
+          const hours = waitingSince
+            ? Math.max(
+                1,
+                Math.round((Date.now() - waitingSince.getTime()) / 3_600_000),
+              )
+            : 0;
+          const subject = waitingSince
+            ? `⏰ Still waiting: ${booking.customer} wrote ${hours} hours ago (${trip})`
+            : offer
+              ? `💬 ${booking.customer} proposes ${offer} for ${trip}`
+              : `💬 ${booking.customer} wrote about ${trip}`;
           await this.mail.sendHtml({
             to,
             subject,
             text: [
-              `${booking.customer} (${trip}) wrote on their booking page:`,
+              waitingSince
+                ? `Nobody has answered ${booking.customer} yet (${trip}). They wrote ${hours} hours ago:`
+                : `${booking.customer} (${trip}) wrote on their booking page:`,
               offer ? `Proposed price: ${offer}` : '',
               text ? `"${text}"` : '',
               `Reply now (no login, your PIN on a new device): ${link}`,
@@ -206,6 +258,7 @@ export class QuickReplyService {
               offer,
               link,
               panel,
+              waitingHours: waitingSince ? hours : undefined,
             }),
           });
         }),
@@ -224,11 +277,16 @@ function alertHtml(a: {
   offer: string | null;
   link: string;
   panel: string;
+  waitingHours?: number; // a reminder: nobody answered yet
 }) {
   const first = a.name.split(/\s+/)[0];
   return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#0a120b;max-width:560px">
   <p style="margin:0 0 6px;color:#5e6960">Hi ${h(first)},</p>
-  <p style="margin:0 0 14px"><strong>${h(a.customer)}</strong> wrote on their booking page about <strong>${h(a.trip)}</strong>:</p>
+  ${
+    a.waitingHours
+      ? `<p style="margin:0 0 14px;color:#9B2C2C"><strong>Nobody has answered ${h(a.customer)} yet.</strong> They wrote about <strong>${h(a.trip)}</strong> ${a.waitingHours} hours ago:</p>`
+      : `<p style="margin:0 0 14px"><strong>${h(a.customer)}</strong> wrote on their booking page about <strong>${h(a.trip)}</strong>:</p>`
+  }
   ${a.offer ? `<p style="margin:0 0 10px;color:#8e7345;font-weight:bold">Proposed price: ${h(a.offer)}</p>` : ''}
   ${a.text ? `<p style="margin:0 0 18px;padding:12px 16px;background:#f7f5f0;border-left:3px solid #c5a86d;border-radius:4px;white-space:pre-line">${h(a.text)}</p>` : ''}
   <p style="margin:0 0 18px">

@@ -1,45 +1,32 @@
 "use client";
 
 import { PhoneField } from "@/components/ui/phone-field";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
-import { Building2, Bell, Shield, User, Users, Save, KeyRound } from "lucide-react";
-import { useEffect } from "react";
+import { Shield, User, Users, KeyRound, MessageSquareText, Pencil, Plus, Trash2, ExternalLink, MailCheck, Save } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { useWorkersStore } from "@/store/workersStore";
+import { useSavedReplies } from "@/lib/useSavedReplies";
+import type { SavedReply } from "@/lib/types";
 import ImageField from "../components/ImageField";
-import { Avatar, Badge, Button, Card, CardHeader, PageHeader, Toggle, inputClass, labelClass } from "../components/ui";
+import { Avatar, Badge, Button, Card, CardHeader, PageHeader, inputClass, labelClass } from "../components/ui";
 
+// Only settings that really work. Company contact details live in lib/company.ts.
 const sections = [
   { id: "account", label: "My account", icon: User },
-  { id: "company", label: "Company", icon: Building2 },
-  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "replies", label: "Saved replies", icon: MessageSquareText },
   { id: "team", label: "Team", icon: Users },
   { id: "security", label: "Security", icon: Shield },
 ] as const;
 
-const team = [
-  { name: "Admin User", email: "admin@acaciasafaris.com", role: "Super admin" },
-  { name: "Eric Mugisha", email: "eric@acaciasafaris.com", role: "Tour guide" },
-  { name: "Diane Ingabire", email: "diane@acaciasafaris.com", role: "Bookings" },
-];
-
 export default function SettingsPage() {
   const [tab, setTab] = useState<(typeof sections)[number]["id"]>("account");
-  const [company, setCompany] = useState({
-    name: "Acacia Safaris Ltd",
-    email: "info@acaciasafaris.com",
-    phone: "+250 788 000 000",
-    whatsapp: "+250 788 000 000",
-    address: "KG 7 Ave, Kigali, Rwanda",
-    currency: "USD",
-  });
-  const [notify, setNotify] = useState({ booking: true, message: true, review: false, weekly: true });
-  const [twoFactor, setTwoFactor] = useState(false);
 
   return (
     <>
-      <PageHeader title="Settings" subtitle="Company details, notifications and team access." />
+      <PageHeader title="Settings" subtitle="Your account, saved replies, team access and security." />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
         <nav className="flex lg:flex-col gap-1 overflow-x-auto">
@@ -60,100 +47,165 @@ export default function SettingsPage() {
         </nav>
 
         {tab === "account" && <AccountForm />}
-
-        {tab === "company" && (
-          <Card>
-            <CardHeader title="Company profile" subtitle="Shown in the website footer, emails and invoices." />
-            <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {(
-                [
-                  ["name", "Company name"],
-                  ["email", "Contact email"],
-                  ["phone", "Phone"],
-                  ["whatsapp", "WhatsApp number"],
-                  ["address", "Address"],
-                ] as const
-              ).map(([key, label]) => (
-                <div key={key} className={key === "address" ? "sm:col-span-2" : ""}>
-                  <label className={labelClass}>{label}</label>
-                  <input className={inputClass} value={company[key]} onChange={(e) => setCompany({ ...company, [key]: e.target.value })} />
-                </div>
-              ))}
-              <div>
-                <label className={labelClass}>Currency</label>
-                <select className={inputClass} value={company.currency} onChange={(e) => setCompany({ ...company, currency: e.target.value })}>
-                  <option>USD</option><option>EUR</option><option>RWF</option><option>KES</option>
-                </select>
-              </div>
-            </div>
-            <div className="px-5 py-4 border-t border-[#0a120b]/[0.06] flex justify-end">
-              <Button onClick={() => toast.success("Settings saved")}><Save className="size-4" /> Save changes</Button>
-            </div>
-          </Card>
-        )}
-
-        {tab === "notifications" && (
-          <Card>
-            <CardHeader title="Email notifications" subtitle="Choose what you want to be emailed about." />
-            <ul className="px-5 pb-5 divide-y divide-[#0a120b]/[0.06]">
-              {(
-                [
-                  ["booking", "New booking requests", "Get an email as soon as a customer sends a booking request."],
-                  ["message", "Contact form messages", "Messages from the contact page and WhatsApp."],
-                  ["review", "New reviews", "When a guest submits a review for approval."],
-                  ["weekly", "Weekly summary", "Revenue and booking report every Monday."],
-                ] as const
-              ).map(([key, title, desc]) => (
-                <li key={key} className="flex items-center justify-between gap-4 py-4">
-                  <div>
-                    <p className="text-sm font-medium">{title}</p>
-                    <p className="text-xs text-[#0a120b]/50">{desc}</p>
-                  </div>
-                  <Toggle checked={notify[key]} onChange={(v) => { setNotify({ ...notify, [key]: v }); toast.success("Preference saved"); }} label={title} />
-                </li>
-              ))}
-            </ul>
-          </Card>
-        )}
-
-        {tab === "team" && (
-          <Card>
-            <CardHeader title="Team members" subtitle="People who can sign in to this admin panel." action={<Button className="py-2" onClick={() => toast("Invites will work once the backend is connected")}>Invite</Button>} />
-            <ul className="px-5 pb-5 divide-y divide-[#0a120b]/[0.06]">
-              {team.map((m) => (
-                <li key={m.email} className="flex items-center gap-3 py-3.5">
-                  <Avatar name={m.name} size={38} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{m.name}</p>
-                    <p className="text-xs text-[#0a120b]/50 truncate">{m.email}</p>
-                  </div>
-                  <Badge tone={m.role === "Super admin" ? "gold" : "gray"} dot={false}>{m.role}</Badge>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        )}
-
+        {tab === "replies" && <SavedRepliesCard />}
+        {tab === "team" && <TeamCard />}
         {tab === "security" && (
           <div className="space-y-6">
-          <ReplyPinCard />
-          <Card>
-            <CardHeader title="Security" />
-            <div className="px-5 pb-5 space-y-4">
-              <PasswordForm />
-              <div className="flex items-center justify-between rounded-xl bg-[#f7f5f0] px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium">Two-factor authentication</p>
-                  <p className="text-xs text-[#0a120b]/50">Require a code from your phone when signing in.</p>
-                </div>
-                <Toggle checked={twoFactor} onChange={setTwoFactor} label="Two-factor authentication" />
+            <ReplyPinCard />
+            <Card>
+              <CardHeader title="Password" />
+              <div className="px-5 pb-5 space-y-4">
+                <PasswordForm />
+                <p className="flex items-start gap-2 rounded-xl bg-[#f7f5f0] px-4 py-3 text-xs text-[#0a120b]/60">
+                  <MailCheck className="size-4 shrink-0 text-[#2E7D5B]" />
+                  Two-step login is always on: after your password, a 6 digit code is emailed to your personal email (except on
+                  devices you chose to trust for 30 days).
+                </p>
               </div>
-            </div>
-          </Card>
+            </Card>
           </div>
         )}
       </div>
     </>
+  );
+}
+
+// The people who can log in to this panel (real workers with admin access)
+function TeamCard() {
+  const workers = useWorkersStore((s) => s.workers);
+  const load = useWorkersStore((s) => s.load);
+  useEffect(() => {
+    load();
+  }, [load]);
+  const admins = workers.filter((w) => w.isAdmin);
+
+  return (
+    <Card>
+      <CardHeader
+        title="Admin access"
+        subtitle="People who can log in to this admin panel. Give or remove access in Workers."
+        action={
+          <Link href="/admin/workers" className="inline-flex items-center gap-1.5 text-xs font-medium text-[#2E7D5B] hover:underline">
+            Manage in Workers <ExternalLink className="size-3.5" />
+          </Link>
+        }
+      />
+      <ul className="px-5 pb-5 divide-y divide-[#0a120b]/[0.06]">
+        {admins.length === 0 && <li className="py-4 text-sm text-[#0a120b]/50">Loading…</li>}
+        {admins.map((w) => (
+          <li key={w.id} className="flex items-center gap-3 py-3.5">
+            <Avatar name={w.name} size={38} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">{w.name}</p>
+              <p className="text-xs text-[#0a120b]/50 truncate">{w.email}</p>
+            </div>
+            {w.status !== "Active" && <Badge tone="gray">{w.status}</Badge>}
+            <Badge tone={w.isOwner ? "gold" : "gray"} dot={false}>
+              {w.isOwner ? "Main admin" : w.role}
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+// Ready answers for the booking conversations (buttons above every reply box)
+function SavedRepliesCard() {
+  const replies = useSavedReplies((s) => s.replies);
+  const load = useSavedReplies((s) => s.load);
+  const add = useSavedReplies((s) => s.add);
+  const edit = useSavedReplies((s) => s.edit);
+  const remove = useSavedReplies((s) => s.remove);
+  const [editing, setEditing] = useState<SavedReply | "new" | null>(null);
+  const [form, setForm] = useState({ title: "", text: "" });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    load(true);
+  }, [load]);
+
+  const open = (reply: SavedReply | "new") => {
+    setEditing(reply);
+    setForm(reply === "new" ? { title: "", text: "" } : { title: reply.title, text: reply.text });
+  };
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const input = { title: form.title.trim(), text: form.text.trim() };
+      if (editing === "new") await add(input);
+      else if (editing) await edit(editing.id, input);
+      setEditing(null);
+      toast.success("Saved reply saved");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const del = async (reply: SavedReply) => {
+    if (!window.confirm(`Delete "${reply.title}"?`)) return;
+    try {
+      await remove(reply.id);
+      toast.success("Deleted");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader
+        title="Saved replies"
+        subtitle="Shown as buttons above every reply box (bookings, messages and quick reply). Click one to insert its text, then edit it before sending."
+        action={
+          <Button className="py-2" onClick={() => open("new")}>
+            <Plus className="size-4" /> Add
+          </Button>
+        }
+      />
+      {editing && (
+        <form onSubmit={save} className="mx-5 mb-4 space-y-3 rounded-xl border border-[#c5a86d]/40 bg-[#c5a86d]/[0.05] p-4">
+          <div>
+            <label className={labelClass}>Button name (short)</label>
+            <input className={inputClass} maxLength={40} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Deposit" />
+          </div>
+          <div>
+            <label className={labelClass}>Text inserted in the reply</label>
+            <textarea rows={4} className={`${inputClass} resize-none`} maxLength={2000} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" type="button" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!form.title.trim() || !form.text.trim() || saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          </div>
+        </form>
+      )}
+      <ul className="px-5 pb-5 divide-y divide-[#0a120b]/[0.06]">
+        {replies === null && <li className="py-4 text-sm text-[#0a120b]/50">Loading…</li>}
+        {replies?.length === 0 && <li className="py-4 text-sm text-[#0a120b]/50">No saved replies yet. Add your most common answers.</li>}
+        {replies?.map((r) => (
+          <li key={r.id} className="flex items-start gap-3 py-3.5">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">{r.title}</p>
+              <p className="text-xs text-[#0a120b]/55 line-clamp-2 whitespace-pre-line">{r.text}</p>
+            </div>
+            <button type="button" onClick={() => open(r)} className="p-2 rounded-lg hover:bg-[#0a120b]/5 cursor-pointer" aria-label={`Edit ${r.title}`}>
+              <Pencil className="size-4 text-[#0a120b]/50" />
+            </button>
+            <button type="button" onClick={() => del(r)} className="p-2 rounded-lg hover:bg-red-50 cursor-pointer" aria-label={`Delete ${r.title}`}>
+              <Trash2 className="size-4 text-[#0a120b]/50" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }
 

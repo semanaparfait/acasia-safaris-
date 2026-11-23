@@ -157,6 +157,8 @@ export type Booking = {
   offer?: number | null; // a price proposal waiting for an answer
   offerBy?: "customer" | "team" | null; // who made it
   needsReply?: boolean; // the customer wrote last
+  teamSeenAt?: string | null; // someone in the team opened the conversation ("Seen by …")
+  teamSeenBy?: string | null;
   accessToken?: string; // the visitor's link: /my-booking/<accessToken>
   messages: BookingMessage[];
 
@@ -419,3 +421,6 @@ export type TripBookingInput = {
   message?: string;
   locale?: string;
 };
+
+// A ready answer for the booking conversations (Admin > Settings > Saved replies)
+export type SavedReply = { id: string; title: string; text: string };

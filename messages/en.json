@@ -156,6 +156,9 @@
     "goingFrom": "travelers from {countries} are going"
   },
   "MyBooking": {
+    "autoReplyShortNamed": "Got it, thank you! 👍 I'll reply here shortly. – {name}",
+    "autoReplyShort": "Got it, thank you! 👍 We'll reply here shortly.",
+    "seenBy": "Seen by {name}",
     "notFound": "Booking not found",
     "notFoundText": "This link is not valid. Please use the link in the email we sent you, or contact us.",
     "contactUs": "Contact us",
@@ -877,6 +880,8 @@
     "contactUs": "Contact Us"
   },
   "Planner": {
+    "draftRestored": "We kept what you filled in last time.",
+    "startOver": "Start over",
     "steps": {
       "1": {
         "title": "Destinations",

@@ -50,6 +50,11 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
   const [booking, setBooking] = useState<PublicBooking | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [teamTyping, setTeamTyping] = useState<string | null>(null); // who in the team is writing now
+  const socketRef = useRef<ReturnType<typeof liveSocket> | null>(null);
+  // The visitor writing: admins see "<name> is typing…" (throttled, see Conversation)
+  const sendTyping = useCallback((typing: boolean) => {
+    socketRef.current?.emit("customerTyping", { typing });
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -64,6 +69,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading data from the API
     load();
     const socket = liveSocket({ booking: token });
+    socketRef.current = socket;
     // The team's "typing" stops by itself if the "stopped" signal never comes
     let typingTimer: ReturnType<typeof setTimeout> | undefined;
     socket.on("booking", (b: PublicBooking) => {
@@ -78,6 +84,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
     socket.io.on("reconnect", load); // back online: catch up on anything missed
     return () => {
       clearTimeout(typingTimer);
+      socketRef.current = null;
       socket.disconnect();
     };
   }, [load, token]);
@@ -139,7 +146,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
           )}
         </div>
         <div className="lg:col-span-2 lg:order-1">
-          <Conversation booking={booking} token={token} onChange={setBooking} teamTyping={teamTyping} />
+          <Conversation booking={booking} token={token} onChange={setBooking} teamTyping={teamTyping} onTyping={sendTyping} />
         </div>
       </div>
     </div>
@@ -443,11 +450,13 @@ function Conversation({
   token,
   onChange,
   teamTyping,
+  onTyping,
 }: {
   booking: PublicBooking;
   token: string;
   onChange: (b: PublicBooking) => void;
   teamTyping: string | null; // a team member writing an answer right now (live)
+  onTyping: (typing: boolean) => void; // tells the team the visitor is writing
 }) {
   const t = useTranslations("MyBooking");
   const moneyText = useMoneyText();
@@ -475,6 +484,32 @@ function Conversation({
   const lastChat = [...booking.messages].reverse().find((m) => !m.event);
   const waiting = !closed && (lastChat?.sender === "customer" || pending != null);
   const dots = (waiting && typing) || teamTyping != null;
+  // The welcome text only after the visitor's first message; afterwards a short "got it"
+  const firstMessage = booking.messages.filter((m) => m.sender === "customer" && !m.event).length <= 1;
+  // "Seen by Jean" under the visitor's last message once someone in the team opened it
+  const lastCustomer = [...booking.messages].reverse().find((m) => m.sender === "customer");
+  const seenBy =
+    booking.teamSeenAt && booking.teamSeenBy && lastCustomer && new Date(booking.teamSeenAt) >= new Date(lastCustomer.createdAt)
+      ? booking.teamSeenBy.split(/\s+/)[0]
+      : null;
+
+  // Typing signal: at most every 2 s while typing, "stopped" after 3 s without a key or on send
+  const typingSentAt = useRef(0);
+  const typingStop = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const stopTyping = () => {
+    clearTimeout(typingStop.current);
+    if (typingSentAt.current) onTyping(false);
+    typingSentAt.current = 0;
+  };
+  const keyTyped = (value: string) => {
+    if (!value.trim()) return stopTyping();
+    if (Date.now() - typingSentAt.current > 2000) {
+      onTyping(true);
+      typingSentAt.current = Date.now();
+    }
+    clearTimeout(typingStop.current);
+    typingStop.current = setTimeout(stopTyping, 3000);
+  };
 
   // Show the newest message
   useEffect(() => {
@@ -486,6 +521,7 @@ function Conversation({
     const offerValue = withOffer ? Number(offer) : undefined;
     if (!text.trim() && !offerValue) return;
     // Show the message and the "typing" dots at once, without waiting for the server
+    stopTyping();
     const draft = { text: text.trim(), offer: offerValue };
     setPending(draft);
     setText("");
@@ -545,7 +581,14 @@ function Conversation({
             {t("noMessages")}
           </div>
         ) : (
-          booking.messages.map((m) => <Bubble key={m.id} message={m} />)
+          booking.messages.map((m) => (
+            <React.Fragment key={m.id}>
+              <Bubble message={m} />
+              {seenBy && m.id === lastCustomer?.id && !pending && (
+                <p className="text-right text-[11px] text-[#0a120b]/40 -mt-1.5 pr-1">{t("seenBy", { name: seenBy })}</p>
+              )}
+            </React.Fragment>
+          ))
         )}
         {pending && (
           <div className="flex justify-end opacity-70">
@@ -567,7 +610,13 @@ function Conversation({
                 {t("fromTeam", { name: member?.name ?? "Acacia Safaris" })} · {moment(lastChat.createdAt, locale)}
               </span>
               <div className="rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed bg-white border border-[#0a120b]/[0.08] text-[#0a120b] shadow-sm">
-                {member ? t("autoReplyNamed", { name: firstName }) : t("autoReply")}
+                {firstMessage
+                  ? member
+                    ? t("autoReplyNamed", { name: firstName })
+                    : t("autoReply")
+                  : member
+                    ? t("autoReplyShortNamed", { name: firstName })
+                    : t("autoReplyShort")}
               </div>
             </div>
           </div>
@@ -607,7 +656,11 @@ function Conversation({
               rows={2}
               value={text}
               maxLength={2000}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value);
+                keyTyped(e.target.value);
+              }}
+              onBlur={stopTyping}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

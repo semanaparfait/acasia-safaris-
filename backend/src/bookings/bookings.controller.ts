@@ -142,6 +142,18 @@ export class BookingsController {
     return this.bookingsService.update(id, dto);
   }
 
+  // POST /api/bookings/12/seen   -> the visitor sees "Seen by <name>" (not in the activity log)
+  @Post(':id/seen')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(200)
+  markSeen(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: AdminRequest,
+  ) {
+    return this.bookingsService.markSeen(id, request.worker.name);
+  }
+
   // POST /api/bookings/12/messages   body: { "text": "...", "offer"?: 6600 }  (emails the visitor)
   @Post(':id/messages')
   @UseGuards(AdminGuard)

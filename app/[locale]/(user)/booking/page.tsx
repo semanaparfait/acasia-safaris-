@@ -103,6 +103,26 @@ function useCountryOptions(locale: string) {
   }, [locale]);
 }
 
+// The booking form kept in the browser while it is being filled in
+const DRAFT_KEY = "acacia-booking-draft";
+const DRAFT_DAYS = 14;
+type Draft = {
+  savedAt: number;
+  step: number;
+  selected: string[];
+  otherDestination: string;
+  from?: string;
+  to?: string;
+  adults: number;
+  children: number;
+  choices: Record<string, TripChoice>;
+  details: { name: string; email: string; phone: string; fromRwanda: string; country: string; notes: string };
+};
+const hasContent = (d: Draft) =>
+  d.step > 0 ||
+  d.selected.length > 0 ||
+  Boolean(d.otherDestination || d.from || d.details.name || d.details.email || d.details.phone || d.details.notes);
+
 const labelClass =
   "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
@@ -274,6 +294,64 @@ export default function BookingPage({
   const [sending, setSending] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  // Draft: what the visitor typed is kept in this browser (14 days), so closing the
+  // tab or going back loses nothing. Cleared once the request is sent.
+  const [restored, setRestored] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      const draft = raw ? (JSON.parse(raw) as Draft) : null;
+      if (draft && Date.now() - draft.savedAt < DRAFT_DAYS * 86_400_000 && hasContent(draft)) {
+        setStep(draft.step);
+        setSelected((now) => [...new Set([...draft.selected, ...now])]);
+        setOtherDestination(draft.otherDestination);
+        setDates({
+          from: draft.from ? new Date(draft.from) : undefined,
+          to: draft.to ? new Date(draft.to) : undefined,
+        });
+        setAdults(draft.adults);
+        setChildren(draft.children);
+        setChoices(draft.choices);
+        setDetails(draft.details);
+        setRestored(true);
+      }
+    } catch {}
+    setDraftReady(true);
+  }, []);
+  useEffect(() => {
+    if (!draftReady || submitted) return;
+    const draft: Draft = {
+      savedAt: Date.now(),
+      step,
+      selected,
+      otherDestination,
+      from: dates.from?.toISOString(),
+      to: dates.to?.toISOString(),
+      adults,
+      children,
+      choices,
+      details,
+    };
+    try {
+      if (hasContent(draft)) localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {}
+  }, [draftReady, submitted, step, selected, otherDestination, dates, adults, children, choices, details]);
+  const startOver = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {}
+    setStep(0);
+    setSelected([]);
+    setOtherDestination("");
+    setDates({ from: undefined });
+    setAdults(2);
+    setChildren(0);
+    setChoices({});
+    setDetails({ name: "", email: "", phone: "", fromRwanda: "", country: "", notes: "" });
+    setRestored(false);
+  };
+
   useEffect(() => {
     if (preselectedId) {
       document
@@ -427,6 +505,9 @@ export default function BookingPage({
       });
       setBookingLink(`/my-booking/${booking.accessToken}`);
       setSubmitted(true);
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {}
       document
         .getElementById("planner")
         ?.scrollIntoView({ behavior: "smooth" });
@@ -627,6 +708,14 @@ export default function BookingPage({
               </motion.div>
             ) : (
               <>
+                {restored && (
+                  <div className="mx-6 md:mx-10 mt-6 flex items-center justify-between gap-3 rounded-lg bg-[#c5a86d]/10 px-4 py-2.5 text-xs text-[#7a5d22]">
+                    <span>{t("draftRestored")}</span>
+                    <button type="button" onClick={startOver} className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer">
+                      {t("startOver")}
+                    </button>
+                  </div>
+                )}
                 {/* Stepper */}
                 <div className="px-6 md:px-10 pt-8">
                   <div className="flex items-center">
