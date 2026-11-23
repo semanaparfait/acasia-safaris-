@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, ChevronRight, Mail, Menu, Phone, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronRight, Heart, Mail, Menu, Phone, X } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 import logo from "@/public/logo2.png";
@@ -12,6 +12,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { COMPANY } from "@/lib/company";
 import { useTripsStore } from "@/store/tripsStore";
+import { useSavedCount } from "@/components/TourActions";
 
 // name = the text's key in messages/*.json (Nav)
 const allLinks = [
@@ -99,6 +100,8 @@ export default function Navbar() {
           </ul>
 
           <div className="flex items-center gap-2.5 sm:gap-4">
+            {/* Shows once the visitor saved a package with the heart */}
+            <SavedLink />
             {/* Desktop: language (the currency is chosen where prices are shown: the booking) */}
             <div className="hidden lg:flex items-center">
               <LanguageSwitcher dark compact />
@@ -213,6 +216,7 @@ function MobileMenu({ open, onClose, isActive }: { open: boolean; onClose: () =>
                   );
                 })}
               </ul>
+              <SavedMenuLink onClose={onClose} />
 
               {/* Contact */}
               <p className="px-3 mt-7 mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/35">{t("language")}</p>
@@ -275,5 +279,39 @@ function ContactRow({
       </span>
       {external && <ArrowUpRight size={15} className="text-white/25" />}
     </a>
+  );
+}
+
+// The heart next to the menu: the packages the visitor saved (/saved)
+function SavedLink() {
+  const t = useTranslations("Saved");
+  const count = useSavedCount();
+  if (count === 0) return null;
+  return (
+    <Link
+      href="/saved"
+      aria-label={t("navLabel", { count })}
+      title={t("navLabel", { count })}
+      className="relative w-10 h-10 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:text-(--accent-gold) transition-colors"
+    >
+      <Heart size={18} />
+      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center">
+        {count}
+      </span>
+    </Link>
+  );
+}
+
+function SavedMenuLink({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("Saved");
+  const count = useSavedCount();
+  if (count === 0) return null;
+  return (
+    <Link href="/saved" onClick={onClose} className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 active:bg-white/5">
+      <span className="w-1 h-6" />
+      <Heart size={17} className="text-red-400" />
+      <span className="flex-1 text-[17px] font-medium text-white/90">{t("title")}</span>
+      <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/80">{count}</span>
+    </Link>
   );
 }

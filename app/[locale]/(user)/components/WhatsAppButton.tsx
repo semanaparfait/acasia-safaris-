@@ -3,6 +3,7 @@
 // The green chat button (bottom right). It opens a small card with quick replies; each one
 // opens WhatsApp with a ready message in the visitor's language. On a package, the first
 // reply is about that package (name, days and link), so the team knows at once what to answer.
+import { track } from "@/lib/analytics";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
@@ -121,7 +122,10 @@ export default function WhatsAppButton() {
                     href={whatsappLink(r.message)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      track("whatsapp-open", { topic: r.key });
+                      setOpen(false);
+                    }}
                     className="group flex items-center justify-between gap-2 rounded-xl border border-[#25D366]/30 bg-white px-3 py-2 text-sm font-medium text-[#075E54] transition-colors hover:border-[#25D366] hover:bg-[#25D366]/10 focus-visible:outline-2 focus-visible:outline-[#25D366]"
                   >
                     <span className="min-w-0 truncate">{r.label}</span>

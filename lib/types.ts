@@ -266,8 +266,6 @@ export type Review = {
   packageTitle?: string | null;
   text: string;
   status: ReviewStatus;
-  source?: "Website" | "Google"; // Google = copied from our Google profile by an admin
-  sourceUrl?: string | null; // the review on Google
   createdAt: string;
 };
 

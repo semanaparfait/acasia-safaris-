@@ -331,24 +331,3 @@ Every morning at 8:00 (Kigali time), in each traveler's language, each sent only
 
 To send what is due right now (e.g. to test): `POST /api/reminders/run` (admin).
 
-## Google reviews (src/google-reviews)
-
-The home page shows our Google rating ("4.9 · 132 reviews on Google") and up to 5 Google reviews
-(Google chooses them), mixed with the reviews published in Admin > Reviews. A small rating badge
-sits next to "Book now", in the booking page sidebar and in the footer. Nothing shows until it works.
-
-1. In Google Cloud (the project of `GOOGLE_TRANSLATE_API_KEY`), enable **Places API (New)**.
-2. Use that key, or a new one restricted to Places API (New), in `GOOGLE_PLACES_API_KEY`.
-3. `GOOGLE_MAPS_CID="2782220313372482447"` (our listing, from g.page/r/CY9bcVmibpwmEBE). On the first
-   load the backend finds the Place ID and logs `set GOOGLE_PLACE_ID="..."`: copy it into `.env`.
-
-**Without the API (free):** in Admin > Reviews > "Google rating & reviews", type the rating and number
-of reviews from our Google profile and add Google reviews by hand ("Add a Google review"). The website
-uses them whenever the API is not set up or fails (e.g. a billing problem). Stored in `Setting`
-(key `googleProfile`) and in `Review` with `source: "Google"`.
-
-Fetched once a day per language (en, fr, sw) at 6:00 Kigali time: about 90 calls a month,
-inside Google's free monthly allowance. `GET /api/google-reviews?lang=fr`.
-The after-trip email and the booking page (after a review) also ask for a review on Google
-(`GOOGLE_REVIEW_URL`).
-

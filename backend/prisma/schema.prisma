@@ -398,18 +398,7 @@ model Review {
   packageTitle String?
   text         String
   status       String   @default("Pending") // "Pending", "Published", "Hidden"
-  // "Website" (left on a booking page) or "Google" (copied from our Google profile by an admin)
-  source       String   @default("Website")
-  sourceUrl    String? // Google: the review on Google Maps ("Read on Google")
   createdAt    DateTime @default(now())
-}
-
-// ---------- Settings (one row per key) ----------
-// "googleProfile": { rating, total, mapsUrl }, typed in Admin > Reviews while the Google API is not used
-model Setting {
-  key       String   @id
-  value     Json
-  updatedAt DateTime @updatedAt
 }
 
 // ---------- Gallery (photos on the gallery page) ----------

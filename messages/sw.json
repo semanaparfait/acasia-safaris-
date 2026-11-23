@@ -21,7 +21,8 @@
     "language": "Lugha",
     "currency": "Sarafu",
     "home_aria": "Ukurasa wa nyumbani wa Acacia Safaris",
-    "trips": "Safari Maalum"
+    "trips": "Safari Maalum",
+    "faq": "Maswali"
   },
   "Footer": {
     "ready": "Tuko tayari ukiwa tayari",
@@ -156,8 +157,6 @@
     "goingFrom": "wasafiri kutoka {countries} wanaenda"
   },
   "MyBooking": {
-    "googleAsk": "Ombi moja zaidi? Maoni kwenye Google yanasaidia wasafiri wengine kutupata kuliko kitu kingine chochote.",
-    "googleButton": "Tupe maoni kwenye Google",
     "autoReplyShortNamed": "Nimepokea, asante! 👍 Nitakujibu hapa hivi karibuni. – {name}",
     "autoReplyShort": "Tumepokea, asante! 👍 Tutakujibu hapa hivi karibuni.",
     "seenBy": "Imeonwa na {name}",
@@ -224,7 +223,42 @@
     "reviewSending": "Inatuma…",
     "reviewThanks": "Asante kwa maoni yako!",
     "reviewThanksText": "Timu yetu itayachapisha kwenye tovuti hivi karibuni.",
-    "reviewNeedStars": "Tafadhali chagua alama na uandike maneno machache."
+    "reviewNeedStars": "Tafadhali chagua alama na uandike maneno machache.",
+    "countdown": {
+      "eyebrow": "Safari yako",
+      "eyebrowConfirmed": "Safari yako imethibitishwa",
+      "daysToGo": "{count, plural, one {siku imebaki} other {siku zimebaki}}",
+      "tomorrow": "Safari yako inaanza kesho!",
+      "today": "Safari yako inaanza leo!",
+      "readyText": "Tumia orodha hapa chini kujiandaa. Tunasubiri kwa hamu kukukaribisha.",
+      "pendingText": "Timu yetu inaandaa safari yako. Kwa sasa, tumia orodha hapa chini.",
+      "onTrip": "Ukiwa safarini",
+      "dayOf": "Siku {day} kati ya {of}",
+      "enjoy": "Furahia kila wakati. Unahitaji chochote? Tuandikie hapa chini."
+    },
+    "packing": {
+      "title": "Jiandae",
+      "before": "Kabla ya kusafiri",
+      "pack": "Cha kubeba",
+      "moreQuestions": "Maswali zaidi? Tazama maswali na majibu",
+      "items": {
+        "passport": "Pasipoti halali miezi 6 baada ya safari",
+        "visa": "Viza (ukiwasili au mtandaoni irembo.gov.rw)",
+        "yellowFever": "Cheti cha homa ya manjano, ikihitajika",
+        "insurance": "Bima ya safari",
+        "flights": "Taarifa za ndege zimetumwa kwa timu yetu",
+        "boots": "Viatu vya kutembea visivyopitisha maji",
+        "rainJacket": "Koti la mvua",
+        "longSleeves": "Suruali ndefu na mikono mirefu",
+        "gloves": "Glovu za bustani kwa matembezi ya sokwe",
+        "warmLayer": "Nguo ya joto kwa jioni",
+        "sunscreen": "Mafuta ya kuzuia jua na kofia",
+        "repellent": "Dawa ya kufukuza wadudu",
+        "binoculars": "Darubini na kamera",
+        "cash": "Dola chache za Marekani (2013 au baadaye) kwa bakshishi",
+        "noPlastic": "Hakuna mifuko ya plastiki (hairuhusiwi Rwanda)"
+      }
+    }
   },
   "Home": {
     "hero": {
@@ -356,7 +390,8 @@
       "safe": {
         "title": "Salama na yenye ukarimu",
         "text": "Mojawapo ya nchi salama na safi zaidi Afrika."
-      }
+      },
+      "allQuestions": "Maswali yote na majibu"
     },
     "gallery": {
       "eyebrow": "Picha",
@@ -1101,7 +1136,8 @@
     "going": "{count, plural, one {Msafiri # anaenda} other {Wasafiri # wanaenda}}",
     "from": "Wasafiri kutoka {countries}",
     "join": "Jiunge na kikundi hiki",
-    "perPerson": "kuanzia <price></price> kwa kila mtu"
+    "perPerson": "kuanzia <price></price> kwa kila mtu",
+    "nextDate": "Kikundi kijacho: {dates}"
   },
   "Trips": {
     "metaTitle": "Safari Maalum | Acacia Safaris",
@@ -1215,14 +1251,36 @@
     "error": "Imeshindwa kutuma: {error}",
     "home": "Rudi kwenye tovuti"
   },
-  "GoogleReviews": {
-    "count": "{count, plural, one {Maoni #} other {Maoni #}} kwenye Google",
-    "badge": "{count, plural, one {Maoni # ya Google} other {Maoni # ya Google}}",
-    "seeAll": "Ona yote kwenye Google",
-    "write": "Andika maoni",
-    "more": "Soma zaidi",
-    "less": "Punguza",
-    "postedOn": "Imechapishwa kwenye Google",
-    "verified": "Alisafiri nasi"
+  "Saved": {
+    "save": "Hifadhi safari hii",
+    "unsave": "Ondoa kwenye zilizohifadhiwa",
+    "saved": "Imehifadhiwa",
+    "share": "Shiriki safari hii",
+    "shareText": "Angalia safari hii: {title}",
+    "copyLink": "Nakili kiungo",
+    "copied": "Kiungo kimenakiliwa",
+    "metaTitle": "Safari zilizohifadhiwa | Acacia Safaris",
+    "eyebrow": "Orodha yako",
+    "title": "Safari zilizohifadhiwa",
+    "subtitle": "Safari ulizohifadhi kwa moyo. Zinabaki kwenye kifaa hiki, ili uzilinganishe au uzishiriki na unaosafiri nao.",
+    "emptyTitle": "Bado hujahifadhi chochote",
+    "emptyText": "Gusa moyo kwenye safari yoyote ili kuiweka hapa.",
+    "browse": "Tazama safari zetu",
+    "count": "{count, plural, one {Safari # imehifadhiwa} other {Safari # zimehifadhiwa}}",
+    "from": "Kuanzia",
+    "view": "Tazama safari",
+    "navLabel": "{count, plural, one {Safari # iliyohifadhiwa} other {Safari # zilizohifadhiwa}}"
+  },
+  "Faq": {
+    "metaTitle": "Maswali na majibu | Acacia Safaris",
+    "metaDescription": "Vibali vya sokwe, viza, wakati bora wa kutembelea Rwanda, cha kubeba, malipo na kughairi: majibu ya maswali tunayoulizwa zaidi.",
+    "eyebrow": "Vizuri kujua",
+    "title": "Maswali na majibu",
+    "subtitle": "Yote ambayo wasafiri hutuuliza kabla ya kuhifadhi: vibali vya sokwe, viza, malipo, cha kubeba na mengineyo.",
+    "topics": "Mada",
+    "stillTitle": "Bado una swali?",
+    "stillText": "Timu yetu Kigali hujibu kila ujumbe, kwa Kiswahili, Kiingereza au Kifaransa.",
+    "whatsappMessage": "Habari Acacia Safaris, nina swali kuhusu safari yangu:",
+    "contact": "Wasiliana nasi"
   }
 }

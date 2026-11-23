@@ -1,6 +1,7 @@
 "use client";
 
 import React, { use, useEffect, useState } from "react";
+import { track } from "@/lib/analytics";
 import SmartImage from "@/components/ui/smart-image";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -25,7 +26,6 @@ import {
   X,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
-import { GoogleRatingBadge } from "@/components/GoogleRating";
 import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
 import { getCountries } from "react-phone-number-input";
 import {
@@ -506,6 +506,7 @@ export default function BookingPage({
       });
       setBookingLink(`/my-booking/${booking.accessToken}`);
       setSubmitted(true);
+      track("booking-sent", { destinations: booking.destinations.length });
       try {
         localStorage.removeItem(DRAFT_KEY);
       } catch {}
@@ -1223,9 +1224,6 @@ export default function BookingPage({
               >
                 <MessageCircle size={16} /> {t("chatWhatsapp")}
               </a>
-            </div>
-            <div className="flex justify-center">
-              <GoogleRatingBadge />
             </div>
           </aside>
         </div>

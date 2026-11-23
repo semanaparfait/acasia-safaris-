@@ -5,6 +5,7 @@
 //   price options (each with what is included and not) · comparison · call to action.
 // "Reserve" opens a short form saved under Admin > Messages, like the package inquiries.
 import { useEffect, useMemo, useState } from "react";
+import { track } from "@/lib/analytics";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -987,6 +988,7 @@ function ReserveModal({
         message: form.message.trim() || undefined,
         locale,
       });
+      track("trip-booked", { trip: trip.id, travelers: form.travelers });
       setSent(true);
     } catch (err) {
       setError((err as Error).message);
@@ -1295,6 +1297,7 @@ function WaitlistModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
         travelers: form.travelers,
         locale,
       });
+      track("trip-waitlist", { trip: trip.id });
       setDone(true);
     } catch (err) {
       setError((err as Error).message);

@@ -26,13 +26,11 @@ import { StorageModule } from './storage/storage.module';
 import { TranslationsModule } from './translations/translations.module';
 import { WorkersModule } from './workers/workers.module';
 import { SavedRepliesModule } from './saved-replies/saved-replies.module';
-import { GoogleReviewsModule } from './google-reviews/google-reviews.module';
 
 // The root module: every feature module is listed here.
 @Module({
   imports: [
     SavedRepliesModule,
-    GoogleReviewsModule,
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
     ScheduleModule.forRoot(), // daily jobs (reminders)
     // Request limits per visitor: 120 per minute everywhere, much less on login,

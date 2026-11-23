@@ -18,7 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { GoogleRatingBadge } from "@/components/GoogleRating";
+import { SaveTourButton, ShareTourButton } from "@/components/TourActions";
 import { useWhatsAppTopic } from "@/lib/whatsapp";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
@@ -191,8 +191,8 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
         <div className="lg:col-span-5 flex flex-col justify-between">
           <div>
             {/* Header info */}
-            <div className="flex items-start justify-between border-b pb-4 mb-5 border-neutral-200">
-              <div>
+            <div className="flex items-start justify-between gap-3 border-b pb-4 mb-5 border-neutral-200">
+              <div className="min-w-0">
                 <p
                   className={`text-[11px] font-bold tracking-widest uppercase mb-1 flex items-center gap-1 ${
                     isLuxury ? "text-amber-700" : "text-neutral-500"
@@ -204,6 +204,16 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                 <h1 className="text-2xl lg:text-3xl font-serif font-bold text-neutral-900 leading-tight">
                   {tour.title}
                 </h1>
+              </div>
+              {/* Save for later, or send to the people they travel with */}
+              <div className="flex items-center gap-2 shrink-0">
+                <SaveTourButton id={tour.id} className="w-10 h-10 border border-neutral-200 text-neutral-700 hover:border-neutral-400" />
+                <ShareTourButton
+                  id={tour.id}
+                  title={tour.title}
+                  path={`/tour/${tour.id}`}
+                  className="w-10 h-10 border border-neutral-200 text-neutral-700 hover:border-neutral-400"
+                />
               </div>
             </div>
 
@@ -319,7 +329,6 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                   {t("bookNow")}
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
-                <GoogleRatingBadge dark className="mt-3" />
               </div>
             </div>
           )}

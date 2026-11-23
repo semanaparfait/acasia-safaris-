@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import Navbar from "@/app/[locale]/(user)/components/Navbar";
 import Footer from "@/app/[locale]/(user)/components/Footer";
 import WhatsAppButton from "@/app/[locale]/(user)/components/WhatsAppButton";
+import Analytics from "@/components/Analytics";
 
 export default function UserLayout({
   children,
@@ -24,6 +25,7 @@ export default function UserLayout({
       </main>
       <Footer />
       <WhatsAppButton />
+      <Analytics />
     </>
   );
 }

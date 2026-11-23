@@ -29,9 +29,8 @@ import { depositOf, DEPOSIT_RATE } from "@/lib/helpers";
 import { Money, useMoneyText } from "@/components/ui/money";
 import type { BookingMessage, PublicBooking } from "@/lib/types";
 import { useChatMember } from "@/lib/useChatMember";
-import { GOOGLE_REVIEW_URL } from "@/lib/company";
-import { GoogleG } from "@/components/GoogleRating";
 import { MemberAvatar, TypingDots } from "@/components/ui/chat-bits";
+import { PackingList, TripCountdown } from "./TripPrep";
 
 const TYPING_MS = 2000; // after the visitor sends: "typing…" for a moment, then the quick "got it" reply
 
@@ -136,9 +135,11 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
       <div className="max-w-6xl mx-auto px-5 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Price + trip: first on phones */}
         <div className="space-y-6 lg:order-2">
+          <TripCountdown booking={booking} now={openedAt} />
           {booking.ticketCode && <TicketCard booking={booking} token={token} />}
           <PriceCard booking={booking} token={token} onChange={setBooking} />
           <TripCard booking={booking} />
+          <PackingList booking={booking} token={token} now={openedAt} />
           {/* The cancellation dates of this trip (not once it is over or cancelled) */}
           {(booking.status === "Pending" || booking.status === "Negotiating" || booking.status === "Confirmed") && (
             <PolicyCard startDate={booking.startDate} />
@@ -344,17 +345,6 @@ function ReviewCard({ booking, token, onChange }: { booking: PublicBooking; toke
           </span>
           <p className="font-serif text-lg text-[#12231a]">{t("reviewThanks")}</p>
           <p className="text-xs text-[#0a120b]/55 mt-1">{t("reviewThanksText")}</p>
-          <div className="mt-4 rounded-xl bg-[#f7f5f0] p-4">
-            <p className="text-xs text-[#0a120b]/65">{t("googleAsk")}</p>
-            <a
-              href={GOOGLE_REVIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-white border border-[#0a120b]/10 px-4 py-2 text-sm font-medium text-[#12231a] shadow-sm hover:border-[#0a120b]/30 transition-colors"
-            >
-              <GoogleG className="size-4" /> {t("googleButton")}
-            </a>
-          </div>
         </div>
       ) : (
         <form onSubmit={send} className="space-y-3">

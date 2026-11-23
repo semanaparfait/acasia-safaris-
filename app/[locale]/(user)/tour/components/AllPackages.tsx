@@ -21,6 +21,8 @@ import {
 import { useTranslations } from "next-intl";
 import type { TourPackage } from "@/lib/types";
 import { useMessagesStore } from "@/store/messagesStore";
+import { SaveTourButton } from "@/components/TourActions";
+import { NextDepartureChip } from "./GroupDepartures";
 
 interface AllPackagesProps {
   title?: string;
@@ -117,6 +119,7 @@ export default function AllPackages({ title, packages, onSelectPackage }: AllPac
                       {pkg.badge}
                     </div>
                   )}
+                  <SaveTourButton id={pkg.id} className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur text-[#11241A] shadow hover:bg-white" />
                 </div>
 
                 {/* Middle: Information details */}
@@ -136,6 +139,7 @@ export default function AllPackages({ title, packages, onSelectPackage }: AllPac
                     <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed line-clamp-2">
                       {pkg.description}
                     </p>
+                    <NextDepartureChip packageId={pkg.id} className="mt-3" />
                   </div>
 
                   {/* Bottom Specs Row */}

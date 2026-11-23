@@ -7,6 +7,7 @@
 //   3. Price:   the total, then "Book at this price" or "Ask for a better price"
 // The booking is saved, and the visitor goes to their booking page (/my-booking/<token>),
 // where they follow it and talk with the team.
+import { track } from "@/lib/analytics";
 import React, { useEffect, useMemo, useState } from "react";
 import SmartImage from "@/components/ui/smart-image";
 import { createPortal } from "react-dom";
@@ -148,6 +149,7 @@ export default function BookPackageModal({
         ...(bargain ? { offer: offerValue, offerNote: offerNote.trim() || undefined } : {}),
         locale, // emails go out in the visitor's language
       });
+      track("package-booked", { package: tour.id, group: Boolean(departure), offer: Boolean(bargain) });
       router.push(`/my-booking/${booking.accessToken}`);
     } catch (err) {
       setError((err as Error).message);

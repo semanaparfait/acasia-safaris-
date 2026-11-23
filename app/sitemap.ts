@@ -3,7 +3,7 @@
 import type { MetadataRoute } from "next";
 import { getPackages, getTrips, SITE_URL } from "@/lib/server-api";
 
-const PAGES = ["", "/destination", "/tour", "/gallery", "/aboutus", "/contact", "/booking", "/privacy", "/terms"];
+const PAGES = ["", "/destination", "/tour", "/gallery", "/aboutus", "/faq", "/contact", "/booking", "/privacy", "/terms"];
 const LOCALES = ["en", "fr", "sw"] as const;
 
 const url = (locale: string, path: string) => `${SITE_URL}${locale === "en" ? "" : `/${locale}`}${path}`;

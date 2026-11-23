@@ -21,7 +21,8 @@
     "language": "Langue",
     "currency": "Devise",
     "home_aria": "Accueil Acacia Safaris",
-    "trips": "Voyages"
+    "trips": "Voyages",
+    "faq": "FAQ"
   },
   "Footer": {
     "ready": "Quand vous voulez",
@@ -156,8 +157,6 @@
     "goingFrom": "des voyageurs de {countries} participent"
   },
   "MyBooking": {
-    "googleAsk": "Encore un petit service ? Un avis sur Google aide énormément d'autres voyageurs à nous trouver.",
-    "googleButton": "Laisser un avis sur Google",
     "autoReplyShortNamed": "Bien reçu, merci ! 👍 Je vous réponds ici très vite. – {name}",
     "autoReplyShort": "Bien reçu, merci ! 👍 Nous vous répondons ici très vite.",
     "seenBy": "Vu par {name}",
@@ -224,7 +223,42 @@
     "reviewSending": "Envoi…",
     "reviewThanks": "Merci pour votre avis !",
     "reviewThanksText": "Notre équipe le publiera bientôt sur le site.",
-    "reviewNeedStars": "Choisissez une note et écrivez quelques mots."
+    "reviewNeedStars": "Choisissez une note et écrivez quelques mots.",
+    "countdown": {
+      "eyebrow": "Votre voyage",
+      "eyebrowConfirmed": "Votre voyage est confirmé",
+      "daysToGo": "{count, plural, one {jour avant le départ} other {jours avant le départ}}",
+      "tomorrow": "Votre voyage commence demain !",
+      "today": "Votre voyage commence aujourd'hui !",
+      "readyText": "Préparez-vous avec la liste ci-dessous. Nous avons hâte de vous accueillir.",
+      "pendingText": "Notre équipe organise votre voyage. En attendant, utilisez la liste ci-dessous.",
+      "onTrip": "En safari",
+      "dayOf": "Jour {day} sur {of}",
+      "enjoy": "Profitez de chaque instant. Besoin de quelque chose ? Écrivez-nous ci-dessous."
+    },
+    "packing": {
+      "title": "Se préparer",
+      "before": "Avant le départ",
+      "pack": "Dans la valise",
+      "moreQuestions": "D'autres questions ? Voir la FAQ",
+      "items": {
+        "passport": "Passeport valable 6 mois après le voyage",
+        "visa": "Visa (à l'arrivée ou en ligne sur irembo.gov.rw)",
+        "yellowFever": "Certificat fièvre jaune, si nécessaire",
+        "insurance": "Assurance voyage",
+        "flights": "Détails des vols envoyés à notre équipe",
+        "boots": "Chaussures de randonnée imperméables",
+        "rainJacket": "Veste de pluie",
+        "longSleeves": "Pantalon et manches longues",
+        "gloves": "Gants de jardinage pour le trek des gorilles",
+        "warmLayer": "Une couche chaude pour les soirées",
+        "sunscreen": "Crème solaire et chapeau",
+        "repellent": "Anti-moustique",
+        "binoculars": "Jumelles et appareil photo",
+        "cash": "Quelques dollars US (2013 ou plus récents) pour les pourboires",
+        "noPlastic": "Pas de sacs plastique (interdits au Rwanda)"
+      }
+    }
   },
   "Home": {
     "hero": {
@@ -356,7 +390,8 @@
       "safe": {
         "title": "Sûr et accueillant",
         "text": "L'un des pays les plus sûrs et les plus propres d'Afrique."
-      }
+      },
+      "allQuestions": "Toutes les questions"
     },
     "gallery": {
       "eyebrow": "Galerie",
@@ -1101,7 +1136,8 @@
     "going": "{count, plural, one {# voyageur inscrit} other {# voyageurs inscrits}}",
     "from": "Voyageurs venant de : {countries}",
     "join": "Rejoindre ce groupe",
-    "perPerson": "à partir de <price></price> par personne"
+    "perPerson": "à partir de <price></price> par personne",
+    "nextDate": "Prochain groupe : {dates}"
   },
   "Trips": {
     "metaTitle": "Voyages spéciaux | Acacia Safaris",
@@ -1215,14 +1251,36 @@
     "error": "Envoi impossible : {error}",
     "home": "Retour au site"
   },
-  "GoogleReviews": {
-    "count": "{count, plural, one {# avis} other {# avis}} sur Google",
-    "badge": "{count, plural, one {# avis Google} other {# avis Google}}",
-    "seeAll": "Tout voir sur Google",
-    "write": "Laisser un avis",
-    "more": "Lire la suite",
-    "less": "Réduire",
-    "postedOn": "Publié sur Google",
-    "verified": "A voyagé avec nous"
+  "Saved": {
+    "save": "Enregistrer ce voyage",
+    "unsave": "Retirer des favoris",
+    "saved": "Enregistré",
+    "share": "Partager ce voyage",
+    "shareText": "Regarde ce safari : {title}",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "metaTitle": "Voyages enregistrés | Acacia Safaris",
+    "eyebrow": "Votre sélection",
+    "title": "Voyages enregistrés",
+    "subtitle": "Les voyages que vous avez enregistrés avec le cœur. Ils restent sur cet appareil : comparez-les ou partagez-les avec vos compagnons de voyage.",
+    "emptyTitle": "Rien d'enregistré pour l'instant",
+    "emptyText": "Touchez le cœur sur un voyage pour le garder ici.",
+    "browse": "Voir nos voyages",
+    "count": "{count, plural, one {# voyage enregistré} other {# voyages enregistrés}}",
+    "from": "À partir de",
+    "view": "Voir le voyage",
+    "navLabel": "{count, plural, one {# voyage enregistré} other {# voyages enregistrés}}"
+  },
+  "Faq": {
+    "metaTitle": "Questions fréquentes | Acacia Safaris",
+    "metaDescription": "Permis gorilles, visas, meilleure période pour le Rwanda, que mettre dans sa valise, paiements et annulations : les réponses aux questions les plus posées.",
+    "eyebrow": "Bon à savoir",
+    "title": "Questions fréquentes",
+    "subtitle": "Tout ce que les voyageurs nous demandent avant de réserver : permis gorilles, visas, paiements, bagages et plus encore.",
+    "topics": "Thèmes",
+    "stillTitle": "Encore une question ?",
+    "stillText": "Notre équipe à Kigali répond à chaque message, en français, en anglais ou en swahili.",
+    "whatsappMessage": "Bonjour Acacia Safaris, j'ai une question sur mon voyage :",
+    "contact": "Nous contacter"
   }
 }

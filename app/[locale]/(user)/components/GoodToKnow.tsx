@@ -29,13 +29,18 @@ export default function GoodToKnow() {
           <p className="text-sm text-[#0a120b]/60 leading-relaxed max-w-sm mb-6">
             {t("text")}
           </p>
-          <Link
-            href="/contact"
-            className="group inline-flex items-center gap-2 text-sm font-medium text-[#12231a] border-b-2 border-[#c5a86d] pb-1"
-          >
-            {t("ask")}
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-6">
+            <Link
+              href="/faq"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-[#12231a] border-b-2 border-[#c5a86d] pb-1"
+            >
+              {t("allQuestions")}
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link href="/contact" className="text-sm text-[#0a120b]/60 hover:text-[#12231a] underline-offset-4 hover:underline">
+              {t("ask")}
+            </Link>
+          </div>
         </div>
 
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

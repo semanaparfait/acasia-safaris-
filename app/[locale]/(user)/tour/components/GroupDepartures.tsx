@@ -160,3 +160,31 @@ export function DeparturesShowcase({ packages }: { packages: TourPackage[] }) {
     </section>
   );
 }
+
+// ---------- On a package card ----------
+
+// "Next group date: 12 – 16 Mar · Only 2 seats left!" (nothing when no departure is open)
+export function NextDepartureChip({ packageId, className = "" }: { packageId: string; className?: string }) {
+  const t = useTranslations("Departures");
+  const locale = useLocale();
+  const { departures } = useOpenDepartures();
+  const next = departures
+    .filter((d) => d.packageId === packageId && d.seatsLeft > 0)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+  if (!next) return null;
+  const few = next.seatsLeft <= 3;
+  return (
+    <span
+      className={`inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg px-2.5 py-1 text-[11px] font-medium ${
+        few ? "bg-red-50 text-red-700 ring-1 ring-red-200" : "bg-[#C29342]/10 text-[#8a6d2f] ring-1 ring-[#C29342]/30"
+      } ${className}`}
+    >
+      <Users className="w-3.5 h-3.5 shrink-0" />
+      <span>{t("nextDate", { dates: range(next, locale) })}</span>
+      <span aria-hidden="true">·</span>
+      <span className={few ? "font-semibold" : ""}>
+        {few ? t("fewLeft", { count: next.seatsLeft }) : t("seatsLeft", { count: next.seatsLeft })}
+      </span>
+    </span>
+  );
+}
