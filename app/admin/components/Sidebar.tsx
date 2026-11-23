@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  BarChart3,
   CalendarCheck,
   CalendarDays,
   ScanLine,
@@ -46,7 +47,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   const groups = [
     {
       label: "Overview",
-      items: [{ name: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+      items: [
+        { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+        { name: "Statistics", href: "/admin/statistics", icon: BarChart3 },
+      ],
     },
     {
       label: "Operations",
