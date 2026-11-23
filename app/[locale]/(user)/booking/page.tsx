@@ -18,7 +18,7 @@ import {
   Plus,
   ShieldCheck,
   Clock,
-  Sparkles,
+  Star,
   Headphones,
   MessageCircle,
   ChevronRight,
@@ -26,7 +26,11 @@ import {
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
-import { defaultTripOptions, tripOptions, type TripOptions } from "@/lib/helpers";
+import {
+  defaultTripOptions,
+  tripOptions,
+  type TripOptions,
+} from "@/lib/helpers";
 import type { Destination } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
 import { useDestinationsStore } from "@/store/destinationsStore";
@@ -56,7 +60,12 @@ const finalValue = (picked: string, typed: string) =>
   picked === OTHER ? typed.trim() : picked;
 
 // A destination of the trip with its own choices
-type Stop = { key: string; title: string; titleEn?: string; options: TripOptions };
+type Stop = {
+  key: string;
+  title: string;
+  titleEn?: string;
+  options: TripOptions;
+};
 
 // Texts of these lists: messages Planner.steps / perks / process / faqs
 const steps = ["1", "2", "3"] as const;
@@ -151,7 +160,8 @@ function ChoiceGroup({
 // The value sent to the team stays in English.
 function useChoiceText() {
   const t = useTranslations("Planner");
-  return (c: string) => (t.has(`choices.${c}` as never) ? t(`choices.${c}` as "choices.Other") : c);
+  return (c: string) =>
+    t.has(`choices.${c}` as never) ? t(`choices.${c}` as "choices.Other") : c;
 }
 
 function Counter({
@@ -394,7 +404,9 @@ export default function BookingPage({
       });
       setBookingLink(`/my-booking/${booking.accessToken}`);
       setSubmitted(true);
-      document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" });
+      document
+        .getElementById("planner")
+        ?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -403,8 +415,15 @@ export default function BookingPage({
   };
 
   // Dates in the visitor's language ("1 déc. – 7 déc. 2026")
-  const short = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
-  const long = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
+  const short = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+  });
+  const long = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
   const dateText = dates.from
     ? dates.to
       ? `${short.format(dates.from)} – ${long.format(dates.to)}`
@@ -416,7 +435,13 @@ export default function BookingPage({
       {/* Hero */}
       <section className="relative z-30 w-full bg-[#0a1811] text-white px-6">
         <div className="absolute inset-0 overflow-hidden">
-          <SmartImage src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80" alt={t("heroAlt")} className="w-full h-full object-cover object-center brightness-[0.85]" sizes="100vw" priority />
+          <SmartImage
+            src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=2000&q=80"
+            alt={t("heroAlt")}
+            className="w-full h-full object-cover object-center brightness-[0.85]"
+            sizes="100vw"
+            priority
+          />
           <div className="absolute inset-0 bg-black/50" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e1d16] via-transparent to-black/60" />
         </div>
@@ -438,7 +463,8 @@ export default function BookingPage({
               <span className="text-[#c5a86d]">{t("booking")}</span>
             </nav>
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-serif uppercase tracking-[0.06em] leading-none mb-5">
-              {t("title1")} <span className="text-[#c5a86d]">{t("title2")}</span>
+              {t("title1")}{" "}
+              <span className="text-[#c5a86d]">{t("title2")}</span>
             </h1>
             <p className="text-sm md:text-base text-zinc-300 font-light max-w-md mx-auto mb-10">
               {t("subtitle")}
@@ -455,7 +481,8 @@ export default function BookingPage({
           >
             <label className="relative rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors cursor-pointer">
               <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
-                <MapPin size={12} className="text-[#c5a86d]" /> {t("barDestination")}
+                <MapPin size={12} className="text-[#c5a86d]" />{" "}
+                {t("barDestination")}
               </span>
               <select
                 value={heroValue}
@@ -472,7 +499,8 @@ export default function BookingPage({
             </label>
             <div className="rounded-xl px-4 py-2.5 hover:bg-[#f7f5f0] transition-colors md:border-l border-[#0a120b]/10">
               <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/45">
-                <CalendarDays size={12} className="text-[#c5a86d]" /> {t("barDates")}
+                <CalendarDays size={12} className="text-[#c5a86d]" />{" "}
+                {t("barDates")}
               </span>
               <div className="[&>div>button]:border-0 [&>div>button]:py-0.5 [&>div>button]:font-sans [&>div>button]:text-sm [&>div>button]:font-medium">
                 <DateRangePicker
@@ -518,7 +546,8 @@ export default function BookingPage({
                 key={p.key}
                 className="flex items-center gap-2 text-xs md:text-sm text-zinc-200"
               >
-                <p.icon size={15} className="text-[#c5a86d]" /> {t(`perks.${p.key}`)}
+                <p.icon size={15} className="text-[#c5a86d]" />{" "}
+                {t(`perks.${p.key}`)}
               </span>
             ))}
           </div>
@@ -543,7 +572,9 @@ export default function BookingPage({
                   <CheckCircle2 size={36} />
                 </div>
                 <h2 className="text-3xl md:text-4xl font-serif uppercase tracking-wide mb-3">
-                  {details.name ? t("sentName", { name: details.name.split(" ")[0] }) : t("sent")}
+                  {details.name
+                    ? t("sentName", { name: details.name.split(" ")[0] })
+                    : t("sent")}
                 </h2>
                 <p className="text-sm text-[#0a120b]/60 max-w-md mx-auto leading-relaxed mb-8">
                   {t("sentText")}
@@ -653,7 +684,12 @@ export default function BookingPage({
                                       : "ring-transparent hover:ring-[#c5a86d]/40"
                                   }`}
                                 >
-                                  <SmartImage src={d.image} alt={d.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 50vw, 25vw" />
+                                  <SmartImage
+                                    src={d.image}
+                                    alt={d.title}
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    sizes="(max-width: 640px) 50vw, 25vw"
+                                  />
                                   <div
                                     className={`absolute inset-0 transition-colors ${active ? "bg-[#12231a]/55" : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"}`}
                                   />
@@ -841,14 +877,14 @@ export default function BookingPage({
                                 id="phone"
                                 required
                                 value={details.phone}
-                                onChange={(phone) => setDetails({ ...details, phone })}
+                                onChange={(phone) =>
+                                  setDetails({ ...details, phone })
+                                }
                                 className={inputClass}
                               />
                             </div>
                             <div>
-                              <p className={labelClass}>
-                                {t("fromRwanda")}
-                              </p>
+                              <p className={labelClass}>{t("fromRwanda")}</p>
                               <div className="flex gap-2">
                                 {["Yes", "No"].map((answer) => (
                                   <Chip
@@ -960,7 +996,12 @@ export default function BookingPage({
                 <ul className="space-y-2.5 mb-5">
                   {chosen.map((d) => (
                     <li key={d.id} className="flex items-center gap-3">
-                      <SmartImage src={d.image} alt="" className="w-11 h-11 rounded-lg object-cover" sizes="64px" />
+                      <SmartImage
+                        src={d.image}
+                        alt=""
+                        className="w-11 h-11 rounded-lg object-cover"
+                        sizes="64px"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate">{d.title}</p>
                         <p className="text-[11px] text-zinc-400 truncate">
@@ -1014,7 +1055,9 @@ export default function BookingPage({
                   const c = choiceFor(key);
                   const summary = [
                     choiceText(finalValue(c.style, c.otherStyle)),
-                    choiceText(finalValue(c.accommodation, c.otherAccommodation)),
+                    choiceText(
+                      finalValue(c.accommodation, c.otherAccommodation),
+                    ),
                     c.budget,
                   ]
                     .filter(Boolean)
@@ -1042,9 +1085,7 @@ export default function BookingPage({
                   <p className="font-serif uppercase tracking-wide">
                     {t("needHelp")}
                   </p>
-                  <p className="text-xs text-[#0a120b]/50">
-                    {t("talkExpert")}
-                  </p>
+                  <p className="text-xs text-[#0a120b]/50">{t("talkExpert")}</p>
                 </div>
               </div>
               <a

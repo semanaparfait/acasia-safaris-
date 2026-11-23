@@ -4,13 +4,13 @@ import SmartImage from "@/components/ui/smart-image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
-import { ShieldCheck, Compass, Leaf, Sparkles, ArrowRight } from "lucide-react";
+import { ShieldCheck, Compass, Leaf, Star, ArrowRight } from "lucide-react";
 
 // key = the texts in messages: Home.why.<key>
 const pillars = [
   { icon: ShieldCheck, key: "secure" },
   { icon: Compass, key: "guides" },
-  { icon: Sparkles, key: "tailor" },
+  { icon: Star, key: "tailor" },
   { icon: Leaf, key: "eco" },
 ] as const;
 

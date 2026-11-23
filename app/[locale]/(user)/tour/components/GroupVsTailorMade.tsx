@@ -9,7 +9,7 @@ import {
   Check,
   X,
   Calendar,
-  Sparkles,
+  Star,
   ArrowRight,
   ShieldCheck,
   Clock,
@@ -48,7 +48,13 @@ export default function GroupVsTailorMade() {
         name: formData.name,
         email: formData.email,
         subject: `Safari request: ${formData.travelType}`,
-        body: [`Travel option: ${formData.travelType}`, `Guests: ${formData.guests}`, formData.notes].filter(Boolean).join("\n"),
+        body: [
+          `Travel option: ${formData.travelType}`,
+          `Guests: ${formData.guests}`,
+          formData.notes,
+        ]
+          .filter(Boolean)
+          .join("\n"),
         source: "Booking request",
       });
       setSubmitted(true);
@@ -62,7 +68,9 @@ export default function GroupVsTailorMade() {
   // "Ask for the next dates": the request form below, with a small group chosen
   const askGroupDates = () => {
     setFormData((f) => ({ ...f, travelType: "Small Group Departure" }));
-    document.getElementById("safari-request")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document
+      .getElementById("safari-request")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   const sample7DayItinerary = [
@@ -80,7 +88,6 @@ export default function GroupVsTailorMade() {
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Main Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-
           <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-[#11241A] tracking-tight">
             {t("title")}
           </h1>
@@ -161,7 +168,9 @@ export default function GroupVsTailorMade() {
                     <span className="font-bold text-[#11241A] uppercase tracking-wider text-[11px] block border-b border-neutral-200 pb-2">
                       {t("upcoming")}
                     </span>
-                    <p className="text-[11px] leading-relaxed text-neutral-600">{t("onRequest")}</p>
+                    <p className="text-[11px] leading-relaxed text-neutral-600">
+                      {t("onRequest")}
+                    </p>
                     <button
                       type="button"
                       onClick={askGroupDates}
@@ -283,9 +292,7 @@ export default function GroupVsTailorMade() {
             <h2 className="text-2xl font-serif font-bold text-[#11241A]">
               {t("matrix")}
             </h2>
-            <p className="text-xs text-neutral-500 mt-1">
-              {t("matrixText")}
-            </p>
+            <p className="text-xs text-neutral-500 mt-1">{t("matrixText")}</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -299,28 +306,48 @@ export default function GroupVsTailorMade() {
               </thead>
               <tbody className="divide-y divide-neutral-200/80">
                 <tr className="hover:bg-neutral-50">
-                  <td className="p-4 font-bold text-[#11241A]">{t("table.vehicle.label")}</td>
+                  <td className="p-4 font-bold text-[#11241A]">
+                    {t("table.vehicle.label")}
+                  </td>
                   <td className="p-4">{t("table.vehicle.group")}</td>
-                  <td className="p-4 font-semibold text-emerald-800">{t("table.vehicle.tailor")}</td>
+                  <td className="p-4 font-semibold text-emerald-800">
+                    {t("table.vehicle.tailor")}
+                  </td>
                 </tr>
                 <tr className="hover:bg-neutral-50">
-                  <td className="p-4 font-bold text-[#11241A]">{t("table.dates.label")}</td>
+                  <td className="p-4 font-bold text-[#11241A]">
+                    {t("table.dates.label")}
+                  </td>
                   <td className="p-4">{t("table.dates.group")}</td>
-                  <td className="p-4 font-semibold text-emerald-800">{t("table.dates.tailor")}</td>
+                  <td className="p-4 font-semibold text-emerald-800">
+                    {t("table.dates.tailor")}
+                  </td>
                 </tr>
                 <tr className="hover:bg-neutral-50">
-                  <td className="p-4 font-bold text-[#11241A]">{t("table.lodging.label")}</td>
+                  <td className="p-4 font-bold text-[#11241A]">
+                    {t("table.lodging.label")}
+                  </td>
                   <td className="p-4">{t("table.lodging.group")}</td>
-                  <td className="p-4 font-semibold text-emerald-800">{t("table.lodging.tailor")}</td>
+                  <td className="p-4 font-semibold text-emerald-800">
+                    {t("table.lodging.tailor")}
+                  </td>
                 </tr>
                 <tr className="hover:bg-neutral-50">
-                  <td className="p-4 font-bold text-[#11241A]">{t("table.pace.label")}</td>
+                  <td className="p-4 font-bold text-[#11241A]">
+                    {t("table.pace.label")}
+                  </td>
                   <td className="p-4">{t("table.pace.group")}</td>
-                  <td className="p-4 font-semibold text-emerald-800">{t("table.pace.tailor")}</td>
+                  <td className="p-4 font-semibold text-emerald-800">
+                    {t("table.pace.tailor")}
+                  </td>
                 </tr>
                 <tr className="hover:bg-neutral-50">
-                  <td className="p-4 font-bold text-[#11241A]">{t("table.price.label")}</td>
-                  <td className="p-4 font-semibold text-emerald-800">{t("table.price.group")}</td>
+                  <td className="p-4 font-bold text-[#11241A]">
+                    {t("table.price.label")}
+                  </td>
+                  <td className="p-4 font-semibold text-emerald-800">
+                    {t("table.price.group")}
+                  </td>
                   <td className="p-4">{t("table.price.tailor")}</td>
                 </tr>
               </tbody>
@@ -381,7 +408,9 @@ export default function GroupVsTailorMade() {
                   </p>
                 </div>
                 <div className="pt-2 border-t border-neutral-200/60 text-[9px] font-semibold text-emerald-800 uppercase">
-                  {activeTab === "group" ? t("setDeparture") : t("privateGuide")}
+                  {activeTab === "group"
+                    ? t("setDeparture")
+                    : t("privateGuide")}
                 </div>
               </div>
             ))}
@@ -406,12 +435,14 @@ export default function GroupVsTailorMade() {
             <div className="bg-emerald-900/60 border border-emerald-500/40 rounded-2xl p-6 text-center text-sm text-emerald-200 space-y-2 max-w-xl">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
               <p className="font-bold text-white text-base">{t("submitted")}</p>
-              <p className="text-xs text-neutral-300">
-                {t("submittedText")}
-              </p>
+              <p className="text-xs text-neutral-300">{t("submittedText")}</p>
             </div>
           ) : (
-            <form id="safari-request" onSubmit={handleSubmit} className="scroll-mt-28 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl">
+            <form
+              id="safari-request"
+              onSubmit={handleSubmit}
+              className="scroll-mt-28 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl"
+            >
               <div>
                 <label className="block text-[11px] font-semibold text-neutral-200 mb-1">
                   {t("name")}
@@ -421,7 +452,9 @@ export default function GroupVsTailorMade() {
                   required
                   placeholder={t("namePlaceholder")}
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#B28236]"
                 />
               </div>
@@ -435,7 +468,9 @@ export default function GroupVsTailorMade() {
                   required
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#B28236]"
                 />
               </div>
@@ -446,11 +481,17 @@ export default function GroupVsTailorMade() {
                 </label>
                 <select
                   value={formData.travelType}
-                  onChange={(e) => setFormData({ ...formData, travelType: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, travelType: e.target.value })
+                  }
                   className="w-full bg-white text-neutral-900 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#B28236]"
                 >
-                  <option value="Tailor-Made Custom">{t("options.custom")}</option>
-                  <option value="Small Group Departure">{t("options.group")}</option>
+                  <option value="Tailor-Made Custom">
+                    {t("options.custom")}
+                  </option>
+                  <option value="Small Group Departure">
+                    {t("options.group")}
+                  </option>
                   <option value="Not Sure Yet">{t("options.unsure")}</option>
                 </select>
               </div>
@@ -465,7 +506,11 @@ export default function GroupVsTailorMade() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-              {sendError && <p className="sm:col-span-2 lg:col-span-4 text-xs text-red-300">{sendError}</p>}
+              {sendError && (
+                <p className="sm:col-span-2 lg:col-span-4 text-xs text-red-300">
+                  {sendError}
+                </p>
+              )}
             </form>
           )}
         </div>

@@ -1,6 +1,7 @@
 // 404 page: Next.js shows it for any address that does not exist
 // (English; the French and Swahili site use app/[locale]/not-found.tsx).
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
 import NotFoundView from "@/components/NotFoundView";
 
 export const metadata: Metadata = {
@@ -8,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
-  return <NotFoundView />;
+  // Outside app/[locale], so it needs its own provider: the language Link in
+  // NotFoundView reads it (English, from i18n/request.ts)
+  return (
+    <NextIntlClientProvider>
+      <NotFoundView />
+    </NextIntlClientProvider>
+  );
 }

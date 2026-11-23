@@ -13,7 +13,7 @@ import {
   Check,
   X,
   Crown,
-  Sparkles,
+  Star,
   CheckCircle2,
   FileText,
 } from "lucide-react";
@@ -27,8 +27,17 @@ import { DepartureList, useOpenDepartures } from "./GroupDepartures";
 import type { Departure } from "@/lib/types";
 
 // The values go to the team in English; the labels are translated (messages: Detail)
-const guestOptions: string[] = ["2 Guests", "1 Guest", "3-4 Guests", "5+ Guests"];
-const tripStyles: string[] = ["Luxury Safari", "Mid-range Comfort", "Classic Adventure"];
+const guestOptions: string[] = [
+  "2 Guests",
+  "1 Guest",
+  "3-4 Guests",
+  "5+ Guests",
+];
+const tripStyles: string[] = [
+  "Luxury Safari",
+  "Mid-range Comfort",
+  "Classic Adventure",
+];
 
 type TourDetailProps = {
   tour: TourPackage;
@@ -46,7 +55,11 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const setWhatsAppTopic = useWhatsAppTopic((s) => s.setTopic);
   useEffect(() => {
     const path = `${locale === "en" ? "" : `/${locale}`}/tour/${tour.id}`;
-    setWhatsAppTopic({ title: tour.title, days: tour.itinerary.length, url: window.location.origin + path });
+    setWhatsAppTopic({
+      title: tour.title,
+      days: tour.itinerary.length,
+      url: window.location.origin + path,
+    });
     return () => setWhatsAppTopic(null);
   }, [setWhatsAppTopic, locale, tour.id, tour.title, tour.itinerary.length]);
 
@@ -81,7 +94,9 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   const [joinHandled, setJoinHandled] = useState(false);
   if (!joinHandled && departures.length > 0 && typeof window !== "undefined") {
     const wanted = new URLSearchParams(window.location.search).get("join");
-    const d = departures.find((x) => x.id === wanted && x.packageId === tour.id && x.seatsLeft > 0);
+    const d = departures.find(
+      (x) => x.id === wanted && x.packageId === tour.id && x.seatsLeft > 0,
+    );
     setJoinHandled(true);
     if (d) {
       setJoining(d);
@@ -101,7 +116,10 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
   // Bring the form into view when the pop-up closes
   useEffect(() => {
     if (quotationRequested && !quotationOpen) {
-      inquiryCard.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      inquiryCard.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   }, [quotationRequested, quotationOpen]);
 
@@ -179,7 +197,7 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                     isLuxury ? "text-amber-700" : "text-neutral-500"
                   }`}
                 >
-                  {isLuxury && <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                  {isLuxury && <Star className="w-3.5 h-3.5 text-amber-600" />}
                   {dayLabel} • {tour.location}
                 </p>
                 <h1 className="text-2xl lg:text-3xl font-serif font-bold text-neutral-900 leading-tight">
@@ -205,8 +223,12 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
                       isLuxury ? "text-amber-300" : "text-white"
                     }`}
                   >
-                    <span className="text-[8px] uppercase tracking-wider leading-none">{t("day")}</span>
-                    <span className="text-xs font-bold leading-none">{i + 1}</span>
+                    <span className="text-[8px] uppercase tracking-wider leading-none">
+                      {t("day")}
+                    </span>
+                    <span className="text-xs font-bold leading-none">
+                      {i + 1}
+                    </span>
                   </div>
 
                   {/* Day Details */}
@@ -279,8 +301,12 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
             <div className="relative overflow-hidden rounded-2xl bg-[#12231a] p-5 text-white shadow-lg">
               <div className="absolute -bottom-16 -right-12 w-44 h-44 rounded-full bg-[#C29342]/20" />
               <div className="relative">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C29342] mb-1.5">{t("readyToGo")}</p>
-                <h2 className="font-serif text-lg font-bold leading-snug">{t("bookTitle")}</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C29342] mb-1.5">
+                  {t("readyToGo")}
+                </p>
+                <h2 className="font-serif text-lg font-bold leading-snug">
+                  {t("bookTitle")}
+                </h2>
                 <p className="text-xs text-neutral-300 mt-2 mb-4 leading-relaxed">
                   {t("bookText")}
                 </p>
@@ -298,118 +324,139 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
 
           {/* Inquiry Form Card */}
           {showInquiry && (
-          <div ref={inquiryCard} className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <Mail className="w-4 h-4 text-[#b28236]" />
-              <h2 className="text-xs font-bold tracking-wider uppercase text-neutral-800">
-                {t("inquireTitle")}
-              </h2>
-            </div>
-            <p className="text-[11px] text-neutral-500 mb-4">
-              {t("inquireText")}
-            </p>
-
-            {submitted ? (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
-                {t("received")}
+            <div
+              ref={inquiryCard}
+              className="bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl p-5 shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="w-4 h-4 text-[#b28236]" />
+                <h2 className="text-xs font-bold tracking-wider uppercase text-neutral-800">
+                  {t("inquireTitle")}
+                </h2>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    {t("name")}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={t("namePlaceholder")}
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full text-xs bg-white border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-[#1b3d2f]"
-                  />
-                </div>
+              <p className="text-[11px] text-neutral-500 mb-4">
+                {t("inquireText")}
+              </p>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    {t("email")}
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full text-xs bg-white border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-[#1b3d2f]"
-                  />
+              {submitted ? (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs text-emerald-800">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                  {t("received")}
                 </div>
-
-                <div className="grid grid-cols-2 gap-2 hidden">
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                      {t("dates")}
+                      {t("name")}
                     </label>
-                    <div className="relative">
-                      <Calendar className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
-                      <input
-                        type="text"
-                        placeholder={t("datesPlaceholder")}
-                        value={formData.dates}
-                        onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
-                        className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f]"
-                      />
+                    <input
+                      type="text"
+                      required
+                      placeholder={t("namePlaceholder")}
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="w-full text-xs bg-white border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-[#1b3d2f]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                      {t("email")}
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      className="w-full text-xs bg-white border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-[#1b3d2f]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 hidden">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                        {t("dates")}
+                      </label>
+                      <div className="relative">
+                        <Calendar className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
+                        <input
+                          type="text"
+                          placeholder={t("datesPlaceholder")}
+                          value={formData.dates}
+                          onChange={(e) =>
+                            setFormData({ ...formData, dates: e.target.value })
+                          }
+                          className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f]"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                        {t("guests")}
+                      </label>
+                      <div className="relative">
+                        <Users className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
+                        <select
+                          value={formData.guests}
+                          onChange={(e) =>
+                            setFormData({ ...formData, guests: e.target.value })
+                          }
+                          className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f] appearance-none"
+                        >
+                          {guestOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {t(
+                                `guestOptions.${option}` as "guestOptions.1 Guest",
+                              )}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                      {t("guests")}
+                      {t("style")}
                     </label>
                     <div className="relative">
-                      <Users className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
+                      <Mountain className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
                       <select
-                        value={formData.guests}
-                        onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
+                        value={formData.style}
+                        onChange={(e) =>
+                          setFormData({ ...formData, style: e.target.value })
+                        }
                         className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f] appearance-none"
                       >
-                        {guestOptions.map((option) => (
-                          <option key={option} value={option}>{t(`guestOptions.${option}` as "guestOptions.1 Guest")}</option>
+                        {tripStyles.map((style) => (
+                          <option key={style} value={style}>
+                            {t(`styles.${style}` as "styles.Luxury Safari")}
+                          </option>
                         ))}
                       </select>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                    {t("style")}
-                  </label>
-                  <div className="relative">
-                    <Mountain className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2.5" />
-                    <select
-                      value={formData.style}
-                      onChange={(e) => setFormData({ ...formData, style: e.target.value })}
-                      className="w-full text-xs bg-white border border-neutral-300 rounded-lg pl-8 pr-2 py-2 outline-none focus:border-[#1b3d2f] appearance-none"
-                    >
-                      {tripStyles.map((style) => (
-                        <option key={style} value={style}>{t(`styles.${style}` as "styles.Luxury Safari")}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                  {sendError && (
+                    <p className="text-[11px] text-red-600">{sendError}</p>
+                  )}
 
-                {sendError && <p className="text-[11px] text-red-600">{sendError}</p>}
-
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="w-full mt-2 bg-[#C29342] hover:bg-[#b08336] text-white font-semibold text-xs tracking-wider uppercase py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-60"
-                >
-                  {sending ? t("sending") : t("request")}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            )}
-          </div>
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="w-full mt-2 bg-[#C29342] hover:bg-[#b08336] text-white font-semibold text-xs tracking-wider uppercase py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:opacity-60"
+                  >
+                    {sending ? t("sending") : t("request")}
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              )}
+            </div>
           )}
 
           {/* Perks Card (optional) */}
@@ -421,7 +468,9 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </div>
               <ul className="space-y-1.5 text-[11px] text-neutral-600">
                 {tour.perks.map((perk) => (
-                  <li key={perk} className="flex items-center gap-1.5">✓ {perk}</li>
+                  <li key={perk} className="flex items-center gap-1.5">
+                    ✓ {perk}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -435,7 +484,10 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </h3>
               <ol className="w-full rounded-lg bg-[#e2ede2] border border-neutral-200 p-3 text-[11px] font-semibold text-neutral-600">
                 {tour.route.map((stop, i) => (
-                  <li key={`${stop}-${i}`} className="relative flex items-center gap-2 pb-2 last:pb-0">
+                  <li
+                    key={`${stop}-${i}`}
+                    className="relative flex items-center gap-2 pb-2 last:pb-0"
+                  >
                     {i < tour.route.length - 1 && (
                       <span className="absolute left-[3px] top-3 bottom-0 border-l border-dashed border-neutral-400" />
                     )}
@@ -456,7 +508,9 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </div>
               <ul className="space-y-1.5 pl-1 text-neutral-300">
                 {tour.inclusions.map((item) => (
-                  <li key={item} className="flex items-center gap-1.5">✓ {item}</li>
+                  <li key={item} className="flex items-center gap-1.5">
+                    ✓ {item}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -468,17 +522,30 @@ export default function TourDetail({ tour, onBack }: TourDetailProps) {
               </div>
               <ul className="space-y-1.5 pl-1 text-neutral-300">
                 {tour.exclusions.map((item) => (
-                  <li key={item} className="flex items-center gap-1.5">✕ {item}</li>
+                  <li key={item} className="flex items-center gap-1.5">
+                    ✕ {item}
+                  </li>
                 ))}
               </ul>
             </div>
           </div>
-
         </div>
       </div>
 
-      <QuotationModal tour={tour} open={quotationOpen} onClose={closeQuotation} onRequested={markRequested} onBook={openBooking} />
-      <BookPackageModal key={joining?.id ?? "own-date"} tour={tour} open={bookOpen} onClose={closeBooking} departure={joining} />
+      <QuotationModal
+        tour={tour}
+        open={quotationOpen}
+        onClose={closeQuotation}
+        onRequested={markRequested}
+        onBook={openBooking}
+      />
+      <BookPackageModal
+        key={joining?.id ?? "own-date"}
+        tour={tour}
+        open={bookOpen}
+        onClose={closeBooking}
+        departure={joining}
+      />
     </div>
   );
 }
