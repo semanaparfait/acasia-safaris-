@@ -48,6 +48,11 @@ export class MailService {
       port,
       secure: port === 465,
       auth: { user, pass },
+      // Give up quickly when the mail server cannot be reached (e.g. a host that blocks
+      // email ports): the visitor gets a clear error instead of waiting 2 minutes for a 502
+      connectionTimeout: 15_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 30_000,
     });
     this.from = config.get<string>('MAIL_FROM') ?? user;
   }
