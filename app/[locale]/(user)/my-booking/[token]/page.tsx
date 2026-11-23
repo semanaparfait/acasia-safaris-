@@ -31,7 +31,7 @@ import type { BookingMessage, PublicBooking } from "@/lib/types";
 import { useChatMember } from "@/lib/useChatMember";
 import { MemberAvatar, TypingDots } from "@/components/ui/chat-bits";
 
-const TYPING_MS = 10000; // after the visitor sends: "typing…" for a moment, then "will reply soon"
+const TYPING_MS = 2000; // after the visitor sends: "typing…" for a moment, then the quick "got it" reply
 
 
 const statusStyle: Record<string, string> = {
@@ -49,6 +49,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
   const [openedAt] = useState(() => Date.now()); // the review form shows once the trip has started
   const [booking, setBooking] = useState<PublicBooking | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [teamTyping, setTeamTyping] = useState<string | null>(null); // who in the team is writing now
 
   const load = useCallback(async () => {
     try {
@@ -63,9 +64,20 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading data from the API
     load();
     const socket = liveSocket({ booking: token });
-    socket.on("booking", (b: PublicBooking) => setBooking(b));
+    // The team's "typing" stops by itself if the "stopped" signal never comes
+    let typingTimer: ReturnType<typeof setTimeout> | undefined;
+    socket.on("booking", (b: PublicBooking) => {
+      setBooking(b);
+      if (b.messages.at(-1)?.sender === "team") setTeamTyping(null); // their answer arrived
+    });
+    socket.on("typing", ({ name, typing }: { name: string; typing: boolean }) => {
+      clearTimeout(typingTimer);
+      setTeamTyping(typing ? name : null);
+      if (typing) typingTimer = setTimeout(() => setTeamTyping(null), 6000);
+    });
     socket.io.on("reconnect", load); // back online: catch up on anything missed
     return () => {
+      clearTimeout(typingTimer);
       socket.disconnect();
     };
   }, [load, token]);
@@ -127,7 +139,7 @@ export default function MyBookingPage({ params }: { params: Promise<{ token: str
           )}
         </div>
         <div className="lg:col-span-2 lg:order-1">
-          <Conversation booking={booking} token={token} onChange={setBooking} />
+          <Conversation booking={booking} token={token} onChange={setBooking} teamTyping={teamTyping} />
         </div>
       </div>
     </div>
@@ -426,7 +438,17 @@ function Row({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
 
 // ---------- Conversation ----------
 
-function Conversation({ booking, token, onChange }: { booking: PublicBooking; token: string; onChange: (b: PublicBooking) => void }) {
+function Conversation({
+  booking,
+  token,
+  onChange,
+  teamTyping,
+}: {
+  booking: PublicBooking;
+  token: string;
+  onChange: (b: PublicBooking) => void;
+  teamTyping: string | null; // a team member writing an answer right now (live)
+}) {
   const t = useTranslations("MyBooking");
   const moneyText = useMoneyText();
   const locale = useLocale();
@@ -437,6 +459,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
   const [error, setError] = useState("");
   const end = useRef<HTMLDivElement>(null);
   const [typing, setTyping] = useState(false);
+  const [pending, setPending] = useState<{ text: string; offer?: number } | null>(null); // shown before the server answers
   const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(typingTimer.current), []);
 
@@ -446,39 +469,51 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
 
   // Who the visitor talks to: the last team member who answered, else one picked at random
   const lastTeam = [...booking.messages].reverse().find((m) => m.sender === "team" && !m.event);
-  const member = useChatMember(lastTeam?.authorName);
+  const member = useChatMember(teamTyping ?? lastTeam?.authorName);
   const firstName = member?.name.split(/\s+/)[0] ?? "";
   // The visitor wrote last: waiting for the team (an answer arriving ends the "typing")
   const lastChat = [...booking.messages].reverse().find((m) => !m.event);
-  const waiting = !closed && lastChat?.sender === "customer";
+  const waiting = !closed && (lastChat?.sender === "customer" || pending != null);
+  const dots = (waiting && typing) || teamTyping != null;
 
   // Show the newest message
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [count, typing]);
+  }, [count, typing, pending, teamTyping]);
 
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const offerValue = withOffer ? Number(offer) : undefined;
     if (!text.trim() && !offerValue) return;
+    // Show the message and the "typing" dots at once, without waiting for the server
+    const draft = { text: text.trim(), offer: offerValue };
+    setPending(draft);
+    setText("");
+    setOffer("");
+    setWithOffer(false);
     setSending(true);
     setError("");
+    setTyping(true);
+    clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => setTyping(false), TYPING_MS);
     try {
       onChange(
         await api<PublicBooking>(`/bookings/track/${token}/messages`, {
           method: "POST",
-          body: { text: text.trim() || undefined, offer: offerValue },
+          body: { text: draft.text || undefined, offer: draft.offer },
         }),
       );
-      setText("");
-      setOffer("");
-      setWithOffer(false);
-      setTyping(true);
-      clearTimeout(typingTimer.current);
-      typingTimer.current = setTimeout(() => setTyping(false), TYPING_MS);
     } catch (err) {
       setError((err as Error).message);
+      // Not sent: give the text back so nothing is lost
+      setText(draft.text);
+      if (draft.offer) {
+        setOffer(String(draft.offer));
+        setWithOffer(true);
+      }
+      setTyping(false);
     } finally {
+      setPending(null);
       setSending(false);
     }
   };
@@ -494,7 +529,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
         <div className="min-w-0">
           <p className="text-sm font-semibold truncate">{member ? t("talkWith", { name: member.name }) : t("talkTitle")}</p>
           <p className="text-xs text-[#0a120b]/50">
-            {waiting && typing && member
+            {dots && member
               ? t("typingNamed", { name: firstName })
               : member
                 ? `Acacia Safaris · ${t("talkText")}`
@@ -504,7 +539,7 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
       </div>
 
       <div className="px-4 sm:px-5 py-5 space-y-3 min-h-[260px] max-h-[520px] overflow-y-auto bg-[#faf8f5]/60">
-        {count === 0 ? (
+        {count === 0 && !pending ? (
           <div className="h-[220px] flex flex-col items-center justify-center text-center text-sm text-[#0a120b]/45">
             <MessageCircle size={28} className="mb-2 text-[#0a120b]/20" />
             {t("noMessages")}
@@ -512,13 +547,20 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
         ) : (
           booking.messages.map((m) => <Bubble key={m.id} message={m} />)
         )}
-        {waiting && typing && (
-          <div className="flex justify-start">
-            <TypingDots label={member ? t("typingNamed", { name: firstName }) : t("typing")} className="bg-white border border-[#0a120b]/[0.08]" />
+        {pending && (
+          <div className="flex justify-end opacity-70">
+            <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line bg-[#12231a] text-white">
+              {pending.offer != null && (
+                <span className="flex items-center gap-1.5 text-xs font-semibold mb-1 text-[#c5a86d]">
+                  <HandCoins size={13} /> {t("yourOfferLabel")}: <Money usd={pending.offer} />
+                </span>
+              )}
+              {pending.text}
+            </div>
           </div>
         )}
         {/* After the dots: a quick "got it" from the team member (shown here only, not saved) */}
-        {waiting && !typing && lastChat && (
+        {waiting && !typing && lastChat && !pending && (
           <div className="flex justify-start">
             <div className="max-w-[85%] sm:max-w-[75%] flex flex-col items-start">
               <span className="text-[11px] text-[#0a120b]/45 mb-1 px-1">
@@ -528,6 +570,12 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
                 {member ? t("autoReplyNamed", { name: firstName }) : t("autoReply")}
               </div>
             </div>
+          </div>
+        )}
+        {/* The dots: right after the visitor sends, and whenever someone in the team is writing */}
+        {dots && (
+          <div className="flex justify-start">
+            <TypingDots label={member ? t("typingNamed", { name: firstName }) : t("typing")} className="bg-white border border-[#0a120b]/[0.08]" />
           </div>
         )}
         <div ref={end} />

@@ -10,6 +10,7 @@ import { AlertTriangle, CheckCircle2, HandCoins, Loader2, MessageCircle, Send } 
 import { money } from "@/lib/helpers";
 import type { Booking, BookingMessage } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
+import { sendTyping } from "@/lib/live";
 import { Button } from "../components/ui";
 
 export default function BookingConversation({ booking }: { booking: Booking }) {
@@ -20,6 +21,29 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   const [offer, setOffer] = useState("");
   const [busy, setBusy] = useState(false);
   const thread = useRef<HTMLDivElement>(null);
+
+  // Tell the customer's page "<name> is typing…": at most every 2 s while typing,
+  // and "stopped" after 3 s without a key, on send, or when the drawer closes
+  const typingSentAt = useRef(0);
+  const typingStop = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const stopTyping = () => {
+    clearTimeout(typingStop.current);
+    if (typingSentAt.current) sendTyping(booking.id, false);
+    typingSentAt.current = 0;
+  };
+  const onTyping = () => {
+    if (Date.now() - typingSentAt.current > 2000) {
+      sendTyping(booking.id, true);
+      typingSentAt.current = Date.now();
+    }
+    clearTimeout(typingStop.current);
+    typingStop.current = setTimeout(stopTyping, 3000);
+  };
+  const stopRef = useRef(stopTyping);
+  useEffect(() => {
+    stopRef.current = stopTyping;
+  });
+  useEffect(() => () => stopRef.current(), []);
 
   const messages = booking.messages ?? [];
   const closed = booking.status === "Completed" || booking.status === "Cancelled";
@@ -51,6 +75,7 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!text.trim() && !offerValue) return;
+    stopTyping();
     const ok = await run(
       () => sendMessage(booking.id, text.trim(), offerValue),
       offerValue ? `Offer of ${money(offerValue)} sent` : "Message sent",
@@ -137,7 +162,12 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
             rows={3}
             value={text}
             maxLength={2000}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (e.target.value.trim()) onTyping();
+              else stopTyping();
+            }}
+            onBlur={stopTyping}
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send();
             }}

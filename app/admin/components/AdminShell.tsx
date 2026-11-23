@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { adminLiveAuth, liveSocket } from "@/lib/live";
+import { adminLiveAuth, liveSocket, setAdminSocket } from "@/lib/live";
 import type { Booking, TripBooking } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingsStore } from "@/store/bookingsStore";
@@ -61,6 +61,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!mounted || !loggedIn || isLoginPage) return;
     const socket = liveSocket(adminLiveAuth);
+    setAdminSocket(socket);
     socket.on("booking", (booking: Booking) => {
       const { bookings, upsertBooking } = useBookingsStore.getState();
       const before = bookings.find((b) => b.id === booking.id);
@@ -93,6 +94,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     // Back online after a break: load everything once, in case something was missed
     socket.io.on("reconnect", () => loadBookings());
     return () => {
+      setAdminSocket(null);
       socket.disconnect();
     };
   }, [mounted, loggedIn, isLoginPage, loadBookings]);

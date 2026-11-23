@@ -1,6 +1,7 @@
 // Live updates from the backend (Socket.IO, namespace /live): nothing needs a reload.
 //   Admin panel:        liveSocket(adminLiveAuth)        -> "booking", "booking:deleted"
-//   Visitor's booking:  liveSocket({ booking: <token> }) -> "booking"
+//   Visitor's booking:  liveSocket({ booking: <token> }) -> "booking", "typing" { name, typing }
+//   Admin typing a reply: sendTyping(bookingId, true/false) -> the visitor sees "<name> is typing…"
 // WebSockets go straight to the backend (Next.js cannot forward them).
 import { io, type Socket } from "socket.io-client";
 import { api } from "./api";
@@ -25,3 +26,12 @@ export function liveSocket(auth: Auth | ((send: (auth: Auth) => void) => void)):
     reconnectionDelayMax: 5000,
   });
 }
+
+// The admin panel's open connection (set in AdminShell), used to send "typing"
+let adminSocket: Socket | null = null;
+export const setAdminSocket = (socket: Socket | null) => {
+  adminSocket = socket;
+};
+export const sendTyping = (bookingId: string, typing: boolean) => {
+  adminSocket?.emit("typing", { bookingId, typing });
+};
