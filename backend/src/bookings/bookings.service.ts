@@ -150,6 +150,17 @@ export const bookingPath = (token: string, locale?: string | null) => {
 export class BookingsService {
   private readonly logger = new Logger(BookingsService.name);
   private siteUrl: string;
+  // Called when a customer writes and the team had answered everything (QuickReplyService alerts the team)
+  private customerMessageListeners: ((
+    bookingId: string,
+    dto: BookingMessageDto,
+  ) => void)[] = [];
+
+  onCustomerMessage(
+    listener: (bookingId: string, dto: BookingMessageDto) => void,
+  ) {
+    this.customerMessageListeners.push(listener);
+  }
 
   constructor(
     private prisma: PrismaService,
@@ -615,6 +626,12 @@ export class BookingsService {
     const booking = await this.findBookingByToken(token);
     await this.addMessage(booking, 'customer', booking.customer, dto);
     await this.changed(booking.id);
+    // One alert per waiting conversation: more messages before the team answers add none
+    if (!booking.needsReply) {
+      this.customerMessageListeners.forEach((listener) =>
+        listener(booking.id, dto),
+      );
+    }
     return this.findByToken(token);
   }
 

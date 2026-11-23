@@ -3,7 +3,9 @@
 import { PhoneField } from "@/components/ui/phone-field";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Building2, Bell, Shield, User, Users, Save } from "lucide-react";
+import { Building2, Bell, Shield, User, Users, Save, KeyRound } from "lucide-react";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import ImageField from "../components/ImageField";
 import { Avatar, Badge, Button, Card, CardHeader, PageHeader, Toggle, inputClass, labelClass } from "../components/ui";
@@ -133,6 +135,8 @@ export default function SettingsPage() {
         )}
 
         {tab === "security" && (
+          <div className="space-y-6">
+          <ReplyPinCard />
           <Card>
             <CardHeader title="Security" />
             <div className="px-5 pb-5 space-y-4">
@@ -146,6 +150,7 @@ export default function SettingsPage() {
               </div>
             </div>
           </Card>
+          </div>
         )}
       </div>
     </>
@@ -222,6 +227,79 @@ function AccountForm() {
         </div>
         <div className="px-5 py-4 border-t border-[#0a120b]/[0.06] flex justify-end">
           <Button type="submit" disabled={!valid || saving}><Save className="size-4" /> {saving ? "Saving…" : "Save changes"}</Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+// Quick reply: when a customer writes, admins get an email / WhatsApp alert with a personal
+// link to answer without logging in. On a new device the link asks for this 4 digit PIN.
+function ReplyPinCard() {
+  const [set, setSet] = useState<boolean | null>(null);
+  const [pin, setPin] = useState("");
+  const [password, setPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api<{ set: boolean }>("/auth/me/reply-pin", { admin: true })
+      .then((r) => setSet(r.set))
+      .catch(() => setSet(false));
+  }, []);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api("/auth/me/reply-pin", { method: "PUT", body: { pin, currentPassword: password }, admin: true });
+      setSet(true);
+      setPin("");
+      setPassword("");
+      toast.success("Quick-reply PIN saved");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader
+        title="Quick-reply PIN"
+        subtitle="Answer customers from the link in an email or WhatsApp alert, without logging in. On a new phone or computer the link asks for this PIN once (then 30 days)."
+        action={set === null ? null : set ? <Badge tone="green">Set</Badge> : <Badge tone="gold">Not set</Badge>}
+      />
+      <form onSubmit={save} className="px-5 pb-5 space-y-4">
+        {set === false && (
+          <p className="flex items-start gap-2 rounded-xl bg-[#c5a86d]/10 px-4 py-3 text-xs text-[#7a5d22]">
+            <KeyRound className="size-4 shrink-0" /> Without a PIN, the &quot;Reply now&quot; links in your alerts will not open. Set one below.
+          </p>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>{set ? "New 4 digit PIN" : "4 digit PIN"}</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={4}
+              className={`${inputClass} tracking-[0.5em]`}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              placeholder="••••"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Your password (to confirm)</label>
+            <input type="password" autoComplete="current-password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+        </div>
+        <p className="text-xs text-[#0a120b]/45">
+          Avoid easy PINs like 1234 or your birthday. Five wrong PINs lock quick replies for 15 minutes and email you. Changing your password or logging out everywhere ends every link.
+        </p>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={pin.length !== 4 || !password || saving}>{saving ? "Saving…" : set ? "Change PIN" : "Save PIN"}</Button>
         </div>
       </form>
     </Card>

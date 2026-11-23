@@ -5,6 +5,7 @@ import {
   HttpCode,
   Patch,
   Post,
+  Put,
   Req,
   Res,
   UseGuards,
@@ -37,6 +38,14 @@ import {
   setSession,
   setTrustedDevice,
 } from './session';
+
+class ReplyPinDto {
+  @Matches(/^\d{4}$/, { message: 'The PIN has 4 digits' })
+  pin: string;
+
+  @IsString()
+  currentPassword: string;
+}
 
 class LoginDto {
   @IsEmail()
@@ -202,6 +211,29 @@ export class AuthController {
     );
     setSession(res, result.token);
     return { worker: result.worker };
+  }
+
+  // GET /api/auth/me/reply-pin   -> { set: true/false }
+  @Get('me/reply-pin')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  replyPin(@Req() request: AdminRequest) {
+    return this.authService.hasReplyPin(request.worker.id);
+  }
+
+  // PUT /api/auth/me/reply-pin   body: { "pin": "1234", "currentPassword": "..." }
+  // The 4 digit PIN asked when a quick-reply link (in a customer-message alert) is opened on a new device
+  @Put('me/reply-pin')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ResetCodeLimit()
+  @Audit('Set their quick-reply PIN')
+  setReplyPin(@Req() request: AdminRequest, @Body() dto: ReplyPinDto) {
+    return this.authService.setReplyPin(
+      request.worker.id,
+      dto.pin,
+      dto.currentPassword,
+    );
   }
 
   // POST /api/auth/logout   -> ends the login on every device

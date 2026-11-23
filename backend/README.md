@@ -120,6 +120,24 @@ WHATSAPP_TEMPLATE_LANGUAGE="en"
 
 Without the token and the ID nothing is sent. Failed messages appear in the backend logs as `WhatsApp message failed`.
 
+## Quick reply (answer customers without logging in)
+
+When a customer writes on their booking page and the team had answered everything, every
+active admin gets an email (to their personal email) with a **Reply now** button.
+More messages before the team answers
+send no new alert. Code: `src/bookings/quick-reply.*`, PIN and links in `AuthService`.
+
+- The link (`/reply/<token>` on the website) is personal: one admin, one booking, 48 hours.
+- On a new device it asks for the admin's 4 digit PIN (Admin > Settings > Security, needs the
+  password). The device is then trusted for 30 days (`acacia_reply_device` cookie).
+- 5 wrong PINs lock quick replies for 15 minutes and email the admin and the owner.
+- Deactivating the worker, removing admin access, a new password or "log out everywhere"
+  ends every link and trusted device at once.
+- Replies, prices and accepted prices go into the normal conversation (the customer is emailed)
+  and into Admin > Activity as "... (quick reply)".
+
+After pulling this change: `npx prisma migrate deploy` (adds the PIN columns to Worker), then restart.
+
 ## Database commands
 
 | Command | What it does |

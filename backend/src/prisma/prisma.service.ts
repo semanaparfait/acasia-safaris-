@@ -24,6 +24,9 @@ export class PrismaService
           loginAttempts: true,
           failedLogins: true,
           lockedUntil: true,
+          replyPinHash: true,
+          replyPinAttempts: true,
+          replyPinLockedUntil: true,
         },
         // The lowest bargaining price is for admins only (see PackagesService)
         // Translations are read by TranslationsService only: the website gets the texts already translated

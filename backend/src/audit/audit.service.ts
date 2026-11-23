@@ -12,7 +12,7 @@ export type AuditEntry = {
 };
 
 // Keys that never go into the log
-const SECRET = /password|code|token|secret|hash/i;
+const SECRET = /password|code|token|secret|hash|^pin$/i;
 
 // Keeps the log small and free of secrets: no passwords or codes, long text cut
 // (only lists and objects count towards the depth limit: texts and numbers are always kept,

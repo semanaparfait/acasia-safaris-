@@ -23,8 +23,16 @@ import { ChangePasswordDto, UpdateAccountDto } from './dto/account.dto';
 //   login:  between the password and the 6 digit code (10 minutes)
 //   device: "trust this device" (30 days, no code needed)
 //   live:   opening the live connection (2 minutes)
-export type TokenPurpose = 'session' | 'login' | 'device' | 'live';
-export type TokenPayload = { sub: string; v?: number; purpose?: TokenPurpose };
+//   reply:  a quick-reply link in an alert about one booking (b = booking id, 48 hours)
+//   replyDevice: this browser typed the worker's quick-reply PIN (30 days)
+export type TokenPurpose =
+  'session' | 'login' | 'device' | 'live' | 'reply' | 'replyDevice';
+export type TokenPayload = {
+  sub: string;
+  v?: number;
+  purpose?: TokenPurpose;
+  b?: string;
+};
 
 // Who is signing in, for the activity log
 export type Visitor = { ip?: string; deviceToken?: string };
@@ -52,6 +60,14 @@ const RESEND_SECONDS = 60; // a new code can be asked for after this
 // by an attacker with many addresses): after 10 in a row the account waits 15 minutes
 export const MAX_FAILED_LOGINS = 10;
 const LOCK_MINUTES = 15;
+
+// Quick reply (answering a customer from an alert, without logging in)
+const REPLY_LINK_HOURS = 48;
+const REPLY_DEVICE_DAYS = 30;
+const MAX_PIN_TRIES = 5; // wrong PINs in a row before a 15 minute lock
+
+// A worker that may use a quick-reply link: still an active admin
+type ReplyWorker = { id: string; name: string };
 
 @Injectable()
 export class AuthService {
@@ -594,5 +610,176 @@ export class AuthService {
       throw new UnauthorizedException('Please log in again');
     }
     return worker;
+  }
+
+  // ---------- Quick reply ----------
+  // An alert about a customer's message carries a personal link for each admin. Opening it
+  // on a new device asks for the admin's 4 digit PIN (set in Admin > Settings); the device
+  // is then trusted for 30 days. Logging out everywhere or a new password ends both.
+
+  async hasReplyPin(workerId: string) {
+    const { replyPinHash } = await this.prisma.worker.findUniqueOrThrow({
+      where: { id: workerId },
+      omit: { replyPinHash: false },
+    });
+    return { set: Boolean(replyPinHash) };
+  }
+
+  // Needs the password, so someone at an unlocked computer cannot set it
+  async setReplyPin(workerId: string, pin: string, password: string) {
+    await this.checkPassword(workerId, password);
+    await this.prisma.worker.update({
+      where: { id: workerId },
+      data: {
+        replyPinHash: await hash(pin, 10),
+        replyPinAttempts: 0,
+        replyPinLockedUntil: null,
+      },
+    });
+    return { set: true };
+  }
+
+  replyLink(workerId: string, version: number, bookingId: string) {
+    const payload: TokenPayload = {
+      sub: workerId,
+      v: version,
+      purpose: 'reply',
+      b: bookingId,
+    };
+    return this.jwt.signAsync(payload, {
+      expiresIn: `${REPLY_LINK_HOURS}h`,
+    });
+  }
+
+  // The admin and booking of a quick-reply link, or 401 if it expired / is not valid anymore
+  async readReplyLink(token: string) {
+    const payload = await this.readToken(token, 'reply');
+    if (!payload?.b) {
+      throw new UnauthorizedException(
+        'This link has expired. Open the newest alert, or log in to the admin panel.',
+      );
+    }
+    const worker = await this.replyWorker(payload);
+    return { worker, bookingId: payload.b };
+  }
+
+  // Is this browser trusted for this admin? (it typed their PIN in the last 30 days)
+  async isReplyDevice(deviceToken: string | undefined, workerId: string) {
+    if (!deviceToken) return false;
+    const payload = await this.readToken(deviceToken, 'replyDevice');
+    if (!payload || payload.sub !== workerId) return false;
+    try {
+      await this.replyWorker(payload);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Checks the PIN; returns a device token to keep in a cookie
+  async checkReplyPin(worker: ReplyWorker, pin: string, ip?: string) {
+    const found = await this.prisma.worker.findUniqueOrThrow({
+      where: { id: worker.id },
+      omit: {
+        replyPinHash: false,
+        replyPinAttempts: false,
+        replyPinLockedUntil: false,
+        tokenVersion: false,
+      },
+    });
+    if (!found.replyPinHash) {
+      throw new BadRequestException(
+        'You have no quick-reply PIN yet. Set one in Admin > Settings, then open this link again.',
+      );
+    }
+    if (found.replyPinLockedUntil && found.replyPinLockedUntil > new Date()) {
+      throw new HttpException(
+        `Too many wrong PINs. Try again in ${LOCK_MINUTES} minutes.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    if (!(await compare(pin, found.replyPinHash))) {
+      const attempts = found.replyPinAttempts + 1;
+      const locked = attempts >= MAX_PIN_TRIES;
+      await this.prisma.worker.update({
+        where: { id: worker.id },
+        data: {
+          replyPinAttempts: locked ? 0 : attempts,
+          replyPinLockedUntil: locked
+            ? new Date(Date.now() + LOCK_MINUTES * 60_000)
+            : undefined,
+        },
+      });
+      if (locked) {
+        void this.audit.record({
+          worker,
+          action: `Quick reply locked for ${LOCK_MINUTES} minutes (${MAX_PIN_TRIES} wrong PINs)`,
+          ip,
+        });
+        const owner = await this.prisma.worker.findFirst({
+          where: { isOwner: true },
+          select: { personalEmail: true },
+        });
+        void this.mail.sendAlert({
+          to: [found.personalEmail ?? '', owner?.personalEmail ?? ''],
+          subject: `Wrong quick-reply PINs for ${worker.name}`,
+          lines: [
+            `Someone opened the quick-reply link of ${worker.name} and typed a wrong PIN ${MAX_PIN_TRIES} times${ip ? ` (from IP ${ip})` : ''}.`,
+            `Quick replies are locked for ${LOCK_MINUTES} minutes. Nobody got in.`,
+            'If this was not you, use "Log out everywhere" in Admin > Settings: every quick-reply link stops working.',
+          ],
+        });
+        throw new HttpException(
+          `Too many wrong PINs. Try again in ${LOCK_MINUTES} minutes.`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      const left = MAX_PIN_TRIES - attempts;
+      throw new BadRequestException(
+        `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left.`,
+      );
+    }
+    await this.prisma.worker.update({
+      where: { id: worker.id },
+      data: { replyPinAttempts: 0, replyPinLockedUntil: null },
+    });
+    void this.audit.record({
+      worker,
+      action: 'Opened a quick-reply link on a new device (PIN)',
+      ip,
+    });
+    const payload: TokenPayload = {
+      sub: worker.id,
+      v: found.tokenVersion,
+      purpose: 'replyDevice',
+    };
+    return this.jwt.signAsync(payload, {
+      expiresIn: `${REPLY_DEVICE_DAYS}d`,
+    });
+  }
+
+  // Same checks as the login: still an active admin, not logged out everywhere since
+  private async replyWorker(payload: TokenPayload): Promise<ReplyWorker> {
+    const found = await this.prisma.worker.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        isAdmin: true,
+        status: true,
+        tokenVersion: true,
+      },
+    });
+    if (
+      !found ||
+      !found.isAdmin ||
+      found.status !== 'Active' ||
+      (payload.v ?? 0) !== found.tokenVersion
+    ) {
+      throw new UnauthorizedException(
+        'This link does not work anymore. Log in to the admin panel instead.',
+      );
+    }
+    return { id: found.id, name: found.name };
   }
 }

@@ -8,6 +8,8 @@ import type { CookieOptions, Request, Response } from 'express';
 // so these are first-party cookies that every browser keeps.
 export const SESSION_COOKIE = 'acacia_session';
 export const DEVICE_COOKIE = 'acacia_device';
+//   acacia_reply_device: this browser typed the admin's quick-reply PIN (30 days)
+export const REPLY_DEVICE_COOKIE = 'acacia_reply_device';
 
 const DAY = 24 * 60 * 60 * 1000;
 export const SESSION_DAYS = 7;
@@ -33,6 +35,14 @@ export function setSession(res: Response, token: string) {
 
 export function setTrustedDevice(res: Response, token: string) {
   res.cookie(DEVICE_COOKIE, token, options(DEVICE_DAYS, '/api/auth'));
+}
+
+export function setReplyDevice(res: Response, token: string) {
+  res.cookie(
+    REPLY_DEVICE_COOKIE,
+    token,
+    options(DEVICE_DAYS, '/api/quick-reply'),
+  );
 }
 
 export function clearSession(res: Response) {

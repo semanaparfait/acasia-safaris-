@@ -127,6 +127,12 @@ model Worker {
   loginCodeExpires DateTime?
   loginAttempts    Int       @default(0)
 
+  // Quick reply: answering a customer from the link in an email or WhatsApp alert, without
+  // logging in. A 4 digit PIN (bcrypt hash) is asked once per device; 5 wrong PINs lock it 15 min.
+  replyPinHash        String?
+  replyPinAttempts    Int       @default(0)
+  replyPinLockedUntil DateTime?
+
   // Wrong passwords in a row (any IP). After 10, the account is locked for 15 minutes.
   failedLogins Int       @default(0)
   lockedUntil  DateTime?
