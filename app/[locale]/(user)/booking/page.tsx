@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { PhoneField, isValidPhoneNumber } from "@/components/ui/phone-field";
+import { getCountries } from "react-phone-number-input";
 import {
   defaultTripOptions,
   tripOptions,
@@ -81,6 +82,27 @@ const faqs = ["1", "2", "3", "4"] as const;
 
 const inputClass =
   "w-full bg-[#f7f5f0] border border-[#0a120b]/10 rounded-md px-4 py-3 text-sm text-[#0a120b] placeholder:text-[#0a120b]/35 outline-none! focus:border-[#c5a86d] focus:bg-white transition-all";
+// Every country except Rwanda (asked separately). The value sent to the team is the
+// English name; the label is shown in the visitor's language.
+function useCountryOptions(locale: string) {
+  return React.useMemo(() => {
+    const english = new Intl.DisplayNames(["en"], { type: "region" });
+    let local: Intl.DisplayNames;
+    try {
+      local = new Intl.DisplayNames([locale, "en"], { type: "region" });
+    } catch {
+      local = english;
+    }
+    return getCountries()
+      .filter((code) => code !== "RW")
+      .map((code) => ({
+        value: english.of(code) ?? code,
+        label: local.of(code) ?? code,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, locale));
+  }, [locale]);
+}
+
 const labelClass =
   "block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0a120b]/55 mb-2";
 
@@ -213,6 +235,7 @@ export default function BookingPage({
   const loadDestinations = useDestinationsStore((s) => s.load);
   const createBooking = useBookingsStore((s) => s.createBooking);
   const locale = useLocale();
+  const countryOptions = useCountryOptions(locale);
   const t = useTranslations("Planner");
   const choiceText = useChoiceText();
 
@@ -906,7 +929,7 @@ export default function BookingPage({
                                 <label htmlFor="country" className={labelClass}>
                                   {t("whichCountry")}
                                 </label>
-                                <input
+                                <select
                                   id="country"
                                   required
                                   value={details.country}
@@ -916,9 +939,23 @@ export default function BookingPage({
                                       country: e.target.value,
                                     })
                                   }
-                                  placeholder={t("countryPlaceholder")}
-                                  className={inputClass}
-                                />
+                                  className={`${inputClass} cursor-pointer ${
+                                    details.country ? "" : "text-[#0a120b]/35"
+                                  }`}
+                                >
+                                  <option value="" disabled>
+                                    {t("countryPlaceholder")}
+                                  </option>
+                                  {countryOptions.map((c) => (
+                                    <option
+                                      key={c.value}
+                                      value={c.value}
+                                      className="text-[#0a120b]"
+                                    >
+                                      {c.label}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
                             )}
                           </div>
