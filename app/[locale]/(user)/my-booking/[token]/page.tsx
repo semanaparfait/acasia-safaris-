@@ -28,6 +28,10 @@ import { liveSocket } from "@/lib/live";
 import { depositOf, DEPOSIT_RATE } from "@/lib/helpers";
 import { Money, useMoneyText } from "@/components/ui/money";
 import type { BookingMessage, PublicBooking } from "@/lib/types";
+import { useChatMember } from "@/lib/useChatMember";
+import { MemberAvatar, TypingDots } from "@/components/ui/chat-bits";
+
+const TYPING_MS = 10000; // after the visitor sends: "typing…" for a moment, then "will reply soon"
 
 
 const statusStyle: Record<string, string> = {
@@ -431,15 +435,26 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const end = useRef<HTMLDivElement>(null);
+  const [typing, setTyping] = useState(false);
+  const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(typingTimer.current), []);
 
   const closed = booking.status === "Completed" || booking.status === "Cancelled";
   const canOffer = booking.status === "Pending" || booking.status === "Negotiating";
   const count = booking.messages.length;
 
+  // Who the visitor talks to: the last team member who answered, else one picked at random
+  const lastTeam = [...booking.messages].reverse().find((m) => m.sender === "team" && !m.event);
+  const member = useChatMember(lastTeam?.authorName);
+  const firstName = member?.name.split(/\s+/)[0] ?? "";
+  // The visitor wrote last: waiting for the team (an answer arriving ends the "typing")
+  const lastChat = [...booking.messages].reverse().find((m) => !m.event);
+  const waiting = !closed && lastChat?.sender === "customer";
+
   // Show the newest message
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [count]);
+  }, [count, typing]);
 
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -457,6 +472,9 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
       setText("");
       setOffer("");
       setWithOffer(false);
+      setTyping(true);
+      clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => setTyping(false), TYPING_MS);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -467,10 +485,20 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
   return (
     <div className="rounded-2xl bg-white border border-[#0a120b]/[0.07] shadow-sm flex flex-col">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-[#0a120b]/[0.06]">
-        <span className="w-9 h-9 rounded-full bg-[#12231a] text-[#c5a86d] flex items-center justify-center"><MessageCircle size={17} /></span>
-        <div>
-          <p className="text-sm font-semibold">{t("talkTitle")}</p>
-          <p className="text-xs text-[#0a120b]/50">{t("talkText")}</p>
+        <MemberAvatar
+          member={member}
+          fallback={<MessageCircle size={17} />}
+          className="w-9 h-9 bg-[#12231a] text-[#c5a86d]"
+        />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold truncate">{member ? t("talkWith", { name: member.name }) : t("talkTitle")}</p>
+          <p className="text-xs text-[#0a120b]/50">
+            {waiting && typing && member
+              ? t("typingNamed", { name: firstName })
+              : member
+                ? `Acacia Safaris · ${t("talkText")}`
+                : t("talkText")}
+          </p>
         </div>
       </div>
 
@@ -482,6 +510,16 @@ function Conversation({ booking, token, onChange }: { booking: PublicBooking; to
           </div>
         ) : (
           booking.messages.map((m) => <Bubble key={m.id} message={m} />)
+        )}
+        {waiting && typing && (
+          <div className="flex justify-start">
+            <TypingDots label={member ? t("typingNamed", { name: firstName }) : t("typing")} className="bg-white border border-[#0a120b]/[0.08]" />
+          </div>
+        )}
+        {waiting && !typing && count > 0 && (
+          <p className="text-center text-[11px] text-[#0a120b]/40 pt-1">
+            {member ? t("replySoonNamed", { name: firstName }) : t("replySoon")}
+          </p>
         )}
         <div ref={end} />
       </div>

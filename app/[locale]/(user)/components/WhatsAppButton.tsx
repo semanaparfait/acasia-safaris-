@@ -9,50 +9,10 @@ import { usePathname } from "@/i18n/navigation";
 import { FaWhatsapp } from "react-icons/fa";
 import { X, ChevronRight } from "lucide-react";
 import { useWhatsAppTopic, whatsappLink } from "@/lib/whatsapp";
-import SmartImage from "@/components/ui/smart-image";
-import { api } from "@/lib/api";
-import type { TeamMember } from "@/lib/types";
+import { useChatMember } from "@/lib/useChatMember";
+import { MemberAvatar, TypingDots } from "@/components/ui/chat-bits";
 
 const TYPING_MS = 1400; // how long "typing…" shows before the greeting appears
-const MEMBER_KEY = "acacia-chat-member"; // same person for the whole visit
-
-const initials = (name: string) =>
-  name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-
-// One team member (shown on the website) picked at random, kept for the visit
-function useChatMember() {
-  const [member, setMember] = useState<TeamMember | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    api<TeamMember[]>("/team")
-      .then((team) => {
-        if (cancelled || team.length === 0) return;
-        let saved: string | null = null;
-        try { saved = sessionStorage.getItem(MEMBER_KEY); } catch {}
-        const pick = team.find((m) => m.id === saved) ?? team[Math.floor(Math.random() * team.length)];
-        try { sessionStorage.setItem(MEMBER_KEY, pick.id); } catch {}
-        setMember(pick);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
-  return member;
-}
-
-// Three bouncing dots, like a chat app
-function TypingDots({ label }: { label: string }) {
-  return (
-    <div role="status" aria-label={label} className="inline-flex items-center gap-1 rounded-xl rounded-tl-sm bg-white px-3.5 py-3 shadow-sm">
-      {[0, 150, 300].map((delay) => (
-        <span
-          key={delay}
-          className="size-1.5 rounded-full bg-[#0a120b]/40 animate-bounce motion-reduce:animate-none"
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
-    </div>
-  );
-}
 
 export default function WhatsAppButton() {
   const t = useTranslations("WhatsApp");
@@ -122,32 +82,14 @@ export default function WhatsAppButton() {
           className="w-[min(340px,calc(100vw-2.5rem))] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5"
         >
           <div className="flex items-center gap-3 bg-[#075E54] px-4 py-3 text-white">
-            <span className="relative shrink-0">
-              {member?.photo ? (
-                <SmartImage
-                  src={member.photo}
-                  alt={member.name}
-                  sizes="40px"
-                  width={80}
-                  height={80}
-                  className="size-10 rounded-full object-cover ring-2 ring-white/30"
-                />
-              ) : (
-                <span className="flex size-10 items-center justify-center rounded-full bg-white/15 text-sm font-semibold">
-                  {member ? initials(member.name) : <FaWhatsapp size={22} />}
-                </span>
-              )}
-              {member && (
-                <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-[#25D366] ring-2 ring-[#075E54]" />
-              )}
-            </span>
+            <MemberAvatar member={member} fallback={<FaWhatsapp size={22} />} ringClass="ring-[#075E54]" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{member ? member.name : t("title")}</p>
               <p className="truncate text-[11px] text-white/75">
                 {typing
                   ? t("typing")
                   : member
-                    ? `${member.companyRole ?? t("title")} · ${t("online")}`
+                    ? `${member.role ?? t("title")} · ${t("online")}`
                     : t("status")}
               </p>
             </div>
@@ -163,7 +105,7 @@ export default function WhatsAppButton() {
 
           <div className="bg-[#ECE5DD] px-4 py-4">
             {typing ? (
-              <TypingDots label={member ? t("typingNamed", { name: member.name }) : t("typing")} />
+              <TypingDots label={member ? t("typingNamed", { name: member.name }) : t("typing")} className="bg-white rounded-tl-sm rounded-bl-2xl" />
             ) : (
               <p className="max-w-[85%] rounded-xl rounded-tl-sm bg-white px-3 py-2 text-sm text-[#0a120b] shadow-sm">
                 {member ? t("greetingNamed", { name: member.name.split(/\s+/)[0] }) : t("greeting")}
