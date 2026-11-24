@@ -1229,6 +1229,14 @@
       "note": "Hakuna malipo sasa. Nafasi zikipatikana, wanaohifadhi kwanza ndio wanaozipata.",
       "doneTitle": "Uko kwenye orodha!",
       "doneText": "Asante, {name}. Tutakutumia barua pepe nafasi ikipatikana."
+    },
+    "banner": {
+      "eyebrow": "Safari ijayo",
+      "days": "Siku",
+      "hours": "Saa",
+      "minutes": "Dak",
+      "seconds": "Sek",
+      "label": "Muda uliobaki kabla ya safari"
     }
   },
   "TripReview": {

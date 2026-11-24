@@ -1229,6 +1229,14 @@
       "note": "Aucun paiement maintenant. Quand des places se libèrent, les premiers à réserver les obtiennent.",
       "doneTitle": "Vous êtes sur la liste !",
       "doneText": "Merci, {name}. Nous vous écrivons dès qu'une place se libère."
+    },
+    "banner": {
+      "eyebrow": "Prochain voyage",
+      "days": "Jours",
+      "hours": "Heures",
+      "minutes": "Min",
+      "seconds": "Sec",
+      "label": "Compte à rebours avant le voyage"
     }
   },
   "TripReview": {

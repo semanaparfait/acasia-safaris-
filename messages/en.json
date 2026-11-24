@@ -1229,6 +1229,14 @@
       "note": "No payment now. When seats free up, the first people to book get them.",
       "doneTitle": "You're on the list!",
       "doneText": "Thank you, {name}. We will email you as soon as a seat frees up."
+    },
+    "banner": {
+      "eyebrow": "Upcoming trip",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec",
+      "label": "Countdown to the trip"
     }
   },
   "TripReview": {
