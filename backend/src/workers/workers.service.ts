@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { passwordProblem } from '../common/password';
 import { toE164 } from '../common/phone';
 import type { Worker } from '@prisma/client';
 import { hash } from 'bcryptjs';
@@ -115,6 +116,16 @@ export class WorkersService {
     return { ...safe, hasPassword: Boolean(passwordHash) };
   }
 
+  // A new password must not contain the worker's names or emails
+  private checkPassword(dto: WorkerDto, emails: string[]) {
+    if (!dto.password) return;
+    const problem = passwordProblem(dto.password, dto.name, [
+      dto.personalEmail,
+      ...emails,
+    ]);
+    if (problem) throw new BadRequestException(problem);
+  }
+
   async create(dto: WorkerDto, actor: Actor) {
     const email = await this.companyEmail(dto.name);
     await this.roles.checkExists(dto.role);
@@ -125,6 +136,8 @@ export class WorkersService {
         throw new BadRequestException('An admin needs a password to log in');
       }
     }
+
+    this.checkPassword(dto, [email]);
 
     const { password, ...data } = dto;
     const worker = await this.prisma.worker.create({
@@ -172,6 +185,8 @@ export class WorkersService {
     if (isAdmin && !dto.password && !current.hasPassword) {
       throw new BadRequestException('An admin needs a password to log in');
     }
+
+    this.checkPassword(dto, [email, current.email]);
 
     const { password, ...data } = dto;
     const worker = await this.prisma.worker.update({

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, ShieldCheck, UserRound, Contact, Briefcase, StickyNote, Globe } from "lucide-react";
 import type { Worker, WorkerStatus } from "@/lib/types";
 import { SOCIAL_NETWORKS } from "@/lib/socials";
+import { passwordProblem } from "@/lib/password";
 import { PhoneField } from "@/components/ui/phone-field";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
@@ -40,9 +41,7 @@ export default function WorkerForm({
 
   // An admin must have a password: a new one, or the one they already have
   const needsPassword = form.isAdmin && !initial.hasPassword;
-  const passwordOk = password === "" ? !needsPassword : password.length >= 8;
   const websiteOk = !form.showOnWebsite || Boolean(form.companyRole?.trim()); // shown on the website = needs a company role
-  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.personalEmail ?? "") && form.phone.trim() && passwordOk && websiteOk;
 
   // The company email is made by the server from the first name. It only changes
   // when the first name changes (the main admin's login comes from .env and stays).
@@ -55,6 +54,11 @@ export default function WorkerForm({
     : isNew
       ? "Made from the first name. A number is added if it is taken."
       : `Will change from ${initial.email} when you save.`;
+
+  // The password must not contain the worker's names or emails
+  const passwordIssue = password.length >= 8 ? passwordProblem(password, form.name, [form.personalEmail, companyEmail, initial.email]) : null;
+  const passwordOk = password === "" ? !needsPassword : password.length >= 8 && !passwordIssue;
+  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.personalEmail ?? "") && form.phone.trim() && passwordOk && websiteOk;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,6 +232,8 @@ export default function WorkerForm({
                     </button>
                   </div>
                   {password !== "" && password.length < 8 && <p className="text-xs text-red-600 mt-1">At least 8 characters</p>}
+                  {passwordIssue && <p className="text-xs text-red-600 mt-1">{passwordIssue}</p>}
+                  <p className="text-xs text-[#0a120b]/50 mt-1">Do not use the worker&apos;s names or email in the password.</p>
                 </div>
               )}
             </div>

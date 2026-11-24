@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { AuditService } from '../audit/audit.service';
+import { passwordProblem } from '../common/password';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -400,9 +401,23 @@ export class AuthService {
     return worker;
   }
 
+  // A new password must not contain the worker's names or emails
+  private async checkNotPersonal(workerId: string, password: string) {
+    const w = await this.prisma.worker.findUniqueOrThrow({
+      where: { id: workerId },
+      select: { name: true, email: true, personalEmail: true },
+    });
+    const problem = passwordProblem(password, w.name, [
+      w.email,
+      w.personalEmail,
+    ]);
+    if (problem) throw new BadRequestException(problem);
+  }
+
   // Other devices are logged out, so this device gets a new token
   async changePassword(workerId: string, dto: ChangePasswordDto) {
     await this.checkPassword(workerId, dto.currentPassword);
+    await this.checkNotPersonal(workerId, dto.newPassword);
 
     const { tokenVersion, ...worker } = await this.prisma.worker.update({
       where: { id: workerId },
@@ -485,6 +500,7 @@ export class AuthService {
   // and this device is logged in with the new password.
   async resetPassword(email: string, code: string, newPassword: string) {
     const workerId = await this.checkResetCode(email, code);
+    await this.checkNotPersonal(workerId, newPassword);
     const { tokenVersion, ...worker } = await this.prisma.worker.update({
       where: { id: workerId },
       data: {
