@@ -340,6 +340,10 @@ model BookingMessage {
   text       String
   offer      Int? // a price proposed with this message
   event      String? // "offer", "accepted" (shown differently in the thread)
+  // Files sent with the message: [{ name, type, size, key?, url? }]
+  //   key = a photo / file in the private chat bucket (bookings/<bookingId>/<key>)
+  //   url = a public file, e.g. a package quotation PDF
+  attachments Json    @default("[]")
   createdAt  DateTime @default(now())
 
   @@index([bookingId, createdAt])

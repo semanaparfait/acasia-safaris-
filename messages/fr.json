@@ -258,7 +258,12 @@
         "cash": "Quelques dollars US (2013 ou plus récents) pour les pourboires",
         "noPlastic": "Pas de sacs plastique (interdits au Rwanda)"
       }
-    }
+    },
+    "attach": "Envoyer une photo ou un PDF",
+    "removeFile": "Retirer le fichier",
+    "fileCaption": "Ajouter un message (facultatif)…",
+    "fileTooBig": "Ce fichier est trop lourd (10 Mo maximum).",
+    "sendingFile": "Envoi de {name}…"
   },
   "Home": {
     "hero": {

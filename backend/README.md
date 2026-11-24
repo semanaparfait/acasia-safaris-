@@ -66,6 +66,13 @@ AWS_SECRET_ACCESS_KEY="nsk_live_..."
 Without them everything else works; uploads answer "Storage is not configured".
 When a record is deleted, its uploaded images are deleted from the bucket too.
 
+**Booking chat files.** Photos and documents sent in a booking's conversation go to a separate,
+truly private bucket (`CHAT_BUCKET`, default `chat`; create it in Neon Console > Storage). They
+are never served by `/api/files`: only the customer's link (`/api/bookings/track/<token>/files/<key>`)
+and logged-in admins (`/api/bookings/<id>/files/<key>`) can open them. Customers may send photos
+and PDFs, the team also Word / Excel / PowerPoint / text / zip files (10 MB each). The file's first
+bytes must match its type. Deleting a booking deletes its chat files.
+
 ## Quotation emails
 
 Each package has a quotation PDF, made on the server from the package (`src/packages/quotation.service.ts`).
@@ -222,6 +229,9 @@ To add a new feature, copy the `destinations` folder, rename it, add a model to 
 | POST / PUT / DELETE | `/api/gallery[/:id]` | 🔒 `{ title, category, location?, image }` |
 | POST | `/api/uploads/:bucket` | 🔒 multipart form, field `file`. Returns `{ url }` |
 | GET | `/api/files/:bucket/:key` | website: serves an uploaded image |
+| POST | `/api/bookings/track/:token/files` | customer: a photo / PDF in the chat (multipart `file`, optional `text`) |
+| POST | `/api/bookings/:id/files` | 🔒 team: a photo / document in the chat (emails the customer) |
+| POST | `/api/bookings/:id/quotation` | 🔒 team: `{ packageId, text? }` sends that package's quotation PDF in the chat |
 
 A package is sent as one object with its days in order:
 

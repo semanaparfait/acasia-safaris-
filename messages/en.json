@@ -258,7 +258,12 @@
         "cash": "Some US dollars (2013 or newer) for tips",
         "noPlastic": "No plastic bags (not allowed in Rwanda)"
       }
-    }
+    },
+    "attach": "Send a photo or PDF",
+    "removeFile": "Remove the file",
+    "fileCaption": "Add a message (optional)…",
+    "fileTooBig": "This file is too big (10 MB at most).",
+    "sendingFile": "Sending {name}…"
   },
   "Home": {
     "hero": {

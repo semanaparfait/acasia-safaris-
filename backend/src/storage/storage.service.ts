@@ -127,16 +127,37 @@ export class StorageService {
     }
   }
 
-  async putPrivate(bucket: string, key: string, body: Buffer) {
+  async putPrivate(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType = 'application/octet-stream',
+  ) {
     this.checkPrivate(bucket);
     await this.getClient().send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: key,
         Body: body,
-        ContentType: 'application/octet-stream',
+        ContentType: contentType,
       }),
     );
+  }
+
+  // A private file as a stream (e.g. a photo sent in a booking chat)
+  async streamPrivate(bucket: string, key: string) {
+    this.checkPrivate(bucket);
+    try {
+      const result = await this.getClient().send(
+        new GetObjectCommand({ Bucket: bucket, Key: key }),
+      );
+      return {
+        stream: result.Body as Readable,
+        contentType: result.ContentType ?? 'application/octet-stream',
+      };
+    } catch {
+      throw new NotFoundException('File not found');
+    }
   }
 
   async getPrivate(bucket: string, key: string) {

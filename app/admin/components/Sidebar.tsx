@@ -24,6 +24,7 @@ import {
   UsersRound,
   Compass,
   X,
+  FileText,
 } from "lucide-react";
 import logo from "@/public/logo2.png";
 import { useBookingsStore } from "@/store/bookingsStore";
@@ -71,6 +72,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       label: "Content",
       items: [
         { name: "Tour Packages", href: "/admin/packages", icon: Package },
+        { name: "Quotations", href: "/admin/quotations", icon: FileText },
         { name: "Trips", href: "/admin/trips", icon: Compass, count: newTripBookings },
         { name: "Destinations", href: "/admin/destinations", icon: MapPinned },
         { name: "Reviews", href: "/admin/reviews", icon: Star, count: reviews.filter((r) => r.status === "Pending").length },

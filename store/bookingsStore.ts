@@ -2,7 +2,7 @@
 // Same pattern as packagesStore.ts.
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { api } from "@/lib/api";
+import { api, sendFile } from "@/lib/api";
 import type { Booking, BookingDestination, BookingStatus, PaymentMethod, PaymentStatus, PublicBooking } from "@/lib/types";
 
 // A booking is for a package (packageId) or for destinations (destinations + endDate)
@@ -50,6 +50,8 @@ type BookingsState = {
   createBooking: (input: BookingInput) => Promise<PublicBooking & { accessToken: string }>;
   // Admin: write to the customer (optionally with a new price), or accept their price
   sendMessage: (id: string, text: string, offer?: number) => Promise<Booking>;
+  sendFile: (id: string, file: File, text?: string) => Promise<Booking>; // a photo / document in the chat
+  sendQuotation: (id: string, packageId: string, text?: string) => Promise<Booking>; // a package's quotation PDF
   acceptOffer: (id: string) => Promise<Booking>;
   // Live updates (lib/live.ts): put a changed booking in the list, or take a deleted one out
   upsertBooking: (booking: Booking) => void;
@@ -90,6 +92,22 @@ export const useBookingsStore = create<BookingsState>()(
           admin: true,
         });
         set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/sendMessage");
+        return updated;
+      },
+
+      sendFile: async (id, file, text) => {
+        const updated = await sendFile<Booking>(`/bookings/${id}/files`, file, { text: text ?? "" }, true);
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/sendFile");
+        return updated;
+      },
+
+      sendQuotation: async (id, packageId, text) => {
+        const updated = await api<Booking>(`/bookings/${id}/quotation`, {
+          method: "POST",
+          body: { packageId, text: text || undefined },
+          admin: true,
+        });
+        set((state) => ({ bookings: state.bookings.map((b) => (b.id === id ? updated : b)) }), false, "bookings/sendQuotation");
         return updated;
       },
 

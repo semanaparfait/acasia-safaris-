@@ -89,10 +89,20 @@ const publicSelect = {
       text: true,
       offer: true,
       event: true,
+      attachments: true,
       createdAt: true,
     },
   },
 } satisfies Prisma.BookingSelect;
+
+// A file sent in the chat (see BookingMessage.attachments in schema.prisma)
+export type ChatAttachment = {
+  name: string;
+  type: string;
+  size: number;
+  key?: string; // private chat file: bookings/<bookingId>/<key>
+  url?: string; // public file, e.g. a quotation PDF
+};
 
 const MAX_MESSAGES = 300; // per booking, so a link cannot be used to flood the database
 const CLOSED = ['Completed', 'Cancelled']; // no more messages
@@ -162,6 +172,12 @@ export class BookingsService {
     listener: (bookingId: string, dto: BookingMessageDto) => void,
   ) {
     this.customerMessageListeners.push(listener);
+  }
+
+  // Called after a booking is deleted (ChatFilesService removes its chat files)
+  private removedListeners: ((bookingId: string) => void)[] = [];
+  onRemoved(listener: (bookingId: string) => void) {
+    this.removedListeners.push(listener);
   }
 
   constructor(
@@ -278,14 +294,21 @@ export class BookingsService {
   async remove(id: string) {
     await this.findOne(id);
     await this.prisma.booking.delete({ where: { id } });
+    this.removedListeners.forEach((listener) => listener(id));
     this.live.toAdmins('booking:deleted', { id });
     return { deleted: true };
   }
 
   // The team answers, and can propose a new price with "offer"
-  async teamMessage(id: string, dto: BookingMessageDto, authorName: string) {
+  async teamMessage(
+    id: string,
+    dto: BookingMessageDto,
+    authorName: string,
+    attachments: ChatAttachment[] = [],
+  ) {
     const booking = await this.findOne(id);
-    await this.addMessage(booking, 'team', authorName, dto);
+    await this.addMessage(booking, 'team', authorName, dto, attachments);
+    const files = attachments.map((a) => `📎 ${a.name}`);
 
     const T = EMAIL_TEXTS[asLang(booking.locale)];
     const email = dto.offer
@@ -301,7 +324,11 @@ export class BookingsService {
       : {
           subject: T.newMessage.subject,
           heading: T.newMessage.heading,
-          paragraphs: [T.newMessage.wrote(authorName), `"${dto.text?.trim()}"`],
+          paragraphs: [
+            T.newMessage.wrote(authorName),
+            ...(dto.text?.trim() ? [`"${dto.text.trim()}"`] : []),
+            ...files,
+          ],
         };
     this.emailCustomer(booking, email);
     return this.changed(id);
@@ -652,14 +679,28 @@ export class BookingsService {
   }
 
   // The visitor writes, and can propose a price with "offer"
-  async customerMessage(token: string, dto: BookingMessageDto) {
+  async customerMessage(
+    token: string,
+    dto: BookingMessageDto,
+    attachments: ChatAttachment[] = [],
+  ) {
     const booking = await this.findBookingByToken(token);
-    await this.addMessage(booking, 'customer', booking.customer, dto);
+    await this.addMessage(
+      booking,
+      'customer',
+      booking.customer,
+      dto,
+      attachments,
+    );
     await this.changed(booking.id);
     // One alert per waiting conversation: more messages before the team answers add none
     if (!booking.needsReply) {
+      // A file without text: the alert says which file was sent
+      const alert = dto.text?.trim()
+        ? dto
+        : { ...dto, text: attachments.map((a) => `📎 ${a.name}`).join(', ') };
       this.customerMessageListeners.forEach((listener) =>
-        listener(booking.id, dto),
+        listener(booking.id, alert),
       );
     }
     return this.findByToken(token);
@@ -728,6 +769,33 @@ export class BookingsService {
 
   // ---------- Shared ----------
 
+  // The booking a visitor's link belongs to, if the chat is still open (for sending files)
+  async openChatByToken(token: string) {
+    const booking = await this.findBookingByToken(token);
+    this.checkChatOpen(booking);
+    return booking.id;
+  }
+
+  // Same for the team
+  async openChat(id: string) {
+    const booking = await this.findOne(id);
+    this.checkChatOpen(booking);
+    return booking.id;
+  }
+
+  // The booking id of a visitor's link (to read the chat files; closed chats too)
+  async bookingIdByToken(token: string) {
+    return (await this.findBookingByToken(token)).id;
+  }
+
+  private checkChatOpen(booking: { status: string }) {
+    if (CLOSED.includes(booking.status)) {
+      throw new BadRequestException(
+        `This booking is ${booking.status.toLowerCase()}`,
+      );
+    }
+  }
+
   private async findBookingByToken(token: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { accessToken: token },
@@ -743,14 +811,13 @@ export class BookingsService {
     sender: Sender,
     authorName: string,
     dto: BookingMessageDto,
+    attachments: ChatAttachment[] = [],
   ) {
     const text = dto.text?.trim() ?? '';
-    if (!text && !dto.offer) throw new BadRequestException('Write a message');
-    if (CLOSED.includes(booking.status)) {
-      throw new BadRequestException(
-        `This booking is ${booking.status.toLowerCase()}`,
-      );
+    if (!text && !dto.offer && !attachments.length) {
+      throw new BadRequestException('Write a message');
     }
+    this.checkChatOpen(booking);
     if (dto.offer) {
       if (!CAN_BARGAIN.includes(booking.status)) {
         throw new BadRequestException(
@@ -790,11 +857,14 @@ export class BookingsService {
             authorName,
             text:
               text ||
-              (sender === 'customer'
-                ? 'I would like to propose this price.'
-                : 'Here is our price for your trip.'),
+              (!dto.offer
+                ? '' // only a file
+                : sender === 'customer'
+                  ? 'I would like to propose this price.'
+                  : 'Here is our price for your trip.'),
             offer: dto.offer,
             event: dto.offer ? 'offer' : null,
+            attachments,
           },
         },
       },

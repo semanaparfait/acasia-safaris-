@@ -3,13 +3,16 @@
 // The conversation with the customer, in the booking drawer (Admin > Bookings).
 // The team replies, proposes a price (a counter-offer) or accepts the customer's price.
 // Every reply is emailed to the customer with the link to their booking page.
+// The team can also send a photo / document (📎) or a package's quotation PDF.
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { AlertTriangle, CheckCircle2, HandCoins, Loader2, MessageCircle, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileText, HandCoins, Loader2, MessageCircle, Paperclip, Send, X } from "lucide-react";
 import { money } from "@/lib/helpers";
 import type { Booking, BookingMessage } from "@/lib/types";
 import { useBookingsStore } from "@/store/bookingsStore";
+import { usePackagesStore } from "@/store/packagesStore";
+import { ChatAttachments, fileSize } from "@/components/ui/chat-attachments";
 import { sendTyping, useCustomerTyping } from "@/lib/live";
 import { api } from "@/lib/api";
 import { insertReply, useSavedReplies } from "@/lib/useSavedReplies";
@@ -20,6 +23,13 @@ import { Button } from "../components/ui";
 export default function BookingConversation({ booking }: { booking: Booking }) {
   const sendMessage = useBookingsStore((s) => s.sendMessage);
   const acceptOffer = useBookingsStore((s) => s.acceptOffer);
+  const sendFile = useBookingsStore((s) => s.sendFile);
+  const sendQuotation = useBookingsStore((s) => s.sendQuotation);
+  const packages = usePackagesStore((s) => s.packages);
+  const loadPackages = usePackagesStore((s) => s.loadAll);
+  const [file, setFile] = useState<File | null>(null); // a photo / document waiting to be sent
+  const [showQuotes, setShowQuotes] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [withOffer, setWithOffer] = useState(false);
   const [offer, setOffer] = useState("");
@@ -90,8 +100,44 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
     }
   };
 
+  // Quotations to send: this booking's package first
+  const quotations = packages
+    .filter((p) => p.quotation)
+    .sort((a, b) => Number(b.id === booking.package?.id) - Number(a.id === booking.package?.id));
+  const openQuotes = () => {
+    if (!packages.length) loadPackages();
+    setShowQuotes(!showQuotes);
+  };
+  const shareQuotation = async (packageId: string, title: string) => {
+    stopTyping();
+    const ok = await run(() => sendQuotation(booking.id, packageId, text.trim()), `Quotation for ${title} sent`);
+    if (ok) {
+      setText("");
+      setShowQuotes(false);
+    }
+  };
+
+  const pickFile = (picked: File | undefined) => {
+    if (!picked) return;
+    if (picked.size > 10 * 1024 * 1024) {
+      toast.error("This file is too big (10 MB at most)");
+      return;
+    }
+    setFile(picked);
+    setWithOffer(false);
+  };
+
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (file) {
+      stopTyping();
+      const ok = await run(() => sendFile(booking.id, file, text.trim()), `${file.name} sent`);
+      if (ok) {
+        setText("");
+        setFile(null);
+      }
+      return;
+    }
     if (!text.trim() && !offerValue) return;
     stopTyping();
     const ok = await run(
@@ -146,7 +192,7 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
         {messages.length === 0 ? (
           <p className="text-center text-xs text-[#0a120b]/40 py-6">No messages yet. Write to the customer below.</p>
         ) : (
-          messages.map((m) => <Bubble key={m.id} message={m} />)
+          messages.map((m) => <Bubble key={m.id} message={m} filesBase={`/api/bookings/${booking.id}/files`} />)
         )}
         {customerTyping && (
           <div className="flex justify-start">
@@ -181,6 +227,26 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
               )}
             </div>
           )}
+          {file && (
+            <div className="flex items-center gap-2.5 rounded-lg border border-[#c5a86d]/40 bg-[#c5a86d]/[0.07] px-3 py-2">
+              <Paperclip className="size-4 shrink-0 text-[#8a6d2f]" />
+              <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
+              <span className="text-xs text-[#0a120b]/45">{fileSize(file.size)}</span>
+              <button type="button" onClick={() => setFile(null)} className="rounded p-0.5 text-[#0a120b]/40 hover:text-[#0a120b]" aria-label="Remove the file">
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileInput}
+            type="file"
+            hidden
+            accept="image/jpeg,image/png,image/webp,image/gif,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip"
+            onChange={(e) => {
+              pickFile(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
           <SavedReplyChips
             replies={savedReplies ?? []}
             onPick={(reply) => {
@@ -201,25 +267,75 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send();
             }}
-            placeholder={withOffer ? "Explain your price (optional)…" : "Write to the customer… (Ctrl + Enter to send)"}
+            placeholder={
+              file ? "Add a message with the file (optional)…" : withOffer ? "Explain your price (optional)…" : "Write to the customer… (Ctrl + Enter to send)"
+            }
             className="w-full resize-none bg-white border border-[#0a120b]/10 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[#c5a86d] focus:ring-4 focus:ring-[#c5a86d]/15"
           />
           <div className="flex items-center justify-between gap-2">
-            {canOffer ? (
+            <div className="relative flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setWithOffer(!withOffer)}
-                className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1.5 transition-colors cursor-pointer ${
-                  withOffer ? "bg-[#c5a86d] text-[#12231a]" : "bg-[#f4efe6] text-[#7a5d22] hover:bg-[#ece3d2]"
+                onClick={() => fileInput.current?.click()}
+                disabled={busy || withOffer}
+                title="Send a photo or document (10 MB at most)"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#f4efe6] px-3 py-1.5 text-xs font-medium text-[#7a5d22] transition-colors hover:bg-[#ece3d2] disabled:opacity-40 cursor-pointer"
+              >
+                <Paperclip className="size-3.5" /> File
+              </button>
+              <button
+                type="button"
+                onClick={openQuotes}
+                disabled={busy}
+                title="Send a package's quotation PDF"
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  showQuotes ? "bg-[#c5a86d] text-[#12231a]" : "bg-[#f4efe6] text-[#7a5d22] hover:bg-[#ece3d2]"
                 }`}
               >
-                <HandCoins className="size-3.5" /> {withOffer ? "Remove price" : customerOffer != null ? "Counter-offer" : "Propose a price"}
+                <FileText className="size-3.5" /> Quotation
               </button>
-            ) : (
-              <span />
-            )}
-            <Button type="submit" disabled={busy || (!text.trim() && !(offerValue && offerValue > 0))}>
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} {withOffer ? "Send offer" : "Send"}
+              {showQuotes && (
+                <div className="absolute bottom-full left-0 z-20 mb-2 w-72 overflow-hidden rounded-xl border border-[#0a120b]/10 bg-white shadow-xl">
+                  <p className="border-b border-[#0a120b]/[0.06] px-3.5 py-2 text-[11px] uppercase tracking-wider text-[#0a120b]/45">Send a quotation</p>
+                  <div className="max-h-64 overflow-y-auto py-1">
+                    {quotations.length === 0 ? (
+                      <p className="px-3.5 py-4 text-center text-xs text-[#0a120b]/45">
+                        {packages.length ? "No package has a quotation PDF yet (Tour Packages > Edit > Quotation)." : "Loading…"}
+                      </p>
+                    ) : (
+                      quotations.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => shareQuotation(p.id, p.title)}
+                          disabled={busy}
+                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm hover:bg-[#f7f5f0] disabled:opacity-50 cursor-pointer"
+                        >
+                          <FileText className="size-4 shrink-0 text-[#8a6d2f]" />
+                          <span className="min-w-0 flex-1 truncate">{p.title}</span>
+                          {p.id === booking.package?.id && (
+                            <span className="shrink-0 rounded-full bg-[#c5a86d]/15 px-2 py-0.5 text-[10px] font-semibold text-[#8a6d2f]">This trip</span>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+              {canOffer && !file && (
+                <button
+                  type="button"
+                  onClick={() => setWithOffer(!withOffer)}
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1.5 transition-colors cursor-pointer ${
+                    withOffer ? "bg-[#c5a86d] text-[#12231a]" : "bg-[#f4efe6] text-[#7a5d22] hover:bg-[#ece3d2]"
+                  }`}
+                >
+                  <HandCoins className="size-3.5" /> {withOffer ? "Remove price" : customerOffer != null ? "Counter-offer" : "Propose a price"}
+                </button>
+              )}
+            </div>
+            <Button type="submit" disabled={busy || (!file && !text.trim() && !(offerValue && offerValue > 0))}>
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} {file ? "Send file" : withOffer ? "Send offer" : "Send"}
             </Button>
           </div>
           <p className="text-[11px] text-[#0a120b]/40">The customer gets an email with a link to answer.</p>
@@ -229,7 +345,7 @@ export default function BookingConversation({ booking }: { booking: Booking }) {
   );
 }
 
-function Bubble({ message: m }: { message: BookingMessage }) {
+function Bubble({ message: m, filesBase }: { message: BookingMessage; filesBase: string }) {
   const time = format(new Date(m.createdAt), "d MMM, HH:mm");
   if (m.event === "accepted") {
     return (
@@ -246,7 +362,7 @@ function Bubble({ message: m }: { message: BookingMessage }) {
           {m.authorName} · {time}
         </p>
         <div
-          className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-line ${
+          className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-line space-y-1.5 ${
             team ? "bg-[#12231a] text-white rounded-br-md" : "bg-white border border-[#0a120b]/10 rounded-bl-md"
           }`}
         >
@@ -255,7 +371,8 @@ function Bubble({ message: m }: { message: BookingMessage }) {
               <HandCoins className="size-3.5" /> Offer: {money(m.offer)}
             </span>
           )}
-          {m.text}
+          <ChatAttachments attachments={m.attachments} filesBase={filesBase} dark={team} />
+          {m.text && <p>{m.text}</p>}
         </div>
       </div>
     </div>

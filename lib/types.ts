@@ -223,7 +223,17 @@ export type BookingMessage = {
   text: string;
   offer?: number | null; // a price proposed with this message
   event?: "offer" | "accepted" | null;
+  attachments?: ChatAttachment[]; // photos / files sent with the message
   createdAt: string;
+};
+
+// A file sent in the booking chat
+export type ChatAttachment = {
+  name: string; // "passport.jpg", "7-Day Gorilla Trekking Adventure - Quotation.pdf"
+  type: string; // "image/jpeg", "application/pdf"…
+  size: number; // bytes (0 = unknown, e.g. a quotation)
+  key?: string; // a private chat file: opened through the booking's /files/<key> route
+  url?: string; // a public file (quotation PDF)
 };
 
 // What a visitor sees on their booking page (GET /api/bookings/track/<token>)

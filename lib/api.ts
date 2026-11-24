@@ -74,6 +74,31 @@ export async function uploadImage(bucket: Bucket, file: File): Promise<string> {
   return result.url;
 }
 
+/**
+ * Sends a form with a file (multipart/form-data), e.g. a photo in the booking chat.
+ *
+ *   await sendFile<Booking>(`/bookings/${id}/files`, file, { text: "Here it is" }, true);
+ */
+export async function sendFile<T>(path: string, file: File, fields: Record<string, string> = {}, admin = false): Promise<T> {
+  const form = new FormData();
+  form.append("file", file);
+  for (const [key, value] of Object.entries(fields)) if (value) form.append(key, value);
+
+  let response: Response;
+  try {
+    response = await fetch(API_URL + path, {
+      method: "POST",
+      headers: BASE_HEADERS,
+      credentials: "include",
+      body: form,
+    });
+  } catch {
+    throw new Error("Cannot reach the server. Is the backend running?");
+  }
+  if (response.status === 413) throw new Error("This file is too big (10 MB at most)");
+  return readResponse<T>(response, admin);
+}
+
 async function readResponse<T>(response: Response, admin: boolean): Promise<T> {
   const data = await response.json().catch(() => null);
 

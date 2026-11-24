@@ -258,7 +258,12 @@
         "cash": "Dola chache za Marekani (2013 au baadaye) kwa bakshishi",
         "noPlastic": "Hakuna mifuko ya plastiki (hairuhusiwi Rwanda)"
       }
-    }
+    },
+    "attach": "Tuma picha au PDF",
+    "removeFile": "Ondoa faili",
+    "fileCaption": "Ongeza ujumbe (si lazima)…",
+    "fileTooBig": "Faili hili ni kubwa mno (MB 10 zaidi).",
+    "sendingFile": "Inatuma {name}…"
   },
   "Home": {
     "hero": {

@@ -408,6 +408,18 @@ function Bubble({ message: m }: { message: BookingMessage }) {
               <HandCoins className="size-3.5" /> Offer: {money(m.offer)}
             </span>
           )}
+          {/* Files: quotations open here; private photos / files open in Admin > Bookings (needs the login) */}
+          {m.attachments?.map((f, i) =>
+            f.url ? (
+              <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="block truncate text-xs underline underline-offset-2">
+                📎 {f.name}
+              </a>
+            ) : (
+              <span key={i} className="block truncate text-xs opacity-80" title="Open it in Admin > Bookings">
+                📎 {f.name}
+              </span>
+            ),
+          )}
           {m.text}
         </div>
       </div>

@@ -17,12 +17,15 @@ import {
   Loader2,
   MapPin,
   MessageCircle,
+  Paperclip,
   Send,
   ShieldCheck,
   Users,
   Star,
+  X,
 } from "lucide-react";
-import { API_URL, api } from "@/lib/api";
+import { API_URL, api, sendFile } from "@/lib/api";
+import { ChatAttachments, fileSize } from "@/components/ui/chat-attachments";
 import { moment, tripDate, tripRange } from "@/lib/dates";
 import { liveSocket } from "@/lib/live";
 import { depositOf, DEPOSIT_RATE } from "@/lib/helpers";
@@ -471,7 +474,9 @@ function Conversation({
   const [error, setError] = useState("");
   const end = useRef<HTMLDivElement>(null);
   const [typing, setTyping] = useState(false);
-  const [pending, setPending] = useState<{ text: string; offer?: number } | null>(null); // shown before the server answers
+  const [pending, setPending] = useState<{ text: string; offer?: number; file?: string } | null>(null); // shown before the server answers
+  const [file, setFile] = useState<File | null>(null); // a photo / PDF waiting to be sent
+  const fileInput = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(typingTimer.current), []);
 
@@ -521,15 +526,17 @@ function Conversation({
 
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    const offerValue = withOffer ? Number(offer) : undefined;
-    if (!text.trim() && !offerValue) return;
+    const offerValue = withOffer && !file ? Number(offer) : undefined;
+    if (!text.trim() && !offerValue && !file) return;
     // Show the message and the "typing" dots at once, without waiting for the server
     stopTyping();
-    const draft = { text: text.trim(), offer: offerValue };
+    const draft = { text: text.trim(), offer: offerValue, file: file?.name };
+    const sentFile = file;
     setPending(draft);
     setText("");
     setOffer("");
     setWithOffer(false);
+    setFile(null);
     setSending(true);
     setError("");
     setTyping(true);
@@ -537,15 +544,18 @@ function Conversation({
     typingTimer.current = setTimeout(() => setTyping(false), TYPING_MS);
     try {
       onChange(
-        await api<PublicBooking>(`/bookings/track/${token}/messages`, {
-          method: "POST",
-          body: { text: draft.text || undefined, offer: draft.offer },
-        }),
+        sentFile
+          ? await sendFile<PublicBooking>(`/bookings/track/${token}/files`, sentFile, { text: draft.text })
+          : await api<PublicBooking>(`/bookings/track/${token}/messages`, {
+              method: "POST",
+              body: { text: draft.text || undefined, offer: draft.offer },
+            }),
       );
     } catch (err) {
       setError((err as Error).message);
       // Not sent: give the text back so nothing is lost
       setText(draft.text);
+      if (sentFile) setFile(sentFile);
       if (draft.offer) {
         setOffer(String(draft.offer));
         setWithOffer(true);
@@ -586,7 +596,7 @@ function Conversation({
         ) : (
           booking.messages.map((m) => (
             <React.Fragment key={m.id}>
-              <Bubble message={m} />
+              <Bubble message={m} filesBase={`${API_URL}/bookings/track/${token}/files`} />
               {seenBy && m.id === lastCustomer?.id && !pending && (
                 <p className="text-right text-[11px] text-[#0a120b]/40 -mt-1.5 pr-1">{t("seenBy", { name: seenBy })}</p>
               )}
@@ -599,6 +609,11 @@ function Conversation({
               {pending.offer != null && (
                 <span className="flex items-center gap-1.5 text-xs font-semibold mb-1 text-[#c5a86d]">
                   <HandCoins size={13} /> {t("yourOfferLabel")}: <Money usd={pending.offer} />
+                </span>
+              )}
+              {pending.file && (
+                <span className="flex items-center gap-1.5 text-xs mb-1 text-white/70">
+                  <Loader2 size={13} className="animate-spin" /> {t("sendingFile", { name: pending.file })}
                 </span>
               )}
               {pending.text}
@@ -654,7 +669,45 @@ function Conversation({
               />
             </div>
           )}
+          {file && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#c5a86d]/40 bg-[#c5a86d]/[0.07] px-3 py-2">
+              <Paperclip size={15} className="shrink-0 text-[#8a6d2f]" />
+              <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
+              <span className="text-xs text-[#0a120b]/45">{fileSize(file.size)}</span>
+              <button type="button" onClick={() => setFile(null)} className="rounded p-0.5 text-[#0a120b]/40 hover:text-[#0a120b] cursor-pointer" aria-label={t("removeFile")}>
+                <X size={15} />
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileInput}
+            type="file"
+            hidden
+            accept="image/jpeg,image/png,image/webp,image/gif,.heic,.heif,.pdf"
+            onChange={(e) => {
+              const picked = e.target.files?.[0];
+              e.target.value = "";
+              if (!picked) return;
+              if (picked.size > 10 * 1024 * 1024) {
+                setError(t("fileTooBig"));
+                return;
+              }
+              setError("");
+              setFile(picked);
+              setWithOffer(false);
+            }}
+          />
           <div className="flex items-end gap-2">
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              disabled={sending}
+              aria-label={t("attach")}
+              title={t("attach")}
+              className="h-11 w-11 shrink-0 rounded-xl border border-[#0a120b]/10 bg-[#f7f5f0] text-[#0a120b]/55 hover:text-[#12231a] hover:border-[#c5a86d] flex items-center justify-center disabled:opacity-40 transition-colors cursor-pointer"
+            >
+              <Paperclip size={17} />
+            </button>
             <textarea
               rows={2}
               value={text}
@@ -670,12 +723,12 @@ function Conversation({
                   send();
                 }
               }}
-              placeholder={t("write")}
+              placeholder={file ? t("fileCaption") : t("write")}
               className="flex-1 resize-none bg-[#f7f5f0] border border-[#0a120b]/10 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-[#c5a86d] focus:bg-white focus:ring-4 focus:ring-[#c5a86d]/15 transition-all"
             />
             <button
               type="submit"
-              disabled={sending || (!text.trim() && !(withOffer && Number(offer) > 0))}
+              disabled={sending || (!file && !text.trim() && !(withOffer && Number(offer) > 0))}
               aria-label={t("send")}
               className="h-11 w-11 shrink-0 rounded-xl bg-[#12231a] hover:bg-[#1F5A42] text-white flex items-center justify-center disabled:opacity-40 transition-colors cursor-pointer"
             >
@@ -683,7 +736,7 @@ function Conversation({
             </button>
           </div>
           <div className="flex items-center justify-between gap-3">
-            {canOffer ? (
+            {canOffer && !file ? (
               <button
                 type="button"
                 onClick={() => setWithOffer(!withOffer)}
@@ -705,7 +758,7 @@ function Conversation({
   );
 }
 
-function Bubble({ message: m }: { message: BookingMessage }) {
+function Bubble({ message: m, filesBase }: { message: BookingMessage; filesBase: string }) {
   const t = useTranslations("MyBooking");
   const locale = useLocale();
   const time = moment(m.createdAt, locale);
@@ -728,7 +781,7 @@ function Bubble({ message: m }: { message: BookingMessage }) {
           {mine ? t("you") : t("fromTeam", { name: m.authorName })} · {time}
         </span>
         <div
-          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line space-y-1.5 ${
             mine ? "bg-[#12231a] text-white rounded-br-md" : "bg-white border border-[#0a120b]/[0.08] text-[#0a120b] rounded-bl-md shadow-sm"
           }`}
         >
@@ -737,7 +790,8 @@ function Bubble({ message: m }: { message: BookingMessage }) {
               <HandCoins size={13} /> {mine ? t("yourOfferLabel") : t("ourOfferLabel")}: <Money usd={m.offer} />
             </span>
           )}
-          {m.text}
+          <ChatAttachments attachments={m.attachments} filesBase={filesBase} dark={mine} />
+          {m.text && <p>{m.text}</p>}
         </div>
       </div>
     </div>
