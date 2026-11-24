@@ -25,7 +25,7 @@ type AuthState = {
   // Two-step login. Step 1: password. Returns the code challenge, or null when
   // logged in at once (a trusted browser). Throws "Wrong email or password" etc.
   login: (email: string, password: string) => Promise<LoginChallenge | null>;
-  // Step 2: the emailed code. remember = trust this browser for 30 days.
+  // Step 2: the emailed code. remember = trust this browser for 7 days.
   verifyLogin: (challenge: string, code: string, remember: boolean) => Promise<void>;
   resendLoginCode: (challenge: string) => Promise<void>;
 

@@ -198,8 +198,13 @@ export class WorkersService {
         personalEmail: dto.personalEmail.toLowerCase().trim(),
         phone: toE164(dto.phone) ?? dto.phone,
         joined: toDate(dto.joined),
-        // Only change the password when a new one is sent
-        ...(password ? { passwordHash: await hash(password, 10) } : {}),
+        // Only change the password when a new one is sent. Its trusted devices need the code again.
+        ...(password
+          ? {
+              passwordHash: await hash(password, 10),
+              trustVersion: { increment: 1 },
+            }
+          : {}),
       },
     });
     return { ...worker, hasPassword: Boolean(password) || current.hasPassword };

@@ -277,8 +277,9 @@ Real keys and passwords go only in `backend/.env` (ignored by git). `.env.exampl
   in a row for one account (from any IP) lock it for 15 minutes, even for the right password. The admin
   and the main admin get an email, and Admin > Activity shows "Account locked".
 - **Two-step login.** After the password, a 6 digit code is emailed to the admin's personal email
-  (valid 10 minutes, 5 tries). "Trust this device" skips the code on that browser for 30 days;
-  changing the password (or logging out everywhere) ends every trusted device. An admin without a
+  (valid 10 minutes, 5 tries). "Trust this device" skips the code on that browser for 7 days.
+  Logging out keeps that trust; a new password (changed, reset, or set by the main admin) ends
+  every trusted device. An admin without a
   personal email cannot sign in until the main admin adds one under Workers.
 - **Login cookie.** The login is an httpOnly cookie (`acacia_session`, 7 days): the page's JavaScript
   never sees it. The website calls `/api/...` on its own address and Next.js forwards it to the backend

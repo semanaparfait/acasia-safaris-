@@ -3,7 +3,7 @@
 // Admin login, in two steps:
 //   1. company email + password
 //   2. a 6 digit code emailed to the personal email (checked as soon as it is typed).
-//      "Trust this device" skips step 2 on this browser for 30 days.
+//      "Trust this device" skips step 2 on this browser for 7 days (logging out keeps it; a new password ends it).
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -181,7 +181,7 @@ export default function LoginPage() {
                 onChange={(e) => setRemember(e.target.checked)}
                 className="size-4 rounded accent-[#12231a]"
               />
-              Trust this device for 30 days
+              Trust this device for 7 days
             </label>
 
             <div className="min-h-6 mt-4 text-sm">

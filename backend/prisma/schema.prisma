@@ -116,6 +116,7 @@ model Worker {
   isAdmin      Boolean @default(false)
   passwordHash String? // bcrypt hash, never sent to the browser
   tokenVersion Int     @default(0) // raised on logout and password change: older login tokens stop working
+  trustVersion Int     @default(0) // raised on password change only: "trusted devices" (no login code) must log in with a code again
 
   // Forgot password: a 6 digit code emailed to personalEmail (only its bcrypt hash is stored)
   resetCodeHash    String?

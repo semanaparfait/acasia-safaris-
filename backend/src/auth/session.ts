@@ -3,7 +3,8 @@ import type { CookieOptions, Request, Response } from 'express';
 // The admin login lives in httpOnly cookies, out of reach of the page's JavaScript
 // (a malicious script cannot steal it the way it could from localStorage).
 //   acacia_session: the login itself (7 days)
-//   acacia_device:  "trust this device": no 6 digit code for 30 days on this browser
+//   acacia_device:  "trust this device": no 6 digit code for 7 days on this browser
+//                   (logging out keeps it; a new password ends it)
 // The website reaches the API through its own /api address (see next.config.ts),
 // so these are first-party cookies that every browser keeps.
 export const SESSION_COOKIE = 'acacia_session';
@@ -13,7 +14,8 @@ export const REPLY_DEVICE_COOKIE = 'acacia_reply_device';
 
 const DAY = 24 * 60 * 60 * 1000;
 export const SESSION_DAYS = 7;
-export const DEVICE_DAYS = 30;
+export const DEVICE_DAYS = 7;
+export const REPLY_DEVICE_DAYS = 30;
 
 // Secure (https only) online. Locally the site runs on http://localhost.
 const secure = () =>
@@ -41,7 +43,7 @@ export function setReplyDevice(res: Response, token: string) {
   res.cookie(
     REPLY_DEVICE_COOKIE,
     token,
-    options(DEVICE_DAYS, '/api/quick-reply'),
+    options(REPLY_DEVICE_DAYS, '/api/quick-reply'),
   );
 }
 

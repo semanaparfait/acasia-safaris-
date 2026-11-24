@@ -62,7 +62,7 @@ class LoginCodeDto {
   @Matches(/^\d{6}$/, { message: 'The code has 6 digits' })
   code: string;
 
-  // Trust this browser for 30 days (no code)
+  // Trust this browser for 7 days (no code)
   @IsOptional()
   @IsBoolean()
   remember?: boolean;

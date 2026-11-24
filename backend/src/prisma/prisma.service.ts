@@ -16,6 +16,7 @@ export class PrismaService
         worker: {
           passwordHash: true,
           tokenVersion: true,
+          trustVersion: true,
           resetCodeHash: true,
           resetCodeExpires: true,
           resetAttempts: true,

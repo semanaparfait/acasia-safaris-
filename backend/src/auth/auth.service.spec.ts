@@ -18,6 +18,7 @@ const row = (changes = {}) => ({
   isAdmin: true,
   status: 'Active',
   tokenVersion: 3,
+  trustVersion: 1,
   ...changes,
 });
 
@@ -140,6 +141,9 @@ describe('AuthService', () => {
   it('gives this device a new token after a password change', async () => {
     const { service, worker, jwt } = setup();
     worker.findUniqueOrThrow.mockResolvedValue({
+      name: 'Jean',
+      email: 'jean@acaciasafaris.com',
+      personalEmail: 'jean@gmail.com',
       passwordHash: await hash('secret123', 4),
     });
     worker.update.mockResolvedValue(row({ tokenVersion: 4 }));
@@ -154,6 +158,28 @@ describe('AuthService', () => {
     );
     expect(result.token).toBe('new-token');
     expect(result.worker).not.toHaveProperty('tokenVersion');
+    const [{ data }] = worker.update.mock.calls[0] as [
+      { data: Record<string, unknown> },
+    ];
+    expect(data.trustVersion).toEqual({ increment: 1 });
+  });
+
+  it('refuses a new password with a name of the worker in it', async () => {
+    const { service, worker } = setup();
+    worker.findUniqueOrThrow.mockResolvedValue({
+      name: 'Jean Mugisha',
+      email: 'jean@acaciasafaris.com',
+      personalEmail: 'jean@gmail.com',
+      passwordHash: await hash('secret123', 4),
+    });
+
+    await expect(
+      service.changePassword('w1', {
+        currentPassword: 'secret123',
+        newPassword: 'Mugisha2026!',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(worker.update).not.toHaveBeenCalled();
   });
 
   describe('forgot password', () => {
@@ -255,6 +281,7 @@ describe('AuthService', () => {
           resetAttempts: 2,
         }),
       );
+      worker.findUniqueOrThrow.mockResolvedValue(admin());
       worker.update.mockResolvedValue(row({ tokenVersion: 4 }));
 
       const result = await service.resetPassword(
@@ -267,6 +294,7 @@ describe('AuthService', () => {
       ];
       expect(data.resetCodeHash).toBeNull();
       expect(data.tokenVersion).toEqual({ increment: 1 });
+      expect(data.trustVersion).toEqual({ increment: 1 });
       expect(jwt.signAsync).toHaveBeenCalledWith(
         { sub: 'w1', v: 4, purpose: 'session' },
         undefined,
@@ -303,7 +331,7 @@ describe('AuthService', () => {
     it('skips the code on a trusted device of the same worker', async () => {
       const { service, worker, mail, jwt } = setup();
       worker.findUnique.mockResolvedValue(await admin());
-      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 3, purpose: 'device' });
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 1, purpose: 'device' });
 
       const result = await service.login(
         'jean@acaciasafaris.com',
@@ -316,11 +344,26 @@ describe('AuthService', () => {
       expect(mail.sendLoginCode).not.toHaveBeenCalled();
     });
 
+    it('still trusts the device after logging out', async () => {
+      const { service, worker, mail, jwt } = setup();
+      // Logging out raised tokenVersion (3 -> 7), the trust version did not change
+      worker.findUnique.mockResolvedValue(await admin({ tokenVersion: 7 }));
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 1, purpose: 'device' });
+
+      const result = await service.login(
+        'jean@acaciasafaris.com',
+        'secret123',
+        { deviceToken: 'device-token' },
+      );
+      expect(result).toHaveProperty('token', 'new-token');
+      expect(mail.sendLoginCode).not.toHaveBeenCalled();
+    });
+
     it('does not trust a device from before a password change', async () => {
       const { service, worker, mail, jwt } = setup();
       worker.findUnique.mockResolvedValue(await admin());
       worker.findUniqueOrThrow.mockResolvedValue(await admin());
-      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 2, purpose: 'device' });
+      jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 0, purpose: 'device' });
 
       const result = await service.login(
         'jean@acaciasafaris.com',
@@ -348,6 +391,10 @@ describe('AuthService', () => {
       const result = await service.verifyLogin('challenge', '123456', true);
       expect(result.token).toBe('new-token');
       expect(result.deviceToken).toBe('new-token');
+      expect(jwt.signAsync).toHaveBeenCalledWith(
+        { sub: 'w1', v: 1, purpose: 'device' },
+        { expiresIn: '7d' },
+      );
       expect(result.worker).not.toHaveProperty('loginCodeHash');
       expect(result.worker).not.toHaveProperty('passwordHash');
     });

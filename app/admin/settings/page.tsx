@@ -59,7 +59,7 @@ export default function SettingsPage() {
                 <p className="flex items-start gap-2 rounded-xl bg-[#f7f5f0] px-4 py-3 text-xs text-[#0a120b]/60">
                   <MailCheck className="size-4 shrink-0 text-[#2E7D5B]" />
                   Two-step login is always on: after your password, a 6 digit code is emailed to your personal email (except on
-                  devices you chose to trust for 30 days).
+                  devices you chose to trust for 7 days).
                 </p>
               </div>
             </Card>

@@ -12,6 +12,7 @@ import { compare, hash } from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { AuditService } from '../audit/audit.service';
 import { passwordProblem } from '../common/password';
+import { DEVICE_DAYS, REPLY_DEVICE_DAYS } from './session';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -22,7 +23,7 @@ import { ChangePasswordDto, UpdateAccountDto } from './dto/account.dto';
 // purpose keeps each kind of token for its own job:
 //   session (or none, older tokens): the admin login
 //   login:  between the password and the 6 digit code (10 minutes)
-//   device: "trust this device" (30 days, no code needed)
+//   device: "trust this device" (7 days, no code needed; logging out keeps it)
 //   live:   opening the live connection (2 minutes)
 //   reply:  a quick-reply link in an alert about one booking (b = booking id, 48 hours)
 //   replyDevice: this browser typed the worker's quick-reply PIN (30 days)
@@ -64,7 +65,7 @@ const LOCK_MINUTES = 15;
 
 // Quick reply (answering a customer from an alert, without logging in)
 const REPLY_LINK_HOURS = 48;
-const REPLY_DEVICE_DAYS = 30;
+
 const MAX_PIN_TRIES = 5; // wrong PINs in a row before a 15 minute lock
 
 // A worker that may use a quick-reply link: still an active admin
@@ -84,7 +85,7 @@ export class AuthService {
 
   // Login, step 1: email + password. Only active workers with admin access may log in.
   // Then a 6 digit code goes to their personal email (step 2, verifyLogin),
-  // unless this browser was trusted in the last 30 days.
+  // unless this browser was trusted in the last 7 days.
   // Returns { token, worker } when logged in, or { twoStep, challenge, sentTo }.
   async login(email: string, password: string, visitor: Visitor = {}) {
     const typed = email.toLowerCase().trim();
@@ -94,6 +95,7 @@ export class AuthService {
       omit: {
         passwordHash: false,
         tokenVersion: false,
+        trustVersion: false,
         failedLogins: false,
         lockedUntil: false,
       },
@@ -128,6 +130,7 @@ export class AuthService {
     const {
       passwordHash,
       tokenVersion,
+      trustVersion,
       failedLogins,
       lockedUntil,
       ...safeWorker
@@ -148,10 +151,11 @@ export class AuthService {
       );
     }
 
-    // A trusted browser skips the code
+    // A trusted browser skips the code. The trust has its own version, so logging out
+    // keeps it; only a new password (or the 7 days passing) ends it.
     if (visitor.deviceToken) {
       const trusted = await this.readToken(visitor.deviceToken, 'device');
-      if (trusted?.sub === worker.id && (trusted.v ?? 0) === tokenVersion) {
+      if (trusted?.sub === worker.id && (trusted.v ?? 0) === trustVersion) {
         void this.audit.record({
           worker,
           action: 'Logged in (trusted device)',
@@ -223,7 +227,7 @@ export class AuthService {
     });
   }
 
-  // Login, step 2: the 6 digit code. "remember" trusts this browser for 30 days.
+  // Login, step 2: the 6 digit code. "remember" trusts this browser for 7 days.
   async verifyLogin(
     challenge: string,
     code: string,
@@ -240,6 +244,7 @@ export class AuthService {
       where: { id: payload.sub },
       omit: {
         tokenVersion: false,
+        trustVersion: false,
         loginCodeHash: false,
         loginCodeExpires: false,
         loginAttempts: false,
@@ -298,7 +303,12 @@ export class AuthService {
       token: await this.makeToken(worker.id, tokenVersion),
       worker: safeWorker,
       deviceToken: remember
-        ? await this.makeToken(worker.id, tokenVersion, 'device', '30d')
+        ? await this.makeToken(
+            worker.id,
+            worker.trustVersion,
+            'device',
+            `${DEVICE_DAYS}d`,
+          )
         : undefined,
     };
   }
@@ -424,6 +434,7 @@ export class AuthService {
       data: {
         passwordHash: await hash(dto.newPassword, 10),
         tokenVersion: { increment: 1 },
+        trustVersion: { increment: 1 }, // trusted devices need the code again
       },
       omit: { tokenVersion: false },
     });
@@ -506,6 +517,7 @@ export class AuthService {
       data: {
         passwordHash: await hash(newPassword, 10),
         tokenVersion: { increment: 1 },
+        trustVersion: { increment: 1 }, // trusted devices need the code again
         resetCodeHash: null,
         resetCodeExpires: null,
         resetAttempts: 0,
