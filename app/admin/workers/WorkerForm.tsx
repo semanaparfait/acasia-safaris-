@@ -5,7 +5,7 @@
 //   /admin/workers/5/edit     -> edit worker 5
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, UserRound, Contact, Briefcase, StickyNote, Globe } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, ShieldCheck, UserRound, Contact, Briefcase, StickyNote, Globe } from "lucide-react";
 import type { Worker, WorkerStatus } from "@/lib/types";
 import { SOCIAL_NETWORKS } from "@/lib/socials";
 import { PhoneField } from "@/components/ui/phone-field";
@@ -33,6 +33,7 @@ export default function WorkerForm({
   const role = roles.length > 0 && !roles.some((r) => r.name === form.role) ? roles[0].name : form.role;
   const roleDescription = roles.find((r) => r.name === role)?.description;
   const [password, setPassword] = useState(""); // empty = keep the current password
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const set = <K extends keyof Worker>(key: K, value: Worker[K]) => setForm((f) => ({ ...f, [key]: value }));
@@ -207,14 +208,25 @@ export default function WorkerForm({
               {form.isAdmin && canManageAdmins && (
                 <div>
                   <label className={labelClass}>{initial.hasPassword ? "New password" : "Password *"}</label>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    className={inputClass}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={initial.hasPassword ? "Leave empty to keep it" : "At least 8 characters"}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className={`${inputClass} pr-10`}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={initial.hasPassword ? "Leave empty to keep it" : "At least 8 characters"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0a120b]/40 hover:text-[#0a120b]/70"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
                   {password !== "" && password.length < 8 && <p className="text-xs text-red-600 mt-1">At least 8 characters</p>}
                 </div>
               )}
