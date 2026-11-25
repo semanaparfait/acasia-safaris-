@@ -96,7 +96,7 @@ model Destination {
 model Worker {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String
-  // Company email: made from the first name, e.g. "jean@acaciasafaris.com". Used to log in.
+  // Company email: made from the first name, e.g. "jean@acaciasafarisrwanda.com". Used to log in.
   email         String   @unique
   // The worker's own email (e.g. Gmail). The forgot-password code is sent here.
   personalEmail String?

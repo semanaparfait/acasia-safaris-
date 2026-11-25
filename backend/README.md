@@ -25,7 +25,7 @@ with their company email and password.
 
 Every worker has two emails:
 - **Company email** (the login): made by the server from the first name, e.g. "Jean Bosco Habimana"
-  → `jean@acaciasafaris.com` (a second Jean gets `jean2@`). It changes when the first name changes.
+  → `jean@acaciasafarisrwanda.com` (a second Jean gets `jean2@`). It changes when the first name changes.
 - **Personal email**: their own address. "Forgot password?" on the login page emails a 6 digit
   code there (needs the SMTP settings from "Quotation emails"). The code works for 15 minutes and
   5 tries; then they choose a new password and every other device is logged out.

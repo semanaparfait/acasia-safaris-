@@ -37,7 +37,7 @@ function useNavLinks() {
 
 const PHONE = "+250 798 635 578";
 const WHATSAPP = COMPANY.whatsapp;
-const EMAIL = "info@acaciasafaris.com";
+const EMAIL = "info@acaciasafarisrwanda.com";
 
 export default function Navbar() {
   const t = useTranslations("Nav");

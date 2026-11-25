@@ -53,7 +53,7 @@ export function tripCalendar(trip: CalendarTrip) {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:booking-${trip.id}@acaciasafaris.com`,
+    `UID:booking-${trip.id}@acaciasafarisrwanda.com`,
     `DTSTAMP:${new Date()
       .toISOString()
       .replace(/[-:]/g, '')

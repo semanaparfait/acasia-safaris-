@@ -28,8 +28,8 @@ const contactCards = [
   {
     icon: Mail,
     key: "email",
-    value: "info@acaciasafaris.com",
-    href: "mailto:info@acaciasafaris.com",
+    value: "info@acaciasafarisrwanda.com",
+    href: "mailto:info@acaciasafarisrwanda.com",
   },
   {
     icon: MessageCircle,
@@ -181,7 +181,7 @@ export default function Contact() {
               <ul className="space-y-5">
                 {[
                   { icon: Phone, text: "+250 798 635 578" },
-                  { icon: Mail, text: "info@acaciasafaris.com" },
+                  { icon: Mail, text: "info@acaciasafarisrwanda.com" },
                   { icon: MapPin, text: t("location") },
                 ].map((item) => (
                   <li

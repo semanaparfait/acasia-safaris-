@@ -160,7 +160,7 @@ describe('AuthService', () => {
     const { service, worker, jwt } = setup();
     worker.findUniqueOrThrow.mockResolvedValue({
       name: 'Jean',
-      email: 'jean@acaciasafaris.com',
+      email: 'jean@acaciasafarisrwanda.com',
       personalEmail: 'jean@gmail.com',
       passwordHash: await hash('secret123', 4),
     });
@@ -186,7 +186,7 @@ describe('AuthService', () => {
     const { service, worker } = setup();
     worker.findUniqueOrThrow.mockResolvedValue({
       name: 'Jean Mugisha',
-      email: 'jean@acaciasafaris.com',
+      email: 'jean@acaciasafarisrwanda.com',
       personalEmail: 'jean@gmail.com',
       passwordHash: await hash('secret123', 4),
     });
@@ -208,10 +208,10 @@ describe('AuthService', () => {
       const { service, worker, mail } = setup();
       worker.findUnique.mockResolvedValue(admin({ resetCodeExpires: null }));
 
-      await service.forgotPassword('Jean@AcaciaSafaris.com');
+      await service.forgotPassword('Jean@AcaciaSafarisRwanda.com');
       expect(worker.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { email: 'jean@acaciasafaris.com' },
+          where: { email: 'jean@acaciasafarisrwanda.com' },
         }),
       );
       const [{ to, code }] = mail.sendResetCode.mock.calls[0] as [
@@ -226,7 +226,7 @@ describe('AuthService', () => {
       worker.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.forgotPassword('nobody@acaciasafaris.com'),
+        service.forgotPassword('nobody@acaciasafarisrwanda.com'),
       ).rejects.toThrow('No account uses this company email');
       expect(mail.sendResetCode).not.toHaveBeenCalled();
     });
@@ -240,7 +240,7 @@ describe('AuthService', () => {
         }),
       );
 
-      const result = await service.forgotPassword('semana@acaciasafaris.com');
+      const result = await service.forgotPassword('semana@acaciasafarisrwanda.com');
       expect(result.sentTo).toBe('sh********it@gmail.com');
     });
 
@@ -255,7 +255,7 @@ describe('AuthService', () => {
         admin({ resetCodeExpires: new Date(Date.now() + 15 * 60_000 - 5000) }),
       );
 
-      await service.forgotPassword('jean@acaciasafaris.com');
+      await service.forgotPassword('jean@acaciasafarisrwanda.com');
       expect(mail.sendResetCode).not.toHaveBeenCalled();
     });
 
@@ -271,7 +271,7 @@ describe('AuthService', () => {
       worker.update.mockResolvedValue({ resetAttempts: 1 });
 
       await expect(
-        service.verifyResetCode('jean@acaciasafaris.com', '000000'),
+        service.verifyResetCode('jean@acaciasafarisrwanda.com', '000000'),
       ).rejects.toThrow('Wrong code. 4 tries left.');
     });
 
@@ -286,7 +286,7 @@ describe('AuthService', () => {
       );
 
       await expect(
-        service.verifyResetCode('jean@acaciasafaris.com', '123456'),
+        service.verifyResetCode('jean@acaciasafarisrwanda.com', '123456'),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -303,7 +303,7 @@ describe('AuthService', () => {
       worker.update.mockResolvedValue(row({ tokenVersion: 4 }));
 
       const result = await service.resetPassword(
-        'jean@acaciasafaris.com',
+        'jean@acaciasafarisrwanda.com',
         '123456',
         'brandnew123',
       );
@@ -336,7 +336,7 @@ describe('AuthService', () => {
       worker.findUnique.mockResolvedValue(await admin());
       worker.findUniqueOrThrow.mockResolvedValue(await admin());
 
-      const result = await service.login('jean@acaciasafaris.com', 'secret123');
+      const result = await service.login('jean@acaciasafarisrwanda.com', 'secret123');
       expect(result).toMatchObject({ twoStep: true, sentTo: 'j***@gmail.com' });
       expect(result).not.toHaveProperty('token');
       expect(mail.sendLoginCode).toHaveBeenCalled();
@@ -352,7 +352,7 @@ describe('AuthService', () => {
       jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 1, purpose: 'device' });
 
       const result = await service.login(
-        'jean@acaciasafaris.com',
+        'jean@acaciasafarisrwanda.com',
         'secret123',
         {
           deviceToken: 'device-token',
@@ -369,7 +369,7 @@ describe('AuthService', () => {
       jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 1, purpose: 'device' });
 
       const result = await service.login(
-        'jean@acaciasafaris.com',
+        'jean@acaciasafarisrwanda.com',
         'secret123',
         { deviceToken: 'device-token' },
       );
@@ -384,7 +384,7 @@ describe('AuthService', () => {
       jwt.verifyAsync.mockResolvedValue({ sub: 'w1', v: 0, purpose: 'device' });
 
       const result = await service.login(
-        'jean@acaciasafaris.com',
+        'jean@acaciasafarisrwanda.com',
         'secret123',
         {
           deviceToken: 'old-device-token',

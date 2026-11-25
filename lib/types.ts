@@ -79,7 +79,7 @@ export type Socials = Partial<Record<SocialNetwork, string>>; // full links, onl
 export type Worker = {
   id: string;
   name: string;
-  email: string; // company email, made from the first name (e.g. jean@acaciasafaris.com). Used to log in
+  email: string; // company email, made from the first name (e.g. jean@acaciasafarisrwanda.com). Used to log in
   personalEmail?: string | null; // the worker's own email: the forgot-password code is sent here
   phone: string;
   role: string; // name of a Role

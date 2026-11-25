@@ -3,7 +3,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LEGAL_UPDATED, type LegalBlock, type LegalDoc } from "./legalContent";
 
-const EMAIL = "info@acaciasafaris.com";
+import { COMPANY } from "@/lib/company";
+
+const EMAIL = COMPANY.email;
 
 // "Informations collectées" -> "informations-collectees" (for the links of the table of contents)
 const slug = (text: string) =>

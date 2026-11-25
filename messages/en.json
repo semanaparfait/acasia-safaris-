@@ -47,7 +47,9 @@
     "weAccept": "We accept",
     "securePayments": "Secure payments · Deposit confirms your booking",
     "bankTransfer": "Bank transfer",
-    "cash": "Cash"
+    "cash": "Cash",
+    "licence": "RDB tourism licence No. {number}",
+    "companyCode": "Company code {number}"
   },
   "WhatsApp": {
     "message": "Hello Acacia Safaris! I'd like to plan a trip to Rwanda.",
@@ -1283,5 +1285,37 @@
     "stillText": "Our team in Kigali answers every message, in English, French or Swahili.",
     "whatsappMessage": "Hello Acacia Safaris, I have a question about my trip:",
     "contact": "Contact us"
+  },
+  "Seo": {
+    "about": {
+      "title": "About Acacia Safaris | Local Safari Experts in Rwanda",
+      "description": "Meet the team behind Acacia Safaris, a licensed Rwandan tour operator crafting gorilla treks, wildlife safaris and cultural journeys across East Africa."
+    },
+    "contact": {
+      "title": "Contact Acacia Safaris | Plan Your Rwanda Safari",
+      "description": "Talk to our Kigali team by WhatsApp, phone or email. We reply within 24 hours to help you plan gorilla trekking, safaris and tailor-made trips."
+    },
+    "destinations": {
+      "title": "Rwanda Safari Destinations | Volcanoes, Akagera, Nyungwe",
+      "description": "Explore Rwanda's best places: mountain gorillas in Volcanoes National Park, the Big Five in Akagera, chimpanzees in Nyungwe and the shores of Lake Kivu."
+    },
+    "gallery": {
+      "title": "Safari Photo Gallery | Acacia Safaris Rwanda",
+      "description": "Photo albums from our trips: mountain gorillas, Akagera wildlife, Lake Kivu sunsets and the people and culture of Rwanda."
+    },
+    "tours": {
+      "title": "Rwanda Safari Packages & Gorilla Trekking Tours",
+      "description": "Compare our Rwanda and East Africa safari packages with clear prices: gorilla trekking, wildlife safaris, luxury escapes and beach extensions."
+    },
+    "booking": {
+      "title": "Book Your Rwanda Safari | Tailor-Made Trip Request",
+      "description": "Tell us your dates, destinations and travel style, and our team prepares your tailor-made Rwanda safari with a clear price."
+    },
+    "privacy": {
+      "description": "How Acacia Safaris collects, uses and protects your personal information, who we share it with and your rights."
+    },
+    "terms": {
+      "description": "Booking, payment, cancellation and travel conditions for safaris and tours with Acacia Safaris in Rwanda."
+    }
   }
 }

@@ -5,9 +5,9 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
-// Title and description in the page's language, with links to the other languages
-// (search engines show each visitor the right one)
+// Default title, description and link preview in the page's language
 export async function generateMetadata({
   params,
 }: {
@@ -16,12 +16,11 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Meta" });
   return {
+    // Defaults: each page sets its own title, description and language links (lib/seo.ts)
     title: t("title"),
     description: t("description"),
-    alternates: {
-      languages: { en: "/", fr: "/fr", sw: "/sw", "x-default": "/" },
-    },
-    openGraph: { title: t("title"), description: t("description"), locale, siteName: "Acacia Safaris" },
+    openGraph: { title: t("title"), description: t("description"), siteName: "Acacia Safaris", images: [DEFAULT_OG_IMAGE] },
+    twitter: { card: "summary_large_image" },
   };
 }
 

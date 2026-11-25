@@ -47,7 +47,9 @@
     "weAccept": "Paiements acceptés",
     "securePayments": "Paiements sécurisés · L'acompte confirme votre réservation",
     "bankTransfer": "Virement bancaire",
-    "cash": "Espèces"
+    "cash": "Espèces",
+    "licence": "Licence touristique RDB n° {number}",
+    "companyCode": "Code entreprise {number}"
   },
   "WhatsApp": {
     "message": "Bonjour Acacia Safaris ! Je souhaite organiser un voyage au Rwanda.",
@@ -1283,5 +1285,37 @@
     "stillText": "Notre équipe à Kigali répond à chaque message, en français, en anglais ou en swahili.",
     "whatsappMessage": "Bonjour Acacia Safaris, j'ai une question sur mon voyage :",
     "contact": "Nous contacter"
+  },
+  "Seo": {
+    "about": {
+      "title": "À propos d'Acacia Safaris | Experts locaux au Rwanda",
+      "description": "Découvrez l'équipe d'Acacia Safaris, tour-opérateur rwandais agréé qui crée des treks gorilles, des safaris et des voyages culturels en Afrique de l'Est."
+    },
+    "contact": {
+      "title": "Contacter Acacia Safaris | Préparez votre safari",
+      "description": "Parlez à notre équipe de Kigali par WhatsApp, téléphone ou e-mail. Réponse sous 24 heures pour préparer trek gorilles, safaris et voyages sur mesure."
+    },
+    "destinations": {
+      "title": "Destinations au Rwanda | Volcans, Akagera, Nyungwe",
+      "description": "Les plus beaux lieux du Rwanda : gorilles du parc des Volcans, Big Five d'Akagera, chimpanzés de Nyungwe et rives du lac Kivu."
+    },
+    "gallery": {
+      "title": "Galerie photo de safari | Acacia Safaris Rwanda",
+      "description": "Albums photo de nos voyages : gorilles des montagnes, faune d'Akagera, couchers de soleil sur le lac Kivu, et la culture du Rwanda."
+    },
+    "tours": {
+      "title": "Circuits safari au Rwanda et trek des gorilles",
+      "description": "Comparez nos circuits au Rwanda et en Afrique de l'Est, prix clairs : trek des gorilles, safaris, séjours de luxe et extensions plage."
+    },
+    "booking": {
+      "title": "Réservez votre safari au Rwanda | Voyage sur mesure",
+      "description": "Indiquez vos dates, destinations et style de voyage : notre équipe prépare votre safari sur mesure au Rwanda avec un prix clair."
+    },
+    "privacy": {
+      "description": "Comment Acacia Safaris collecte, utilise et protège vos informations personnelles, avec qui elles sont partagées et quels sont vos droits."
+    },
+    "terms": {
+      "description": "Conditions de réservation, de paiement, d'annulation et de voyage pour les safaris et circuits avec Acacia Safaris au Rwanda."
+    }
   }
 }

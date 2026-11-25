@@ -23,7 +23,7 @@ type Actor = Omit<Worker, 'passwordHash' | 'tokenVersion'>;
 // The form sends "2026-10-31", but the database needs a full date
 const toDate = (date?: string) => (date ? new Date(date) : undefined);
 
-export const COMPANY_DOMAIN = 'acaciasafaris.com';
+export const COMPANY_DOMAIN = 'acaciasafarisrwanda.com';
 
 // "Jean Bosco Habimana" -> "jean", "Éric" -> "eric"
 export const firstNameOf = (name: string) =>
@@ -251,7 +251,7 @@ export class WorkersService {
     return { deleted: true };
   }
 
-  // first name + @acaciasafaris.com. Two workers cannot share an email (it is @unique),
+  // first name + @acaciasafarisrwanda.com. Two workers cannot share an email (it is @unique),
   // so a second "Jean" gets jean2@, then jean3@ ...
   private async companyEmail(name: string, exceptId?: string) {
     const first = firstNameOf(name);

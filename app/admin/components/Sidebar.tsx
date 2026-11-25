@@ -169,7 +169,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           >
             <div>
               <p className="font-medium">View website</p>
-              <p className="text-xs text-white/50">acaciasafaris.com</p>
+              <p className="text-xs text-white/50">acaciasafarisrwanda.com</p>
             </div>
             <ExternalLink className="size-4 text-[#c5a86d]" />
           </Link>

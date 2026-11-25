@@ -1,7 +1,7 @@
 import { passwordProblem } from './password';
 
 describe('passwordProblem', () => {
-  const emails = ['jean.mugisha90@gmail.com', 'jean@acaciasafaris.com'];
+  const emails = ['jean.mugisha90@gmail.com', 'jean@acaciasafarisrwanda.com'];
 
   it('refuses a password with a name in it', () => {
     expect(passwordProblem('Mugisha2026!', 'Jean Mugisha', emails)).toContain(

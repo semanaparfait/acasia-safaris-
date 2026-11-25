@@ -5,7 +5,18 @@ export const COMPANY = {
   phone: "+250 798 635 578",
   phoneLink: "tel:+250798635578",
   whatsapp: "250798635578", // country code + number, digits only
-  email: "info@acaciasafaris.com",
+  email: "info@acaciasafarisrwanda.com",
+} as const;
+
+// ✍️ The company's legal details. Used by the Terms of Service, the Privacy Policy, the footer and
+// the company information Google reads. Type the numbers between the quotes, exactly as on your
+// certificates. While one is empty, the pages simply leave it out.
+export const COMPANY_LEGAL = {
+  name: "Acacia Safaris Ltd",
+  rdbLicence: "", // ✍️ Tourism licence number from RDB (Rwanda Development Board)
+  registrationNumber: "", // ✍️ Company code / TIN from your RDB registration certificate
+  address: "Kigali, Rwanda", // ✍️ Full address, e.g. "KG 7 Ave, Kacyiru, Kigali, Rwanda"
+  website: "https://acaciasafarisrwanda.com",
 } as const;
 
 // Paste the full profile links, e.g. "https://instagram.com/acaciasafaris". Empty = hidden.

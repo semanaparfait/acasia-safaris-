@@ -15,7 +15,7 @@ import { Link } from "@/i18n/navigation";
 import SocialLinks from "@/components/SocialLinks";
 import PaymentMethods from "@/components/PaymentMethods";
 import { useMessagesStore } from "@/store/messagesStore";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_LEGAL } from "@/lib/company";
 
 
 // name = the text's key in messages/*.json ("Nav.home", "Footer.bookSafari"…)
@@ -175,11 +175,11 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="mailto:info@acaciasafaris.com"
+                  href="mailto:info@acaciasafarisrwanda.com"
                   className="flex items-center gap-3 hover:text-white transition-colors"
                 >
                   <Mail size={16} className="text-[#c5a86d] shrink-0" />
-                  info@acaciasafaris.com
+                  info@acaciasafarisrwanda.com
                 </a>
               </li>
               <li>
@@ -260,9 +260,22 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col-reverse md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
-            <p className="text-zinc-500 text-xs tracking-widest uppercase text-center md:text-left">
-              {t("Footer.rights", { year: currentYear })}
-            </p>
+            <div className="text-center md:text-left">
+              <p className="text-zinc-500 text-xs tracking-widest uppercase">
+                {t("Footer.rights", { year: currentYear })}
+              </p>
+              {/* The licence and company numbers, once filled in lib/company.ts */}
+              {(COMPANY_LEGAL.rdbLicence || COMPANY_LEGAL.registrationNumber) && (
+                <p className="mt-1 text-[11px] text-zinc-600">
+                  {[
+                    COMPANY_LEGAL.rdbLicence && t("Footer.licence", { number: COMPANY_LEGAL.rdbLicence }),
+                    COMPANY_LEGAL.registrationNumber && t("Footer.companyCode", { number: COMPANY_LEGAL.registrationNumber }),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-5 text-xs text-zinc-400">
               <Link
                 href="/privacy"

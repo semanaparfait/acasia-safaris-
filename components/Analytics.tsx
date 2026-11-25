@@ -2,7 +2,7 @@
 // Set in .env.local (or the hosting settings):
 //   NEXT_PUBLIC_UMAMI_WEBSITE_ID=<the id Umami gives you>
 //   NEXT_PUBLIC_UMAMI_SRC=https://cloud.umami.is/script.js   (or your own Umami server)
-//   NEXT_PUBLIC_UMAMI_DOMAINS=acaciasafaris.com              (optional: count only the live site)
+//   NEXT_PUBLIC_UMAMI_DOMAINS=acaciasafarisrwanda.com              (optional: count only the live site)
 // Without the id nothing is loaded.
 import Script from "next/script";
 

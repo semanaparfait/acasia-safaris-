@@ -953,7 +953,7 @@ function ReserveModal({
     name: "",
     email: "",
     phone: "",
-    travelers: Math.min(2, maxTravelers),
+    travelers: 1,
     message: "",
   });
   const [sending, setSending] = useState(false);
@@ -1268,7 +1268,7 @@ function WaitlistModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
     name: "",
     email: "",
     phone: "",
-    travelers: 2,
+    travelers: 1,
   });
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);

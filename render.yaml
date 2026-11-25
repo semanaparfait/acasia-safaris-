@@ -29,7 +29,7 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      # The website's address(es), first one used in email links, e.g. https://acaciasafaris.com
+      # The website's address(es), first one used in email links, e.g. https://acaciasafarisrwanda.com
       - key: FRONTEND_URL
         sync: false
       # This API's own address, e.g. https://acacia-api.onrender.com

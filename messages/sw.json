@@ -47,7 +47,9 @@
     "weAccept": "Tunapokea",
     "securePayments": "Malipo salama · Amana inathibitisha uhifadhi wako",
     "bankTransfer": "Uhamisho wa benki",
-    "cash": "Pesa taslimu"
+    "cash": "Pesa taslimu",
+    "licence": "Leseni ya utalii ya RDB Na. {number}",
+    "companyCode": "Namba ya kampuni {number}"
   },
   "WhatsApp": {
     "message": "Habari Acacia Safaris! Ningependa kupanga safari ya kwenda Rwanda.",
@@ -1283,5 +1285,37 @@
     "stillText": "Timu yetu Kigali hujibu kila ujumbe, kwa Kiswahili, Kiingereza au Kifaransa.",
     "whatsappMessage": "Habari Acacia Safaris, nina swali kuhusu safari yangu:",
     "contact": "Wasiliana nasi"
+  },
+  "Seo": {
+    "about": {
+      "title": "Kuhusu Acacia Safaris | Wataalamu wa Safari Rwanda",
+      "description": "Kutana na timu ya Acacia Safaris, mwendeshaji wa ziara mwenye leseni nchini Rwanda anayeandaa safari za sokwe, wanyamapori na utamaduni Afrika Mashariki."
+    },
+    "contact": {
+      "title": "Wasiliana na Acacia Safaris | Panga Safari Yako",
+      "description": "Zungumza na timu yetu ya Kigali kwa WhatsApp, simu au barua pepe. Tunajibu ndani ya saa 24 kukusaidia kupanga safari ya sokwe na safari maalum."
+    },
+    "destinations": {
+      "title": "Vivutio vya Safari Rwanda | Volcanoes, Akagera, Nyungwe",
+      "description": "Gundua maeneo bora ya Rwanda: sokwe wa milimani katika Hifadhi ya Volcanoes, Big Five wa Akagera, sokwe-mtu wa Nyungwe na fukwe za Ziwa Kivu."
+    },
+    "gallery": {
+      "title": "Picha za Safari | Acacia Safaris Rwanda",
+      "description": "Albamu za picha za safari zetu: sokwe wa milimani, wanyamapori wa Akagera, machweo ya Ziwa Kivu na utamaduni wa Rwanda."
+    },
+    "tours": {
+      "title": "Vifurushi vya Safari Rwanda na Ziara za Sokwe",
+      "description": "Linganisha vifurushi vyetu vya safari Rwanda na Afrika Mashariki kwa bei wazi: sokwe, wanyamapori, safari za kifahari na fukwe."
+    },
+    "booking": {
+      "title": "Hifadhi Safari Yako Rwanda | Safari Maalum",
+      "description": "Tuambie tarehe, vivutio na mtindo wako wa safari, na timu yetu itaandaa safari yako maalum ya Rwanda kwa bei iliyo wazi."
+    },
+    "privacy": {
+      "description": "Jinsi Acacia Safaris inavyokusanya, kutumia na kulinda taarifa zako binafsi, tunazishiriki na nani, na haki zako."
+    },
+    "terms": {
+      "description": "Masharti ya kuhifadhi, malipo, kughairi na safari kwa safari na ziara na Acacia Safaris nchini Rwanda."
+    }
   }
 }

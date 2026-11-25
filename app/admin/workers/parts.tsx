@@ -13,8 +13,8 @@ import { Avatar, Badge, Button, inputClass } from "../components/ui";
 export const statuses: WorkerStatus[] = ["Active", "On leave", "Inactive"];
 
 // The company email the server makes from the first name (same rule as the backend).
-// "Jean Bosco Habimana" -> "jean@acaciasafaris.com". A second "Jean" gets jean2@ (set by the server).
-export const COMPANY_DOMAIN = "acaciasafaris.com";
+// "Jean Bosco Habimana" -> "jean@acaciasafarisrwanda.com". A second "Jean" gets jean2@ (set by the server).
+export const COMPANY_DOMAIN = "acaciasafarisrwanda.com";
 export function companyEmailFor(name: string) {
   const first = (name.trim().split(/\s+/)[0] ?? "")
     .normalize("NFD")

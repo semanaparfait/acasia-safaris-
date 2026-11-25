@@ -76,7 +76,7 @@ export default async function TripDetailPage({ params }: Props) {
       name: "Acacia Safaris Ltd",
       url: SITE_URL,
       telephone: COMPANY.phoneLink.replace("tel:", ""),
-      email: "info@acaciasafaris.com",
+      email: "info@acaciasafarisrwanda.com",
       address: { "@type": "PostalAddress", addressLocality: "Kigali", addressCountry: "RW" },
     },
   };

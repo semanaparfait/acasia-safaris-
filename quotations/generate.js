@@ -22,7 +22,7 @@ const SETTINGS = {
     { label: "Infant", ages: "0 to 3 years", share: 0 },
   ],
   phone: "+250 798 635 578",
-  email: "info@acaciasafaris.com",
+  email: "info@acaciasafarisrwanda.com",
   place: "Kigali, Rwanda",
 };
 

@@ -410,7 +410,7 @@ export function tripTicketHtml(e: TripTicketEmail) {
   <tr><td style="padding:30px 32px 26px">
     <div style="border-top:1px solid ${LINE};padding-top:18px;text-align:center">
       <p style="margin:0;font-family:${SERIF};font-size:14px;letter-spacing:3px;color:${GREEN}">ACACIA SAFARIS</p>
-      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578 &nbsp;·&nbsp; info@acaciasafaris.com<br>${h(T.questions)}</p>
+      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578 &nbsp;·&nbsp; info@acaciasafarisrwanda.com<br>${h(T.questions)}</p>
     </div>
   </td></tr>
 
@@ -667,7 +667,7 @@ function shortEmail(o: {
   <tr><td style="padding:30px 32px 26px">
     <div style="border-top:1px solid ${LINE};padding-top:18px;text-align:center">
       <p style="margin:0;font-family:${SERIF};font-size:14px;letter-spacing:3px;color:${GREEN}">ACACIA SAFARIS</p>
-      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578 &nbsp;·&nbsp; info@acaciasafaris.com<br>${h(M.questions)}</p>
+      <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#9aa39d">Kigali, Rwanda &nbsp;·&nbsp; +250 798 635 578 &nbsp;·&nbsp; info@acaciasafarisrwanda.com<br>${h(M.questions)}</p>
     </div>
   </td></tr>
 </table>

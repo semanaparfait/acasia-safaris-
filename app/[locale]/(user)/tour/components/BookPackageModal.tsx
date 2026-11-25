@@ -70,7 +70,7 @@ export default function BookPackageModal({
   const startDate = departure ? departure.startDate.slice(0, 10) : chosenDate;
   const maxTravelers = departure ? departure.seatsLeft : 50;
   // 2 adults to start (fewer when the group departure has fewer seats left)
-  const [counts, setCounts] = useState<number[]>(() => rates.map((_, i) => (i === 0 ? Math.max(1, Math.min(2, departure?.seatsLeft ?? 2)) : 0)));
+  const [counts, setCounts] = useState<number[]>(() => rates.map((_, i) => (i === 0 ? 1 : 0)));
   const [details, setDetails] = useState({ name: "", email: "", phone: "", country: "", notes: "" });
   const [bargain, setBargain] = useState(false);
   const [offer, setOffer] = useState("");

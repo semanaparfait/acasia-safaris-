@@ -119,7 +119,7 @@ export default function LoginPage() {
                     autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="firstname@acaciasafaris.com"
+                    placeholder="firstname@acaciasafarisrwanda.com"
                     className={`${inputClass} pl-9`}
                   />
                 </div>

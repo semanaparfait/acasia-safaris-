@@ -26,7 +26,7 @@ const SANS = 'Helvetica';
 const SANS_BOLD = 'Helvetica-Bold';
 
 const PHONE = '+250 798 635 578';
-const EMAIL = 'info@acaciasafaris.com';
+const EMAIL = 'info@acaciasafarisrwanda.com';
 const PLACE = 'Kigali, Rwanda';
 const PRICE_BASIS =
   'Per person, in US dollars, based on two people sharing a room.';

@@ -18,7 +18,7 @@ visitor ──https──> Vercel (website, /api is forwarded) ──https──
 2. Fill in the values it asks for (from `backend/.env`): `DATABASE_URL`, `DIRECT_URL`, the `AWS_…` storage
    values, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, the WhatsApp values, `GOOGLE_TRANSLATE_API_KEY`, `BACKUP_ENCRYPTION_KEY`
    (the same one as on your computer, see "Backups" in backend/README.md), and:
-   - `FRONTEND_URL` = the website address, e.g. `https://acaciasafaris.com`
+   - `FRONTEND_URL` = the website address, e.g. `https://acaciasafarisrwanda.com`
      (several: separate with commas, the first one is used in email links)
    - `PUBLIC_API_URL` = the API's own address, e.g. `https://acacia-api.onrender.com`
 3. Deploy. Each deploy applies new database changes first (`prisma migrate deploy`).
@@ -64,7 +64,7 @@ Logs: app > **Log stream**. After changing a setting the app restarts by itself.
 1. vercel.com > **Add New > Project** > import the repository (root folder: the repository root).
 2. Environment variables:
    - `NEXT_PUBLIC_API_URL` = `https://<api>/api` (the Render address)
-   - `NEXT_PUBLIC_SITE_URL` = `https://acaciasafaris.com` (the website's own address)
+   - `NEXT_PUBLIC_SITE_URL` = `https://acaciasafarisrwanda.com` (the website's own address)
 3. Deploy. Vercel serves images through its CDN worldwide.
 4. Add your domain in Vercel > Domains, then set `FRONTEND_URL` on Render to it.
 

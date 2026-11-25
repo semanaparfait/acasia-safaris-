@@ -55,7 +55,7 @@ describe('WorkersService', () => {
     const { service, worker } = setup();
     worker.findUnique.mockResolvedValueOnce({
       id: 'w1',
-      email: 'new@acaciasafaris.com',
+      email: 'new@acaciasafarisrwanda.com',
       isOwner: false,
       isAdmin: true,
       passwordHash: 'x',
@@ -79,7 +79,7 @@ describe('WorkersService', () => {
     const [{ data }] = worker.create.mock.calls[0] as [
       { data: { email: string; personalEmail: string } },
     ];
-    expect(data.email).toBe('eric@acaciasafaris.com');
+    expect(data.email).toBe('eric@acaciasafarisrwanda.com');
     expect(data.personalEmail).toBe('new@example.com');
   });
 
@@ -91,14 +91,14 @@ describe('WorkersService', () => {
     const [{ data }] = worker.create.mock.calls[0] as [
       { data: { email: string } },
     ];
-    expect(data.email).toBe('eric2@acaciasafaris.com');
+    expect(data.email).toBe('eric2@acaciasafarisrwanda.com');
   });
 
   it('keeps the company email when the first name stays the same', async () => {
     const { service, worker } = setup();
     worker.findUnique.mockResolvedValueOnce({
       id: 'w1',
-      email: 'new2@acaciasafaris.com',
+      email: 'new2@acaciasafarisrwanda.com',
       isOwner: false,
       isAdmin: true,
       passwordHash: 'x',
@@ -108,7 +108,7 @@ describe('WorkersService', () => {
     const [{ data }] = worker.update.mock.calls[0] as [
       { data: { email: string } },
     ];
-    expect(data.email).toBe('new2@acaciasafaris.com');
+    expect(data.email).toBe('new2@acaciasafarisrwanda.com');
   });
 
   it('needs a company role to show a worker on the website', async () => {
@@ -142,7 +142,7 @@ describe('WorkersService', () => {
   describe('admin access (permissions)', () => {
     const current = (permissions: string[]) => ({
       id: 'w1',
-      email: 'new@acaciasafaris.com',
+      email: 'new@acaciasafarisrwanda.com',
       isOwner: false,
       isAdmin: true,
       passwordHash: 'x',

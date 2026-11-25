@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
+import NumberInputGuard from "@/components/NumberInputGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,8 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        {/* Number fields: the mouse wheel scrolls the page, it never changes a value */}
+        <NumberInputGuard />
       </body>
     </html>
   );

@@ -278,7 +278,7 @@ export default function BookingPage({
     from: Date | undefined;
     to?: Date | undefined;
   }>({ from: undefined });
-  const [adults, setAdults] = useState(2);
+  const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [choices, setChoices] = useState<Record<string, TripChoice>>({});
   const [details, setDetails] = useState({
@@ -346,7 +346,7 @@ export default function BookingPage({
     setSelected([]);
     setOtherDestination("");
     setDates({ from: undefined });
-    setAdults(2);
+    setAdults(1);
     setChildren(0);
     setChoices({});
     setDetails({ name: "", email: "", phone: "", fromRwanda: "", country: "", notes: "" });

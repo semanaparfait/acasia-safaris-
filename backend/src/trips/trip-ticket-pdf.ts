@@ -503,7 +503,7 @@ export async function buildTripTicketPdf(t: TripTicketPdf): Promise<Buffer> {
     .fontSize(7.5)
     .fillColor('#ffffff', 0.72)
     .text(
-      'Kigali, Rwanda  ·  +250 798 635 578  ·  info@acaciasafaris.com  ·  acaciasafaris.com',
+      'Kigali, Rwanda  ·  +250 798 635 578  ·  info@acaciasafarisrwanda.com  ·  acaciasafarisrwanda.com',
       MARGIN,
       fy + 5 * MM,
     );
