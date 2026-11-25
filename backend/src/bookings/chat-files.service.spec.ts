@@ -57,6 +57,19 @@ describe('ChatFilesService', () => {
     );
   });
 
+  it('explains a missing storage bucket instead of a server error', async () => {
+    const { service, storage, bookings } = setup();
+    storage.putPrivate.mockRejectedValue(
+      Object.assign(new Error('The specified bucket does not exist'), {
+        name: 'NoSuchBucket',
+      }),
+    );
+    await expect(
+      service.customerFile('tok', file('photo.jpg', JPEG), {}),
+    ).rejects.toThrow('the private storage bucket "chat" does not exist');
+    expect(bookings.customerMessage).not.toHaveBeenCalled();
+  });
+
   it('refuses a file pretending to be a photo', async () => {
     const { service, storage } = setup();
     await expect(

@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
@@ -231,12 +232,25 @@ export class ChatFilesService {
       );
     }
     const key = `${randomUUID()}${extension === '.jpeg' ? '.jpg' : extension}`;
-    await this.storage.putPrivate(
-      this.bucket,
-      `bookings/${bookingId}/${key}`,
-      file.buffer,
-      kind.type,
-    );
+    try {
+      await this.storage.putPrivate(
+        this.bucket,
+        `bookings/${bookingId}/${key}`,
+        file.buffer,
+        kind.type,
+      );
+    } catch (error) {
+      // The private bucket does not exist (Neon Console > Storage), or storage is down
+      const missing = (error as { name?: string }).name === 'NoSuchBucket';
+      this.logger.error(
+        `Chat file not saved in bucket "${this.bucket}": ${error instanceof Error ? error.message : error}`,
+      );
+      throw new ServiceUnavailableException(
+        missing
+          ? `Files cannot be sent yet: the private storage bucket "${this.bucket}" does not exist. Create it in Neon Console > Storage.`
+          : 'The file could not be saved right now. Please try again in a minute.',
+      );
+    }
     return {
       name: file.originalname.slice(0, 120),
       type: kind.type,
