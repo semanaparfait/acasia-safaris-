@@ -11,8 +11,10 @@ import { PrismaService } from '../prisma/prisma.service';
 // for a few minutes.
 //
 // Free Umami plan (no API keys): set UMAMI_SHARE_URL instead, the website's Share URL
-// (Umami > Websites > Edit > Share URL). Admin > Statistics then shows Umami's own page.
-// Only admins receive this link; it is never sent to the public website.
+// (Umami > Websites > Edit > Share URL). The backend reads the same numbers the share page
+// shows, with the short-lived pass Umami gives that page (renewed when it expires), so
+// Admin > Statistics shows its own charts. Only admins see them; the link is never sent
+// to the public website. An API key, when set, is used instead.
 
 export const RANGES = ['today', '7d', '30d', '90d'] as const;
 export type Range = (typeof RANGES)[number];
@@ -88,6 +90,20 @@ function readStats(raw: Record<string, unknown> | undefined): Stats {
 
 class Refused extends Error {}
 
+// How to read Umami: an API key, or the pass of a share link
+type Source = {
+  base: string; // e.g. https://api.umami.is/v1
+  websiteId: string;
+  headers: Record<string, string>;
+  renew?: () => void; // share link: forget the pass (it expired)
+};
+
+// A share link's pass, and the address where it works
+type SharePass = { at: number; base: string; websiteId: string; token: string };
+
+// The share pass lasts a while: asked again after this, or at once when Umami refuses it
+const SHARE_PASS_MS = 30 * 60_000;
+
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
@@ -107,35 +123,143 @@ export class AnalyticsService {
     }
   }
 
-  private get config() {
+  private sharePass: SharePass | null = null;
+  private cloudBase: string | null = null; // the Umami Cloud region found for this account
+
+  // The share pass from each possible address; with two (Umami Cloud's EU and US regions),
+  // keep the one where the website has visits, and remember it
+  private async pickShare(
+    bases: string[],
+    shareId: string,
+  ): Promise<SharePass> {
+    let best: { pageviews: number; pass: SharePass } | null = null;
+    for (const base of bases) {
+      const res = await fetch(`${base}/share/${encodeURIComponent(shareId)}`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.status === 401 || res.status === 403 || res.status === 404) {
+        if (bases.length === 1) throw new Refused(`share link ${res.status}`);
+        continue;
+      }
+      if (!res.ok) throw new Error(`share link answered ${res.status}`);
+      const data = (await res.json()) as { websiteId?: string; token?: string };
+      if (!data.websiteId || !data.token)
+        throw new Error('share link: unexpected answer');
+      const pass: SharePass = {
+        at: Date.now(),
+        base,
+        websiteId: data.websiteId,
+        token: data.token,
+      };
+      if (bases.length === 1) return pass;
+
+      // How many page views this region has for the website (2 years)
+      const now = Date.now();
+      const stats = await fetch(
+        `${base}/websites/${encodeURIComponent(data.websiteId)}/stats?startAt=${now - 730 * DAY}&endAt=${now}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            'x-umami-share-token': data.token,
+            'x-umami-share-context': '1',
+          },
+          signal: AbortSignal.timeout(10_000),
+        },
+      )
+        .then((r) =>
+          r.ok ? (r.json() as Promise<{ pageviews?: unknown }>) : {},
+        )
+        .catch(() => ({}));
+      const pageviews =
+        Number((stats as { pageviews?: unknown }).pageviews) || 0;
+      if (!best || pageviews > best.pageviews) best = { pageviews, pass };
+    }
+    if (!best) throw new Refused('share link not found');
+    // Remember the region once it has visits (until then, look again next time)
+    if (best.pageviews > 0) this.cloudBase = best.pass.base;
+    return best.pass;
+  }
+
+  // An API key (paid plans, or self-hosted), else the share link (free plan), else nothing
+  private async source(): Promise<Source | null> {
     const key = process.env.UMAMI_API_KEY?.trim();
     const websiteId = process.env.UMAMI_WEBSITE_ID?.trim();
-    const base = (
-      process.env.UMAMI_API_URL?.trim() || 'https://api.umami.is/v1'
-    ).replace(/\/+$/, '');
-    return key && websiteId ? { key, websiteId, base } : null;
+    if (key && websiteId) {
+      const base = (
+        process.env.UMAMI_API_URL?.trim() || 'https://api.umami.is/v1'
+      ).replace(/\/+$/, '');
+      return { base, websiteId, headers: { Authorization: `Bearer ${key}` } };
+    }
+    const share = this.shareUrl;
+    if (!share) return null;
+
+    // https://cloud.umami.is/share/<id>: Umami Cloud keeps each account's data in one region,
+    // /analytics/eu/api or /analytics/us/api (UMAMI_REGION, else found by the backend: the
+    // region that has the website's visits). Self-hosted: https://<server>/share/<id> -> /api
+    const url = new URL(share);
+    const shareId = url.pathname.split('/').filter(Boolean)[1];
+    if (!shareId) return null;
+    const custom = process.env.UMAMI_API_URL?.trim().replace(/\/+$/, '');
+    const cloud = !custom && url.hostname === 'cloud.umami.is';
+
+    if (!this.sharePass || Date.now() - this.sharePass.at > SHARE_PASS_MS) {
+      const region = process.env.UMAMI_REGION?.trim().toLowerCase();
+      const bases = custom
+        ? [custom]
+        : !cloud
+          ? [`${url.origin}/api`]
+          : region === 'eu' || region === 'us'
+            ? [`${url.origin}/analytics/${region}/api`]
+            : this.cloudBase
+              ? [this.cloudBase]
+              : [
+                  `${url.origin}/analytics/eu/api`,
+                  `${url.origin}/analytics/us/api`,
+                ];
+      this.sharePass = await this.pickShare(bases, shareId);
+    }
+    const pass = this.sharePass;
+    return {
+      base: pass.base,
+      websiteId: pass.websiteId,
+      // What Umami's own share page sends
+      headers: {
+        'x-umami-share-token': pass.token,
+        'x-umami-share-context': '1',
+      },
+      renew: () => (this.sharePass = null),
+    };
   }
 
   async report(range: Range, fresh = false): Promise<AnalyticsReport> {
-    const config = this.config;
-    if (!config) {
-      return {
-        connected: false,
-        reason: 'not-configured',
-        shareUrl: this.shareUrl,
-      };
-    }
-
     const kept = this.cache.get(range);
     if (!fresh && kept && Date.now() - kept.at < KEEP_MS) return kept.report;
 
     try {
-      const report = await this.build(range, config);
+      let source = await this.source();
+      if (!source) {
+        return {
+          connected: false,
+          reason: 'not-configured',
+          shareUrl: this.shareUrl,
+        };
+      }
+      let report: AnalyticsReport;
+      try {
+        report = await this.build(range, source);
+      } catch (err) {
+        // The share pass expired: ask for a new one, once
+        if (!(err instanceof Refused) || !source.renew) throw err;
+        source.renew();
+        source = (await this.source())!;
+        report = await this.build(range, source);
+      }
       this.cache.set(range, { at: Date.now(), report });
       return report;
     } catch (err) {
       if (err instanceof Refused)
-        return { connected: false, reason: 'refused' };
+        return { connected: false, reason: 'refused', shareUrl: this.shareUrl };
       this.logger.warn(`Umami: ${(err as Error).message}`);
       // Umami is down or slow: show the last numbers we had rather than nothing
       if (kept) return kept.report;
@@ -145,10 +269,7 @@ export class AnalyticsService {
     }
   }
 
-  private async build(
-    range: Range,
-    config: { key: string; websiteId: string; base: string },
-  ): Promise<AnalyticsReport> {
+  private async build(range: Range, source: Source): Promise<AnalyticsReport> {
     // From midnight (Kigali time) of the first day until now
     const now = Date.now();
     const todayStart =
@@ -166,14 +287,11 @@ export class AnalyticsService {
       params: Record<string, string> = {},
     ): Promise<T> => {
       const url = new URL(
-        `${config.base}/websites/${encodeURIComponent(config.websiteId)}${path}`,
+        `${source.base}/websites/${encodeURIComponent(source.websiteId)}${path}`,
       );
       for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
       const res = await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${config.key}`,
-        },
+        headers: { Accept: 'application/json', ...source.headers },
         signal: AbortSignal.timeout(10_000),
       });
       if (res.status === 401 || res.status === 403 || res.status === 404)

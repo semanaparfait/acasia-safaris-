@@ -305,25 +305,25 @@ function NotConnected({ reason }: { reason: "not-configured" | "refused" }) {
     <Card className="p-6 max-w-2xl">
       {reason === "refused" ? (
         <EmptyState
-          title="Umami refused the key"
-          text="The API key or the website ID in backend/.env is not accepted. Check both in Umami, save backend/.env and restart the backend."
+          title="Umami refused the connection"
+          text="The Share URL (or the API key and website ID) in the backend settings is not accepted. In Umami, check that Share URL is still turned on for the website and copy it again, then update UMAMI_SHARE_URL in Azure (the web app's Environment variables)."
         />
       ) : (
         <>
           <p className="font-medium">Connect the statistics</p>
-          <p className="text-sm text-[#0a120b]/60 mt-1">The website sends its visits to Umami. To see them here (free plan):</p>
+          <p className="text-sm text-[#0a120b]/60 mt-1">The website sends its visits to Umami. To see them here, with these charts (works on Umami&apos;s free plan):</p>
           <ol className="mt-4 space-y-2.5 text-sm text-[#0a120b]/75 list-decimal pl-5">
             <li>
               In Umami, open <b>Websites</b>, click the pencil next to the website, and turn on <b>Share URL</b>.
             </li>
             <li>Copy that link.</li>
             <li>
-              Add it to <code className="rounded bg-[#0a120b]/5 px-1.5 py-0.5 text-xs">backend/.env</code>:
+              Add it to the backend settings (Azure: the web app&apos;s <b>Environment variables</b>; on your computer: <code className="rounded bg-[#0a120b]/5 px-1.5 py-0.5 text-xs">backend/.env</code>):
               <pre className="mt-2 rounded-lg bg-[#0a120b] text-white/85 p-3 text-xs overflow-x-auto">
                 {`UMAMI_SHARE_URL="https://cloud.umami.is/share/..."`}
               </pre>
             </li>
-            <li>Restart the backend and open this page again.</li>
+            <li>Apply (Azure restarts the backend by itself) and open this page again.</li>
           </ol>
         </>
       )}
