@@ -22,7 +22,7 @@ visitor ──https──> Vercel (website, /api is forwarded) ──https──
      (several: separate with commas, the first one is used in email links)
    - `PUBLIC_API_URL` = the API's own address, e.g. `https://acacia-api.onrender.com`
 3. Deploy. Each deploy applies new database changes first (`prisma migrate deploy`).
-4. Check: `https://<api>/api/packages` shows the packages, `https://<api>/api/docs` the API docs.
+4. Check: `https://<api>/api/packages` shows the packages (`/api/docs` is off online, see backend/README.md).
 5. The main admin: in Render > Shell, run `npm run admin:main` once (with the `OWNER_…` values set),
    or keep using the admin created on your computer (same database).
 

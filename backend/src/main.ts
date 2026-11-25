@@ -45,25 +45,32 @@ async function bootstrap() {
 
   // Swagger: interactive API docs at /api/docs (the raw spec is at /api/docs-json).
   // Click "Authorize" and paste the token from POST /api/auth/login to try admin routes.
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Acacia Safaris API')
-    .setDescription(
-      'Backend for the Acacia Safaris website and admin panel. ' +
-        'Routes with a lock need an admin login: call POST /api/auth/login, ' +
-        'then click "Authorize" and paste the token.',
-    )
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true }, // keep the token after a page reload
-  });
+  // Only on your computer: online (NODE_ENV=production) the map of every route is not
+  // published, unless ENABLE_API_DOCS=true is set for a while on purpose.
+  const docs =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.ENABLE_API_DOCS === 'true';
+  if (docs) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Acacia Safaris API')
+      .setDescription(
+        'Backend for the Acacia Safaris website and admin panel. ' +
+          'Routes with a lock need an admin login: call POST /api/auth/login, ' +
+          'then click "Authorize" and paste the token.',
+      )
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true }, // keep the token after a page reload
+    });
+  }
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
   console.log(`API running on http://localhost:${port}/api`);
-  console.log(`API docs on   http://localhost:${port}/api/docs`);
+  if (docs) console.log(`API docs on   http://localhost:${port}/api/docs`);
   console.log(`CORS allows:  ${allowedOrigins().join(', ')}`);
 }
-bootstrap();
+void bootstrap();

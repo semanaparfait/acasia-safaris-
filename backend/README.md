@@ -10,7 +10,7 @@ npm install            # also runs "prisma generate"
 npm run start:dev      # starts the API and restarts on every save
 ```
 
-**API docs (Swagger):** http://localhost:4000/api/docs. Every route, with what to send and a "Try it out" button.
+**API docs (Swagger):** http://localhost:4000/api/docs. Every route, with what to send and a "Try it out" button. Only on your computer: online (`NODE_ENV=production`) they are off, unless `ENABLE_API_DOCS=true` is set on purpose.
 For routes with a lock: call `POST /api/auth/login`, copy the `token`, click **Authorize** and paste it.
 
 `.env` holds the Neon connection, the storage keys and `JWT_SECRET` (copy `.env.example` on a new machine).
