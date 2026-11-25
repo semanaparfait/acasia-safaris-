@@ -875,10 +875,8 @@
     "close": "Fermer",
     "previous": "Photo précédente",
     "next": "Photo suivante",
-    "heroAlt": "Deux lionnes aux aguets dans les herbes",
     "title1": "Instants",
     "title2": "sauvages",
-    "intro": "Des gorilles dans la brume, des couchers de soleil dorés sur le lac Kivu et les sourires chaleureux des personnes rencontrées en chemin. Découvrez les moments capturés par nos voyageurs et nos guides.",
     "browse": "Parcourir les albums",
     "photos": "{count, plural, one {# photo} other {# photos}}",
     "filmTag": "Film à la une",
@@ -901,7 +899,15 @@
     "albumsText": "Chaque album raconte un lieu, un voyage ou un moment. Ouvrez-en un pour voir toutes ses photos.",
     "viewAlbum": "Voir l'album",
     "noAlbums": "Nos albums photo arrivent bientôt.",
-    "emptyAlbum": "Pas encore de photos dans cet album."
+    "emptyAlbum": "Pas encore de photos dans cet album.",
+    "heroTag": "Galerie photo",
+    "featured": "Album à la une",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié",
+    "shareWhatsapp": "Partager sur WhatsApp",
+    "nextAlbum": "Album suivant",
+    "gallery": "Galerie"
   },
   "Planner": {
     "draftRestored": "Nous avons gardé ce que vous aviez rempli la dernière fois.",

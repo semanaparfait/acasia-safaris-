@@ -875,10 +875,8 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
-    "heroAlt": "Two lionesses watching from the grass",
     "title1": "Moments From",
     "title2": "The Wild",
-    "intro": "Gorillas in the mist, golden sunsets over Lake Kivu and the warm smiles of the people we meet along the way. Take a look at the moments our guests and guides have captured.",
     "browse": "Browse the albums",
     "photos": "{count, plural, one {# photo} other {# photos}}",
     "filmTag": "Featured Film",
@@ -901,7 +899,15 @@
     "albumsText": "Each album tells the story of a place, a trip or a moment. Open one to see all its photos.",
     "viewAlbum": "View album",
     "noAlbums": "Our photo albums are coming soon.",
-    "emptyAlbum": "No photos in this album yet."
+    "emptyAlbum": "No photos in this album yet.",
+    "heroTag": "Photo gallery",
+    "featured": "Featured album",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "shareWhatsapp": "Share on WhatsApp",
+    "nextAlbum": "Next album",
+    "gallery": "Gallery"
   },
   "Planner": {
     "draftRestored": "We kept what you filled in last time.",

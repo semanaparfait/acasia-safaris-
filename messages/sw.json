@@ -875,10 +875,8 @@
     "close": "Funga",
     "previous": "Picha iliyotangulia",
     "next": "Picha inayofuata",
-    "heroAlt": "Simba jike wawili wakitazama kutoka nyasini",
     "title1": "Matukio ya",
     "title2": "Porini",
-    "intro": "Sokwe ndani ya ukungu, machweo ya dhahabu juu ya Ziwa Kivu na tabasamu za watu tunaokutana nao njiani. Tazama matukio yaliyonaswa na wageni na waongozaji wetu.",
     "browse": "Tazama albamu",
     "photos": "{count, plural, one {Picha #} other {Picha #}}",
     "filmTag": "Filamu Maalum",
@@ -901,7 +899,15 @@
     "albumsText": "Kila albamu inasimulia hadithi ya mahali, safari au wakati maalum. Fungua moja kuona picha zake zote.",
     "viewAlbum": "Tazama albamu",
     "noAlbums": "Albamu zetu za picha zinakuja hivi karibuni.",
-    "emptyAlbum": "Bado hakuna picha kwenye albamu hii."
+    "emptyAlbum": "Bado hakuna picha kwenye albamu hii.",
+    "heroTag": "Picha za safari",
+    "featured": "Albamu maalum",
+    "share": "Shiriki",
+    "copyLink": "Nakili kiungo",
+    "linkCopied": "Kiungo kimenakiliwa",
+    "shareWhatsapp": "Shiriki kwenye WhatsApp",
+    "nextAlbum": "Albamu inayofuata",
+    "gallery": "Picha"
   },
   "Planner": {
     "draftRestored": "Tumehifadhi ulichojaza mara ya mwisho.",
