@@ -42,6 +42,7 @@ export const blankWorker: Worker = {
   bio: "",
   socials: {},
   isAdmin: false,
+  permissions: [],
 };
 
 // What we send to the API (everything except the id).
@@ -65,6 +66,8 @@ export function toInput(w: Worker, password = ""): WorkerInput {
       Object.entries(w.socials ?? {}).map(([k, v]) => [k, toLink(v ?? "")]).filter(([, v]) => v),
     ),
     isAdmin: w.isAdmin,
+    // What this admin may open: only the main admin can change it (the server checks)
+    permissions: w.isAdmin ? (w.permissions ?? []) : [],
     password: password || undefined,
   };
 }

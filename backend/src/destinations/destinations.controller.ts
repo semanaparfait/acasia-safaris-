@@ -14,6 +14,7 @@ import { isLang } from '../translations/content';
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { DestinationsService } from './destinations.service';
 import { DestinationDto } from './dto/destination.dto';
 
@@ -42,6 +43,7 @@ export class DestinationsController {
 
   @Post()
   @UseGuards(AdminGuard)
+  @Access('destinations')
   @ApiBearerAuth()
   @Audit('Added a destination', 'Destination')
   create(@Body() dto: DestinationDto) {
@@ -50,6 +52,7 @@ export class DestinationsController {
 
   @Put(':id')
   @UseGuards(AdminGuard)
+  @Access('destinations')
   @ApiBearerAuth()
   @Audit('Edited a destination', 'Destination')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: DestinationDto) {
@@ -58,6 +61,7 @@ export class DestinationsController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('destinations')
   @ApiBearerAuth()
   @Audit('Deleted a destination', 'Destination')
   remove(@Param('id', ParseUUIDPipe) id: string) {

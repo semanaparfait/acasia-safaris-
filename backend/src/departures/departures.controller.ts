@@ -13,6 +13,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { CreateDepartureDto, UpdateDepartureDto } from './departures.dto';
 import { DeparturesService } from './departures.service';
 
@@ -38,6 +39,7 @@ export class DeparturesController {
 
   @Get('all')
   @UseGuards(AdminGuard)
+  @Access('departures')
   @ApiBearerAuth()
   findAll() {
     return this.departures.findAll();
@@ -45,6 +47,7 @@ export class DeparturesController {
 
   @Post()
   @UseGuards(AdminGuard)
+  @Access('departures')
   @ApiBearerAuth()
   @Audit('Created a group departure', 'Departure')
   create(@Body() dto: CreateDepartureDto) {
@@ -53,6 +56,7 @@ export class DeparturesController {
 
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @Access('departures')
   @ApiBearerAuth()
   @Audit('Changed a group departure', 'Departure')
   update(
@@ -64,6 +68,7 @@ export class DeparturesController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('departures')
   @ApiBearerAuth()
   @Audit('Deleted a group departure', 'Departure')
   remove(@Param('id', ParseUUIDPipe) id: string) {

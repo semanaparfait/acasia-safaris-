@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { OwnerOnly } from '../common/permissions';
 import { BackupsService } from './backups.service';
 
 // Admin > Backups
@@ -23,6 +24,7 @@ import { BackupsService } from './backups.service';
 @ApiTags('Backups')
 @Controller('backups')
 @UseGuards(AdminGuard)
+@OwnerOnly()
 @ApiBearerAuth()
 export class BackupsController {
   constructor(private backups: BackupsService) {}

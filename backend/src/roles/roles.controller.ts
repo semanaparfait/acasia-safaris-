@@ -12,6 +12,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { RoleDto } from './dto/role.dto';
 import { RolesService } from './roles.service';
 
@@ -19,6 +20,7 @@ import { RolesService } from './roles.service';
 @ApiTags('Roles')
 @Controller('roles')
 @UseGuards(AdminGuard)
+@Access('workers')
 @ApiBearerAuth()
 export class RolesController {
   constructor(private rolesService: RolesService) {}

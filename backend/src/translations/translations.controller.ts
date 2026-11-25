@@ -8,11 +8,13 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
-import { AdminGuard } from '../common/admin.guard';
+import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { OwnerOnly, checkAccess } from '../common/permissions';
 import { isLang, type Kind } from './content';
 import { SaveTranslationsDto } from './translations.dto';
 import { TranslationsService } from './translations.service';
@@ -31,6 +33,7 @@ export class TranslationsController {
   constructor(private translations: TranslationsService) {}
 
   @Post('refresh-all')
+  @OwnerOnly()
   @HttpCode(200)
   @Audit('Translated all packages and destinations')
   refreshAll() {
@@ -38,13 +41,18 @@ export class TranslationsController {
   }
 
   @Get(':kind/:id')
-  get(@Param('kind') kind: string, @Param('id', ParseUUIDPipe) id: string) {
-    return this.translations.forAdmin(toKind(kind), id);
+  get(
+    @Req() request: AdminRequest,
+    @Param('kind') kind: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.translations.forAdmin(toKind(kind, request), id);
   }
 
   @Put(':kind/:id/:lang')
   @Audit('Edited translations')
   save(
+    @Req() request: AdminRequest,
     @Param('kind') kind: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('lang') lang: string,
@@ -52,17 +60,18 @@ export class TranslationsController {
   ) {
     if (!isLang(lang))
       throw new BadRequestException('Language must be "fr" or "sw"');
-    return this.translations.save(toKind(kind), id, lang, dto.values);
+    return this.translations.save(toKind(kind, request), id, lang, dto.values);
   }
 
   @Post(':kind/:id/refresh')
   @HttpCode(200)
   async refresh(
+    @Req() request: AdminRequest,
     @Param('kind') kind: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     try {
-      return await this.translations.refresh(toKind(kind), id);
+      return await this.translations.refresh(toKind(kind, request), id);
     } catch (error) {
       if (
         error instanceof Error &&
@@ -75,8 +84,15 @@ export class TranslationsController {
   }
 }
 
-function toKind(kind: string): Kind {
-  if (kind === 'packages') return 'package';
-  if (kind === 'destinations') return 'destination';
+// Also checks the admin may edit that kind (Tour packages or Destinations access)
+function toKind(kind: string, request: AdminRequest): Kind {
+  if (kind === 'packages') {
+    checkAccess(request.worker, 'packages');
+    return 'package';
+  }
+  if (kind === 'destinations') {
+    checkAccess(request.worker, 'destinations');
+    return 'destination';
+  }
   throw new BadRequestException('Use "packages" or "destinations"');
 }

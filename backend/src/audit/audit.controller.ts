@@ -8,12 +8,14 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { OwnerOnly } from '../common/permissions';
 import { AuditService } from './audit.service';
 
 // GET /api/audit?before=<date>   (main admin only): Admin > Activity
 @ApiTags('Activity')
 @Controller('audit')
 @UseGuards(AdminGuard)
+@OwnerOnly()
 @ApiBearerAuth()
 export class AuditController {
   constructor(private audit: AuditService) {}

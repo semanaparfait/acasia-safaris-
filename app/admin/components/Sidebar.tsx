@@ -34,6 +34,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useCalendarStore } from "@/store/calendarStore";
 import { useTripsStore } from "@/store/tripsStore";
 import { todayCount } from "@/lib/calendar";
+import { canOpenPage } from "@/lib/permissions";
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
@@ -90,6 +91,11 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     },
   ];
 
+  // Only the pages this admin may open (the main admin gives the access in Workers)
+  const visibleGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((item) => canOpenPage(me, item.href)) }))
+    .filter((g) => g.items.length > 0);
+
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
   return (
@@ -120,7 +126,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         </div>
 
         <nav className="relative flex-1 overflow-y-auto px-3 py-5 space-y-6">
-          {groups.map((g) => (
+          {visibleGroups.map((g) => (
             <div key={g.label}>
               <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/30">{g.label}</p>
               <ul className="space-y-0.5">

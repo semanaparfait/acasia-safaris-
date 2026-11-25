@@ -23,6 +23,8 @@ import { useBookingsStore } from "@/store/bookingsStore";
 import { useMessagesStore } from "@/store/messagesStore";
 import { usePackagesStore } from "@/store/packagesStore";
 import { useReviewsStore } from "@/store/reviewsStore";
+import { useAuthStore } from "@/store/authStore";
+import { PERMISSIONS, can, canOpenPage } from "@/lib/permissions";
 import { AreaChart, BarList, Sparkline } from "./components/Charts";
 import { Avatar, Button, Card, CardHeader, PageHeader, StatusBadge, Tabs } from "./components/ui";
 
@@ -53,10 +55,12 @@ export default function DashboardPage() {
   const reviews = useReviewsStore((s) => s.reviews);
   const packages = usePackagesStore((s) => s.packages);
   const loadPackages = usePackagesStore((s) => s.loadAll);
+  const me = useAuthStore((s) => s.worker);
+  const seesFigures = can(me, "bookings"); // the figures come from the bookings
 
   useEffect(() => {
-    loadPackages();
-  }, [loadPackages]);
+    if (seesFigures) loadPackages();
+  }, [loadPackages, seesFigures]);
 
   const [range, setRange] = useState<"12m" | "6m" | "3m">("12m");
 
@@ -118,6 +122,8 @@ export default function DashboardPage() {
 
   const pending = bookings.filter((b) => b.status === "Pending").length;
   const unread = messages.filter((m) => !m.read).length;
+
+  if (!seesFigures) return <Welcome name={me?.name ?? ""} />;
 
   return (
     <>
@@ -305,6 +311,53 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+    </>
+  );
+}
+
+// Admins without Bookings access: no company figures, only shortcuts to their own areas
+const AREA_PAGES: Record<string, { href: string; name: string }[]> = {
+  statistics: [{ href: "/admin/statistics", name: "Statistics" }],
+  calendar: [{ href: "/admin/calendar", name: "Calendar" }],
+  departures: [{ href: "/admin/departures", name: "Departures" }],
+  checkin: [{ href: "/admin/check-in", name: "Check-in" }],
+  messages: [{ href: "/admin/messages", name: "Messages" }],
+  packages: [
+    { href: "/admin/packages", name: "Tour Packages" },
+    { href: "/admin/quotations", name: "Quotations" },
+  ],
+  trips: [{ href: "/admin/trips", name: "Trips" }],
+  destinations: [{ href: "/admin/destinations", name: "Destinations" }],
+  reviews: [{ href: "/admin/reviews", name: "Reviews" }],
+  gallery: [{ href: "/admin/gallery", name: "Gallery" }],
+  workers: [
+    { href: "/admin/workers", name: "Workers" },
+    { href: "/admin/roles", name: "Roles" },
+  ],
+};
+
+function Welcome({ name }: { name: string }) {
+  const me = useAuthStore((s) => s.worker);
+  const pages = PERMISSIONS.flatMap((p) => AREA_PAGES[p.key] ?? []).filter((page) => canOpenPage(me, page.href));
+  return (
+    <>
+      <PageHeader title={`Welcome${name ? `, ${name.split(" ")[0]}` : ""}`} subtitle="Your areas in the admin panel" />
+      {pages.length === 0 ? (
+        <Card className="p-8 text-center text-sm text-[#0a120b]/60">
+          You don&apos;t have access to any area yet. The main admin gives it in Workers; it works as soon as they save.
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {pages.map((page) => (
+            <Link key={page.href} href={page.href}>
+              <Card className="flex items-center justify-between p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                <span className="font-medium">{page.name}</span>
+                <span className="text-[#c5a86d]">→</span>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </>
   );
 }

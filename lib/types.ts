@@ -95,6 +95,7 @@ export type Worker = {
   socials?: Socials;
   isAdmin: boolean; // second role: can log in to the admin panel
   isOwner?: boolean; // the main admin: cannot be deleted, manages the other admins
+  permissions?: string[]; // admin areas this admin may open (lib/permissions.ts), given by the main admin
   hasPassword?: boolean; // the password itself is never sent to the browser
 };
 

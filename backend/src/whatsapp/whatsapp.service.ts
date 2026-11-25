@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { adminsWithAccess } from '../common/permissions';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -51,7 +52,7 @@ export class WhatsappService {
 
     try {
       const admins = await this.prisma.worker.findMany({
-        where: { OR: [{ isAdmin: true }, { isOwner: true }], status: 'Active' },
+        where: adminsWithAccess('bookings'), // only admins who handle bookings
         select: { phone: true },
       });
       const numbers = new Set(

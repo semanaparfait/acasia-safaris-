@@ -14,6 +14,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard } from '../common/admin.guard';
+import { Access, OwnerOnly } from '../common/permissions';
 import { FormLimit } from '../common/limits';
 import {
   CreateTripBookingDto,
@@ -62,6 +63,7 @@ export class TripsController {
 
   @Get('all')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   findAll() {
     return this.trips.findAll();
@@ -69,6 +71,7 @@ export class TripsController {
 
   @Get('all/:id')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.trips.findOne(id);
@@ -76,6 +79,7 @@ export class TripsController {
 
   @Get('all/:id/bookings')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   bookings(@Param('id', ParseUUIDPipe) id: string) {
     return this.trips.bookings(id);
@@ -92,6 +96,7 @@ export class TripsController {
 
   @Patch('bookings/:bookingId')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Changed a trip booking', 'TripBooking')
   updateBooking(
@@ -103,6 +108,7 @@ export class TripsController {
 
   @Delete('bookings/:bookingId')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Deleted a trip booking', 'TripBooking')
   removeBooking(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
@@ -112,6 +118,7 @@ export class TripsController {
   // Paid bookings: email the confirmation, QR code ticket and receipt again
   @Post('bookings/:bookingId/send-ticket')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Emailed a trip ticket and receipt', 'TripBooking')
   sendTicket(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
@@ -127,6 +134,7 @@ export class TripsController {
   // The same PDF for the team (Admin > Trips > Bookings), e.g. to print it at the office
   @Get('bookings/:bookingId/ticket.pdf')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   async ticketPdf(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
     return this.pdfFile(await this.trips.ticketPdf(bookingId));
@@ -144,6 +152,7 @@ export class TripsController {
   // Admin > Check-in: the QR code holds "ACACIA:<code>" (or type the code)
   @Get('tickets/:code')
   @UseGuards(AdminGuard)
+  @Access('checkin', 'trips')
   @ApiBearerAuth()
   findTicket(@Param('code') code: string) {
     return this.trips.findByTicket(code);
@@ -151,6 +160,7 @@ export class TripsController {
 
   @Post('tickets/:code/check-in')
   @UseGuards(AdminGuard)
+  @Access('checkin', 'trips')
   @ApiBearerAuth()
   @Audit('Checked in trip travelers', 'TripBooking')
   checkIn(@Param('code') code: string) {
@@ -168,6 +178,7 @@ export class TripsController {
 
   @Get('all/:id/waitlist')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   waitlist(@Param('id', ParseUUIDPipe) id: string) {
     return this.trips.waitlist(id);
@@ -175,6 +186,7 @@ export class TripsController {
 
   @Post('all/:id/waitlist/notify')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Emailed the waitlist of a trip', 'Trip')
   async notifyWaitlist(@Param('id', ParseUUIDPipe) id: string) {
@@ -183,6 +195,7 @@ export class TripsController {
 
   @Delete('waitlist/:entryId')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Removed someone from a trip waitlist', 'Trip')
   removeFromWaitlist(@Param('entryId', ParseUUIDPipe) entryId: string) {
@@ -191,6 +204,7 @@ export class TripsController {
 
   @Post('reminders/run')
   @UseGuards(AdminGuard)
+  @OwnerOnly()
   @ApiBearerAuth()
   @Audit('Sent the trip reminders')
   runReminders() {
@@ -215,6 +229,7 @@ export class TripsController {
 
   @Post()
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Created a trip', 'Trip')
   create(@Body() dto: TripDto) {
@@ -223,6 +238,7 @@ export class TripsController {
 
   @Put(':id')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Edited a trip', 'Trip')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TripDto) {
@@ -231,6 +247,7 @@ export class TripsController {
 
   @Patch(':id/active')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Published or hid a trip', 'Trip')
   setActive(
@@ -242,6 +259,7 @@ export class TripsController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('trips')
   @ApiBearerAuth()
   @Audit('Deleted a trip', 'Trip')
   remove(@Param('id', ParseUUIDPipe) id: string) {

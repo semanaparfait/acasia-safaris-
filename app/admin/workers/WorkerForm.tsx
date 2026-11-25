@@ -9,6 +9,7 @@ import { ArrowLeft, Eye, EyeOff, ShieldCheck, UserRound, Contact, Briefcase, Sti
 import type { Worker, WorkerStatus } from "@/lib/types";
 import { SOCIAL_NETWORKS } from "@/lib/socials";
 import { passwordProblem } from "@/lib/password";
+import { PERMISSIONS } from "@/lib/permissions";
 import { PhoneField } from "@/components/ui/phone-field";
 import { Button, Card, Toggle, inputClass, labelClass } from "../components/ui";
 import ImageField from "../components/ImageField";
@@ -236,11 +237,70 @@ export default function WorkerForm({
                   <p className="text-xs text-[#0a120b]/50 mt-1">Do not use the worker&apos;s names or email in the password.</p>
                 </div>
               )}
+              {form.isAdmin && !isMainAdmin && (
+                <AccessPicker
+                  value={form.permissions ?? []}
+                  onChange={(permissions) => set("permissions", permissions)}
+                  editable={canManageAdmins}
+                />
+              )}
             </div>
           </Section>
         </div>
       </div>
     </form>
+  );
+}
+
+// What this admin may open. Saved changes work at once in their open admin panel.
+function AccessPicker({ value, onChange, editable }: { value: string[]; onChange: (v: string[]) => void; editable: boolean }) {
+  const toggle = (key: string) => onChange(value.includes(key) ? value.filter((k) => k !== key) : [...value, key]);
+  return (
+    <div className="border-t border-[#0a120b]/[0.06] pt-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className={labelClass + " !mb-0"}>What they can open</p>
+        {editable && (
+          <div className="flex gap-1.5 text-[11px] font-medium">
+            <button type="button" onClick={() => onChange(PERMISSIONS.map((p) => p.key))} className="rounded-full bg-[#f4efe6] px-2.5 py-1 text-[#7a5d22] hover:bg-[#ece3d2] cursor-pointer">
+              All
+            </button>
+            <button type="button" onClick={() => onChange([])} className="rounded-full bg-[#f4efe6] px-2.5 py-1 text-[#7a5d22] hover:bg-[#ece3d2] cursor-pointer">
+              None
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="space-y-1">
+        {PERMISSIONS.map((p) => {
+          const on = value.includes(p.key);
+          return (
+            <label
+              key={p.key}
+              className={`flex items-start gap-2.5 rounded-lg px-2.5 py-2 transition-colors ${on ? "bg-[#c5a86d]/[0.08]" : ""} ${editable ? "cursor-pointer hover:bg-[#f7f5f0]" : "opacity-80"}`}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                disabled={!editable}
+                onChange={() => toggle(p.key)}
+                className="mt-0.5 size-4 shrink-0 accent-[#12231a]"
+              />
+              <span>
+                <span className="block text-sm font-medium leading-tight">{p.label}</span>
+                <span className="block text-xs text-[#0a120b]/50">{p.text}</span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-xs text-[#0a120b]/50">
+        {editable
+          ? value.length === 0
+            ? "No area yet: they can log in but see only Settings."
+            : "Works as soon as you save: their open admin panel updates by itself."
+          : "Only the main admin can change this."}
+      </p>
+    </div>
   );
 }
 

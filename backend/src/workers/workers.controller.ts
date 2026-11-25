@@ -13,6 +13,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { WorkerDto } from './dto/worker.dto';
 import { WorkersService } from './workers.service';
 
@@ -21,6 +22,7 @@ import { WorkersService } from './workers.service';
 @ApiTags('Workers')
 @Controller('workers')
 @UseGuards(AdminGuard)
+@Access('workers')
 @ApiBearerAuth()
 export class WorkersController {
   constructor(private workersService: WorkersService) {}

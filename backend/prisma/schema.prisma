@@ -114,6 +114,9 @@ model Worker {
 
   // Second role: workers with isAdmin can log in to the admin panel with email + password
   isAdmin      Boolean @default(false)
+  // What this admin may open (see src/common/permissions.ts), given by the main admin.
+  // The main admin (isOwner) has everything whatever this says.
+  permissions  String[] @default([])
   passwordHash String? // bcrypt hash, never sent to the browser
   tokenVersion Int     @default(0) // raised on logout and password change: older login tokens stop working
   trustVersion Int     @default(0) // raised on password change only: "trusted devices" (no login code) must log in with a code again

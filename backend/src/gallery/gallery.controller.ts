@@ -12,6 +12,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { GalleryItemDto } from './dto/gallery.dto';
 import { GalleryService } from './gallery.service';
 
@@ -28,6 +29,7 @@ export class GalleryController {
 
   @Post()
   @UseGuards(AdminGuard)
+  @Access('gallery')
   @ApiBearerAuth()
   @Audit('Added a gallery photo', 'Photo')
   create(@Body() dto: GalleryItemDto) {
@@ -36,6 +38,7 @@ export class GalleryController {
 
   @Put(':id')
   @UseGuards(AdminGuard)
+  @Access('gallery')
   @ApiBearerAuth()
   @Audit('Edited a gallery photo', 'Photo')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: GalleryItemDto) {
@@ -44,6 +47,7 @@ export class GalleryController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('gallery')
   @ApiBearerAuth()
   @Audit('Deleted a gallery photo', 'Photo')
   remove(@Param('id', ParseUUIDPipe) id: string) {

@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { passwordProblem } from '../common/password';
+import { PERMISSIONS } from '../common/permissions';
+import { LiveGateway } from '../live/live.gateway';
 import { toE164 } from '../common/phone';
 import type { Worker } from '@prisma/client';
 import { hash } from 'bcryptjs';
@@ -67,12 +69,15 @@ function websiteFields(dto: WorkerDto) {
 //  - Only the main admin can give or remove admin access and set admins' passwords.
 //  - Only the main admin can edit the main admin's account.
 //  - An admin must have a password.
+//  - Only the main admin can change what an admin may open (permissions). The change
+//    works at once: their open admin panel is told right away (LiveGateway.accessChanged).
 @Injectable()
 export class WorkersService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
     private roles: RolesService,
+    private live: LiveGateway,
   ) {}
 
   // Each worker gets "hasPassword" (true/false) instead of the password hash
@@ -138,11 +143,17 @@ export class WorkersService {
     }
 
     this.checkPassword(dto, [email]);
+    const permissions = this.permissionsFor(dto, actor, [], {
+      isOwner: false,
+      isAdmin: dto.isAdmin ?? false,
+    });
 
-    const { password, ...data } = dto;
+    const { password, permissions: sent, ...data } = dto;
+    void sent;
     const worker = await this.prisma.worker.create({
       data: {
         ...data,
+        permissions,
         ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
@@ -180,6 +191,10 @@ export class WorkersService {
       const adminPasswordChanges = Boolean(dto.password) && isAdmin;
       if (adminAccessChanges || adminPasswordChanges) this.onlyMainAdmin(actor);
     }
+    const permissions = this.permissionsFor(dto, actor, current.permissions, {
+      isOwner: current.isOwner,
+      isAdmin: dto.isAdmin ?? current.isAdmin,
+    });
 
     const isAdmin = dto.isAdmin ?? current.isAdmin;
     if (isAdmin && !dto.password && !current.hasPassword) {
@@ -188,11 +203,13 @@ export class WorkersService {
 
     this.checkPassword(dto, [email, current.email]);
 
-    const { password, ...data } = dto;
+    const { password, permissions: sent, ...data } = dto;
+    void sent;
     const worker = await this.prisma.worker.update({
       where: { id },
       data: {
         ...data,
+        permissions,
         ...websiteFields(dto),
         email,
         personalEmail: dto.personalEmail.toLowerCase().trim(),
@@ -207,6 +224,8 @@ export class WorkersService {
           : {}),
       },
     });
+    // Their open admin panel follows at once (new menu, lost pages closed, or logged out)
+    void this.live.accessChanged(id);
     return { ...worker, hasPassword: Boolean(password) || current.hasPassword };
   }
 
@@ -218,6 +237,7 @@ export class WorkersService {
     if (worker.isAdmin) this.onlyMainAdmin(actor);
 
     await this.prisma.worker.delete({ where: { id } });
+    void this.live.accessChanged(id); // logged out of any open panel
     await this.storage.deleteByUrl(worker.photo);
     return { deleted: true };
   }
@@ -233,6 +253,25 @@ export class WorkersService {
       });
       if (!existing || existing.id === exceptId) return email;
     }
+  }
+
+  // The areas to save: none without admin access, the same as before unless the main admin
+  // changed them (the main admin's own account has everything, so it keeps none here)
+  private permissionsFor(
+    dto: WorkerDto,
+    actor: Actor,
+    current: string[],
+    target: { isOwner: boolean; isAdmin: boolean },
+  ) {
+    if (target.isOwner || !target.isAdmin) return [];
+    if (!dto.permissions) return current;
+    const wanted = PERMISSIONS.filter((k) => dto.permissions!.includes(k));
+    const same =
+      wanted.length === current.length &&
+      wanted.every((k) => current.includes(k));
+    if (same) return current;
+    this.onlyMainAdmin(actor);
+    return wanted;
   }
 
   private onlyMainAdmin(actor: Actor) {

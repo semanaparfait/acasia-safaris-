@@ -1,4 +1,5 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { adminsWithAccess } from '../common/permissions';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { AuditService } from '../audit/audit.service';
@@ -197,7 +198,7 @@ export class QuickReplyService {
     try {
       const booking = await this.bookings.findOne(bookingId);
       const admins = await this.prisma.worker.findMany({
-        where: { isAdmin: true, status: 'Active' },
+        where: adminsWithAccess('bookings'), // only admins who handle bookings
         select: {
           id: true,
           name: true,

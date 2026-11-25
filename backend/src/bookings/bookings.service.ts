@@ -295,7 +295,7 @@ export class BookingsService {
     await this.findOne(id);
     await this.prisma.booking.delete({ where: { id } });
     this.removedListeners.forEach((listener) => listener(id));
-    this.live.toAdmins('booking:deleted', { id });
+    this.live.toAdmins('booking:deleted', { id }, 'bookings');
     return { deleted: true };
   }
 
@@ -1048,7 +1048,7 @@ export class BookingsService {
   // visitor's booking page, and returns the admin view
   private async changed(id: string) {
     const booking = await this.findOne(id);
-    this.live.toAdmins('booking', booking);
+    this.live.toAdmins('booking', booking, 'bookings');
     this.live.toVisitor(
       booking.accessToken,
       'booking',

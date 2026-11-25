@@ -12,6 +12,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 import { ReviewsService } from './reviews.service';
 import { FormLimit } from '../common/limits';
@@ -31,6 +32,7 @@ export class ReviewsController {
   // GET /api/reviews/all   (admin)
   @Get('all')
   @UseGuards(AdminGuard)
+  @Access('reviews')
   @ApiBearerAuth()
   findAll() {
     return this.reviewsService.findAll();
@@ -46,6 +48,7 @@ export class ReviewsController {
   // PATCH /api/reviews/4   body: { "status": "Published" }   (admin)
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @Access('reviews')
   @ApiBearerAuth()
   @Audit('Changed a review', 'Review')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateReviewDto) {
@@ -54,6 +57,7 @@ export class ReviewsController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('reviews')
   @ApiBearerAuth()
   @Audit('Deleted a review', 'Review')
   remove(@Param('id', ParseUUIDPipe) id: string) {

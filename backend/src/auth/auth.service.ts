@@ -7,6 +7,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { hasAccess } from '../common/permissions';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { randomInt } from 'crypto';
@@ -794,6 +795,8 @@ export class AuthService {
         id: true,
         name: true,
         isAdmin: true,
+        isOwner: true,
+        permissions: true,
         status: true,
         tokenVersion: true,
       },
@@ -802,6 +805,7 @@ export class AuthService {
       !found ||
       !found.isAdmin ||
       found.status !== 'Active' ||
+      !hasAccess(found, ['bookings']) || // answering customers needs Bookings access
       (payload.v ?? 0) !== found.tokenVersion
     ) {
       throw new UnauthorizedException(

@@ -5,10 +5,17 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Worker } from '@prisma/client';
 import { Request } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { SESSION_COOKIE, cookie } from '../auth/session';
+import {
+  ACCESS_KEY,
+  OWNER_KEY,
+  checkAccess,
+  type Permission,
+} from './permissions';
 
 // A request that passed the guard knows which worker is logged in
 export type AdminRequest = Request & {
@@ -26,9 +33,15 @@ const READ_ONLY = ['GET', 'HEAD', 'OPTIONS'];
 // POST /api/auth/login (the admin panel), or from a header (Swagger, scripts):
 //   Authorization: Bearer <token>
 // Use it on a route with:  @UseGuards(AdminGuard)
+// Add @Access('bookings') (common/permissions.ts) so only admins with that access get in,
+// or @OwnerOnly() for the main admin. Checked on every request: a change made by the
+// main admin works at once, without logging out.
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AdminRequest>();
@@ -49,6 +62,18 @@ export class AdminGuard implements CanActivate {
     }
 
     request.worker = await this.auth.verify(token);
+
+    const targets = [context.getHandler(), context.getClass()];
+    if (this.reflector.getAllAndOverride<boolean>(OWNER_KEY, targets)) {
+      if (!request.worker.isOwner) {
+        throw new ForbiddenException('Only the main admin can do this');
+      }
+    }
+    const keys = this.reflector.getAllAndOverride<Permission[] | undefined>(
+      ACCESS_KEY,
+      targets,
+    );
+    if (keys?.length) checkAccess(request.worker, ...keys);
     return true;
   }
 }

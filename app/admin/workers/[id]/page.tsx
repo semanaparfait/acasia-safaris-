@@ -8,6 +8,7 @@ import { format, formatDistanceToNowStrict } from "date-fns";
 import toast from "react-hot-toast";
 import { ArrowLeft, Pencil, Trash2, Mail, Phone, Languages, Briefcase, CalendarDays, ShieldCheck, StickyNote, Clock, KeyRound } from "lucide-react";
 import { useWorkersStore } from "@/store/workersStore";
+import { PERMISSIONS } from "@/lib/permissions";
 import { Button, Card, ConfirmDialog, EmptyState, StatusBadge } from "../../components/ui";
 import { AdminBadge, LanguageChips, WorkerPhoto, useRoles, useWorker, useWorkerPermissions } from "../parts";
 
@@ -119,6 +120,16 @@ export default function WorkerDetailsPage() {
                 <p className="flex items-center gap-1.5 text-xs text-[#0a120b]/50">
                   <KeyRound className="size-3.5" /> {w.hasPassword ? "Password set" : "No password yet"}
                 </p>
+                {!w.isOwner && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {PERMISSIONS.filter((p) => w.permissions?.includes(p.key)).map((p) => (
+                      <span key={p.key} className="rounded-full bg-[#c5a86d]/15 px-2.5 py-0.5 text-[11px] font-medium text-[#8a6d2f]">
+                        {p.label}
+                      </span>
+                    ))}
+                    {!w.permissions?.length && <span className="text-xs text-[#0a120b]/50">No area yet (only Settings)</span>}
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-[#0a120b]/50">No access to the admin panel.</p>

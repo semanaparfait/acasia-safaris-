@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { adminsWithAccess } from '../common/permissions';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
@@ -103,7 +104,7 @@ export class CalendarService {
     const admins = only
       ? [only]
       : await this.prisma.worker.findMany({
-          where: { isAdmin: true, status: 'Active' },
+          where: adminsWithAccess('calendar'), // only admins with the calendar
           select: { email: true, name: true },
         });
     let sent = 0;

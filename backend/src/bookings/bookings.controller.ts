@@ -16,6 +16,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { BookingsService } from './bookings.service';
 import {
   AddPaymentDto,
@@ -101,6 +102,7 @@ export class BookingsController {
   // Admin > Check-in: GET /api/bookings/ticket/<code or scanned "ACACIA:<code>">
   @Get('ticket/:code')
   @UseGuards(AdminGuard)
+  @Access('checkin', 'bookings')
   @ApiBearerAuth()
   findByTicket(@Param('code') code: string) {
     return this.bookingsService.findByTicket(code);
@@ -110,6 +112,7 @@ export class BookingsController {
   @Post('ticket/:code/check-in')
   @HttpCode(200)
   @UseGuards(AdminGuard)
+  @Access('checkin', 'bookings')
   @ApiBearerAuth()
   @Audit('Checked in travelers', 'Ticket')
   checkIn(@Param('code') code: string) {
@@ -118,6 +121,7 @@ export class BookingsController {
 
   @Get()
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   findAll() {
     return this.bookingsService.findAll();
@@ -125,6 +129,7 @@ export class BookingsController {
 
   @Get(':id')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.bookingsService.findOne(id);
@@ -133,6 +138,7 @@ export class BookingsController {
   // PATCH /api/bookings/12   body: { "status": "Confirmed", "payment": "Deposit" }
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Changed a booking (status, payment or price)', 'Booking')
   update(
@@ -145,6 +151,7 @@ export class BookingsController {
   // POST /api/bookings/12/seen   -> the visitor sees "Seen by <name>" (not in the activity log)
   @Post(':id/seen')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @HttpCode(200)
   markSeen(
@@ -157,6 +164,7 @@ export class BookingsController {
   // POST /api/bookings/12/messages   body: { "text": "...", "offer"?: 6600 }  (emails the visitor)
   @Post(':id/messages')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Wrote to the customer / sent a price', 'Booking')
   teamMessage(
@@ -171,6 +179,7 @@ export class BookingsController {
   @Post(':id/accept')
   @HttpCode(200)
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit("Accepted the customer's price", 'Booking')
   teamAccept(
@@ -183,6 +192,7 @@ export class BookingsController {
   // POST /api/bookings/12/payments   body: { "amount": 1500, "method": "Bank transfer", "paidAt"?: "2026-11-13", "reference"?: "..." }
   @Post(':id/payments')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Recorded a payment', 'Booking')
   addPayment(
@@ -196,6 +206,7 @@ export class BookingsController {
   // DELETE /api/bookings/12/payments/<paymentId>   (a payment entered by mistake)
   @Delete(':id/payments/:paymentId')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Removed a payment', 'Booking')
   removePayment(
@@ -207,6 +218,7 @@ export class BookingsController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Deleted a booking', 'Booking')
   remove(@Param('id', ParseUUIDPipe) id: string) {

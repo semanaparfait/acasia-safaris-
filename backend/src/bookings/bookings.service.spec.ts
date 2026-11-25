@@ -205,7 +205,11 @@ describe('BookingsService', () => {
     const { service, live } = setup();
     await service.teamMessage('b1', { text: 'Hello' }, 'Yassel');
 
-    expect(live.toAdmins).toHaveBeenCalledWith('booking', expect.anything());
+    expect(live.toAdmins).toHaveBeenCalledWith(
+      'booking',
+      expect.anything(),
+      'bookings', // only admins who handle bookings
+    );
     expect(live.toVisitor).toHaveBeenCalledWith(
       'tok',
       'booking',

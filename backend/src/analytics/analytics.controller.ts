@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { AnalyticsService, RANGES, type Range } from './analytics.service';
 
 // GET /api/analytics?range=7d   (admins only; range: today | 7d | 30d | 90d)
@@ -9,6 +10,7 @@ import { AnalyticsService, RANGES, type Range } from './analytics.service';
 @ApiTags('Analytics')
 @ApiBearerAuth()
 @UseGuards(AdminGuard)
+@Access('statistics')
 @Controller('analytics')
 export class AnalyticsController {
   constructor(private analytics: AnalyticsService) {}

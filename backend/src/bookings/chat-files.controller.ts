@@ -18,6 +18,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { ChatLimit } from '../common/limits';
 import { ChatFilesService, MAX_CHAT_FILE } from './chat-files.service';
 
@@ -81,6 +82,7 @@ export class ChatFilesController {
   // POST /api/bookings/<id>/files   -> a photo or document from the team (emails the customer)
   @Post(':id/files')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @Audit('Sent a file to the customer', 'Booking')
@@ -97,6 +99,7 @@ export class ChatFilesController {
   // POST /api/bookings/<id>/quotation   body: { "packageId": "...", "text"?: "..." }
   @Post(':id/quotation')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @ApiBearerAuth()
   @Audit('Sent a quotation to the customer', 'Booking')
   teamQuotation(
@@ -116,6 +119,7 @@ export class ChatFilesController {
   // GET /api/bookings/<id>/files/<key>
   @Get(':id/files/:key')
   @UseGuards(AdminGuard)
+  @Access('bookings')
   @SkipThrottle()
   @Header('Cache-Control', 'private, max-age=86400')
   @Header('X-Content-Type-Options', 'nosniff')

@@ -10,6 +10,7 @@ import {
 import type { Namespace, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { linkExpired } from '../bookings/link';
+import { accessOf, type Permission } from '../common/permissions';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Live updates, so nobody has to reload: ws://<api>/live (Socket.IO)
@@ -20,6 +21,9 @@ import { PrismaService } from '../prisma/prisma.service';
 //  - An admin writing a reply sends "typing" { bookingId, typing }; the visitor gets
 //    "typing" { name, typing } so their page shows "<name> is typing…".
 //  - The visitor sends "customerTyping" { typing }; admins get "customerTyping" { bookingId, typing }.
+//  - Each admin only gets the updates of the areas they have access to (room "access:<key>").
+//    When the main admin changes their access, they get "access" at once (the panel reloads
+//    their account); if they lost admin access, "access" { revoked: true } and the connection ends.
 @WebSocketGateway({ namespace: 'live' })
 export class LiveGateway implements OnGatewayConnection {
   private readonly logger = new Logger(LiveGateway.name);
@@ -41,7 +45,8 @@ export class LiveGateway implements OnGatewayConnection {
       if (typeof token === 'string' && token) {
         const worker = await this.auth.verify(token, 'live'); // throws if the login is not valid anymore
         (client.data as { name?: string }).name = worker.name;
-        await client.join('admins');
+        await client.join(['admins', `worker:${worker.id}`]);
+        await client.join(accessOf(worker).map((k) => `access:${k}`));
         return;
       }
       if (typeof booking === 'string' && booking) {
@@ -69,7 +74,7 @@ export class LiveGateway implements OnGatewayConnection {
     @MessageBody() body: { bookingId?: unknown; typing?: unknown },
   ) {
     const name = (client.data as { name?: string }).name;
-    if (!name || !client.rooms.has('admins')) return;
+    if (!name || !client.rooms.has('access:bookings')) return;
     if (typeof body?.bookingId !== 'string' || !body.bookingId) return;
     let token = this.tokens.get(body.bookingId);
     if (!token) {
@@ -95,15 +100,40 @@ export class LiveGateway implements OnGatewayConnection {
   ) {
     const bookingId = (client.data as { bookingId?: string }).bookingId;
     if (!bookingId) return;
-    this.toAdmins('customerTyping', {
-      bookingId,
-      typing: body?.typing === true,
-    });
+    this.toAdmins(
+      'customerTyping',
+      { bookingId, typing: body?.typing === true },
+      'bookings',
+    );
   }
 
-  // Every admin panel that is open
-  toAdmins(event: string, data: unknown) {
-    this.server?.to('admins').emit(event, data);
+  // The admin panels that are open, of the admins with this access
+  toAdmins(event: string, data: unknown, access: Permission) {
+    this.server?.to(`access:${access}`).emit(event, data);
+  }
+
+  // The main admin changed this worker's access (or removed it): their open panels follow at once
+  async accessChanged(workerId: string) {
+    if (!this.server) return;
+    const sockets = await this.server.in(`worker:${workerId}`).fetchSockets();
+    if (!sockets.length) return;
+    const worker = await this.prisma.worker.findUnique({
+      where: { id: workerId },
+      select: { isAdmin: true, isOwner: true, status: true, permissions: true },
+    });
+    const active = worker?.isAdmin && worker.status === 'Active';
+    for (const socket of sockets) {
+      if (!active) {
+        socket.emit('access', { revoked: true });
+        socket.disconnect(true);
+        continue;
+      }
+      for (const room of socket.rooms) {
+        if (room.startsWith('access:')) socket.leave(room);
+      }
+      socket.join(accessOf(worker).map((k) => `access:${k}`));
+      socket.emit('access', { permissions: accessOf(worker) });
+    }
   }
 
   // The visitor's booking page (every tab they have open)

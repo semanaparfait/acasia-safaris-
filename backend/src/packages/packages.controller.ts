@@ -15,6 +15,7 @@ import { isLang } from '../translations/content';
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { PackageDto, QuotationEmailDto } from './dto/package.dto';
 import { PackagesService } from './packages.service';
 import { FormLimit } from '../common/limits';
@@ -35,6 +36,7 @@ export class PackagesController {
   // Must be declared before ':id', otherwise "all" would be read as an id.
   @Get('all')
   @UseGuards(AdminGuard)
+  @Access('packages', 'bookings', 'departures', 'trips')
   @ApiBearerAuth()
   findAll() {
     return this.packagesService.findAll();
@@ -43,6 +45,7 @@ export class PackagesController {
   // GET /api/packages/all/<id>   (admin: one package, with its lowest bargaining price)
   @Get('all/:id')
   @UseGuards(AdminGuard)
+  @Access('packages', 'bookings', 'departures', 'trips')
   @ApiBearerAuth()
   findOneForAdmin(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.findOneForAdmin(id);
@@ -75,6 +78,7 @@ export class PackagesController {
   @Post(':id/quotation')
   @HttpCode(200)
   @UseGuards(AdminGuard)
+  @Access('packages')
   @ApiBearerAuth()
   @Audit('Remade the quotation PDF', 'Package')
   generateQuotation(@Param('id', ParseUUIDPipe) id: string) {
@@ -84,6 +88,7 @@ export class PackagesController {
   // POST /api/packages           (admin)
   @Post()
   @UseGuards(AdminGuard)
+  @Access('packages')
   @ApiBearerAuth()
   @Audit('Added a package', 'Package')
   create(@Body() dto: PackageDto) {
@@ -93,6 +98,7 @@ export class PackagesController {
   // PUT /api/packages/<id>   (admin, send the whole package)
   @Put(':id')
   @UseGuards(AdminGuard)
+  @Access('packages')
   @ApiBearerAuth()
   @Audit('Edited a package', 'Package')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PackageDto) {
@@ -102,6 +108,7 @@ export class PackagesController {
   // DELETE /api/packages/<id>   (admin)
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('packages')
   @ApiBearerAuth()
   @Audit('Deleted a package', 'Package')
   remove(@Param('id', ParseUUIDPipe) id: string) {

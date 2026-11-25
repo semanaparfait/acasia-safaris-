@@ -12,6 +12,7 @@ import {
 import { Audit } from '../audit/audit.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
 import { MessagesService } from './messages.service';
 import { FormLimit } from '../common/limits';
@@ -33,6 +34,7 @@ export class MessagesController {
 
   @Get()
   @UseGuards(AdminGuard)
+  @Access('messages')
   @ApiBearerAuth()
   findAll() {
     return this.messagesService.findAll();
@@ -40,6 +42,7 @@ export class MessagesController {
 
   @Get(':id')
   @UseGuards(AdminGuard)
+  @Access('messages')
   @ApiBearerAuth()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.messagesService.findOne(id);
@@ -48,6 +51,7 @@ export class MessagesController {
   // PATCH /api/messages/3   body: { "read": true }
   @Patch(':id')
   @UseGuards(AdminGuard)
+  @Access('messages')
   @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -58,6 +62,7 @@ export class MessagesController {
 
   @Delete(':id')
   @UseGuards(AdminGuard)
+  @Access('messages')
   @ApiBearerAuth()
   @Audit('Deleted a message', 'Message')
   remove(@Param('id', ParseUUIDPipe) id: string) {

@@ -286,6 +286,14 @@ Real keys and passwords go only in `backend/.env` (ignored by git). `.env.exampl
 - **Account lock.** The login limit above counts per IP address. On top of that, 10 wrong passwords
   in a row for one account (from any IP) lock it for 15 minutes, even for the right password. The admin
   and the main admin get an email, and Admin > Activity shows "Account locked".
+- **What each admin may open.** The main admin ticks the areas of every other admin in
+  Admin > Workers > Edit (Statistics, Bookings & customers, Calendar, Departures, Check-in,
+  Messages, Tour packages & quotations, Trips, Destinations, Reviews, Gallery, Workers & roles;
+  list in `src/common/permissions.ts`). Routes say what they need with `@Access('bookings')`
+  or `@OwnerOnly()`, and `AdminGuard` checks it on every request, so a change works at once.
+  The admin's open panel is told live (`access` event): its menu updates, lost pages close.
+  Live updates, alert emails and WhatsApp alerts only go to admins with that area.
+  Admins who existed before keep every area; new admins start with none.
 - **Two-step login.** After the password, a 6 digit code is emailed to the admin's personal email
   (valid 10 minutes, 5 tries). "Trust this device" skips the code on that browser for 7 days.
   Logging out keeps that trust; a new password (changed, reset, or set by the main admin) ends

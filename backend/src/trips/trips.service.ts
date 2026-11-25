@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { adminsWithAccess } from '../common/permissions';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, Trip } from '@prisma/client';
@@ -321,7 +322,11 @@ export class TripsService {
       where: { tripId: trip.id, email: dto.email.trim().toLowerCase() },
     });
     // Open admin panels show it at once
-    this.live.toAdmins('tripBooking', { ...booking, tripTitle: trip.title });
+    this.live.toAdmins(
+      'tripBooking',
+      { ...booking, tripTitle: trip.title },
+      'trips',
+    );
     void this.notifyAdmins('new', booking.id);
     return { id: booking.id };
   }
@@ -464,7 +469,11 @@ export class TripsService {
     const booking = await this.prisma.tripBooking.findUnique({ where: { id } });
     if (!booking) throw new NotFoundException('Booking not found');
     await this.prisma.tripBooking.delete({ where: { id } });
-    this.live.toAdmins('tripBooking:deleted', { id, tripId: booking.tripId });
+    this.live.toAdmins(
+      'tripBooking:deleted',
+      { id, tripId: booking.tripId },
+      'trips',
+    );
     if (booking.status !== 'Cancelled')
       void this.notifyWaitlist(booking.tripId);
     return { deleted: true };
@@ -550,7 +559,11 @@ export class TripsService {
       include: { trip: { select: { title: true } } },
     });
     const { trip, ...plain } = booking;
-    this.live.toAdmins('tripBooking', { ...plain, tripTitle: trip.title });
+    this.live.toAdmins(
+      'tripBooking',
+      { ...plain, tripTitle: trip.title },
+      'trips',
+    );
     return plain;
   }
 
@@ -741,7 +754,7 @@ export class TripsService {
       });
       if (!b) return;
       const admins = await this.prisma.worker.findMany({
-        where: { OR: [{ isAdmin: true }, { isOwner: true }], status: 'Active' },
+        where: adminsWithAccess('trips'), // only admins who handle trips
         select: { email: true, personalEmail: true },
       });
       const to = [
@@ -846,7 +859,7 @@ export class TripsService {
       create: { tripId, email, ...data },
       update: data,
     });
-    this.live.toAdmins('tripWaitlist', { tripId });
+    this.live.toAdmins('tripWaitlist', { tripId }, 'trips');
     return { waiting: true };
   }
 
@@ -862,7 +875,7 @@ export class TripsService {
     const entry = await this.prisma.tripWaitlist.findUnique({ where: { id } });
     if (!entry) throw new NotFoundException('Not on the waitlist');
     await this.prisma.tripWaitlist.delete({ where: { id } });
-    this.live.toAdmins('tripWaitlist', { tripId: entry.tripId });
+    this.live.toAdmins('tripWaitlist', { tripId: entry.tripId }, 'trips');
     return { deleted: true };
   }
 
@@ -906,7 +919,7 @@ export class TripsService {
           });
         }
       }
-      if (sent) this.live.toAdmins('tripWaitlist', { tripId });
+      if (sent) this.live.toAdmins('tripWaitlist', { tripId }, 'trips');
       return sent;
     } catch (error) {
       this.logger.error(`Waitlist emails for trip ${tripId} failed: ${error}`);

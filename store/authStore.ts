@@ -30,6 +30,7 @@ type AuthState = {
   resendLoginCode: (challenge: string) => Promise<void>;
 
   logout: () => void; // forgets the login in this browser only (used when the API answers 401)
+  refresh: () => Promise<void>; // reloads the logged-in worker (e.g. the main admin changed their access)
   signOut: () => Promise<void>; // also ends the login on the server (every device)
   updateAccount: (changes: AccountChanges) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
@@ -69,6 +70,11 @@ export const useAuthStore = create<AuthState>()(
         },
 
         logout: () => set({ worker: null }, false, "auth/logout"),
+
+        refresh: async () => {
+          const worker = await api<Worker>("/auth/me", { admin: true });
+          set({ worker }, false, "auth/refresh");
+        },
 
         signOut: async () => {
           try {

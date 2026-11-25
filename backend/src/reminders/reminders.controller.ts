@@ -1,6 +1,7 @@
 import { Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from '../common/admin.guard';
+import { OwnerOnly } from '../common/permissions';
 import { RemindersService } from './reminders.service';
 
 // The reminders run by themselves every morning at 8:00 (Kigali).
@@ -8,6 +9,7 @@ import { RemindersService } from './reminders.service';
 @ApiTags('Reminders')
 @Controller('reminders')
 @UseGuards(AdminGuard)
+@OwnerOnly()
 @ApiBearerAuth()
 export class RemindersController {
   constructor(private reminders: RemindersService) {}

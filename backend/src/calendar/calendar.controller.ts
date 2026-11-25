@@ -15,6 +15,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
+import { Access } from '../common/permissions';
 import { ReminderDoneDto, ReminderDto } from './calendar.dto';
 import { CalendarService } from './calendar.service';
 
@@ -28,6 +29,7 @@ import { CalendarService } from './calendar.service';
 @ApiTags('Calendar')
 @Controller('calendar')
 @UseGuards(AdminGuard)
+@Access('calendar')
 @ApiBearerAuth()
 export class CalendarController {
   constructor(private calendar: CalendarService) {}

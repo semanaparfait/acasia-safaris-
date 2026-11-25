@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { PERMISSIONS } from '../../common/permissions';
 import {
   IsArray,
   IsBoolean,
@@ -109,6 +110,13 @@ export class WorkerDto {
   @IsOptional()
   @IsBoolean()
   isAdmin?: boolean;
+
+  // The admin areas this admin may open (common/permissions.ts). Only the main admin
+  // changes them; leave it out to keep the current ones.
+  @IsOptional()
+  @IsArray()
+  @IsIn(PERMISSIONS, { each: true })
+  permissions?: string[];
 
   // Only sent when setting or changing the password. Leave it out to keep the old one.
   @IsOptional()
