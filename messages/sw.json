@@ -872,27 +872,6 @@
     "hours": "Jumatatu – Ijumaa 2:00 asubuhi – 12:00 jioni · Jumamosi 3:00 – 8:00 mchana"
   },
   "Gallery": {
-    "categories": {
-      "All": "Zote",
-      "Wildlife": "Wanyamapori",
-      "Landscapes": "Mandhari",
-      "Culture": "Utamaduni",
-      "People": "Watu"
-    },
-    "stories": {
-      "gorilla": {
-        "title": "Safari ya Sokwe",
-        "desc": "Matukio ya karibu na sokwe wa milimani walio hatarini katika misitu ya mianzi yenye ukungu."
-      },
-      "kivu": {
-        "title": "Machweo Ziwani Kivu",
-        "desc": "Machweo tulivu na mawimbi madogo ya ziwa zuri zaidi la Rwanda."
-      },
-      "culture": {
-        "title": "Roho ya Utamaduni",
-        "desc": "Nguvu, mila tajiri na ustahimilivu mkubwa wa watu wa Rwanda."
-      }
-    },
     "close": "Funga",
     "previous": "Picha iliyotangulia",
     "next": "Picha inayofuata",
@@ -900,9 +879,7 @@
     "title1": "Matukio ya",
     "title2": "Porini",
     "intro": "Sokwe ndani ya ukungu, machweo ya dhahabu juu ya Ziwa Kivu na tabasamu za watu tunaokutana nao njiani. Tazama matukio yaliyonaswa na wageni na waongozaji wetu.",
-    "browse": "Tazama Picha",
-    "curated": "Mkusanyiko Maalum",
-    "throughLens": "Kupitia Kamera Yetu",
+    "browse": "Tazama albamu",
     "photos": "{count, plural, one {Picha #} other {Picha #}}",
     "filmTag": "Filamu Maalum",
     "filmTitle1": "Hisi mdundo",
@@ -913,13 +890,18 @@
     "playFilm": "Cheza filamu",
     "filmAlt": "Filamu ya Visit Rwanda",
     "collections": "Mikusanyiko",
-    "visualStories": "Hadithi kwa Picha",
-    "view": "Tazama {category}",
     "yourTurn": "Zamu yako",
     "stepIn": "Ingia kwenye picha",
     "stepText": "Usitazame tu matukio haya, yaishi. Turuhusu tukuandalie safari ya Afrika isiyosahaulika.",
     "exploreTours": "Gundua Safari",
-    "contactUs": "Wasiliana Nasi"
+    "contactUs": "Wasiliana Nasi",
+    "album": "Albamu",
+    "allAlbums": "Albamu zote",
+    "albumsTitle": "Albamu Zetu",
+    "albumsText": "Kila albamu inasimulia hadithi ya mahali, safari au wakati maalum. Fungua moja kuona picha zake zote.",
+    "viewAlbum": "Tazama albamu",
+    "noAlbums": "Albamu zetu za picha zinakuja hivi karibuni.",
+    "emptyAlbum": "Bado hakuna picha kwenye albamu hii."
   },
   "Planner": {
     "draftRestored": "Tumehifadhi ulichojaza mara ya mwisho.",

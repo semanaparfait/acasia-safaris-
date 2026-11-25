@@ -280,12 +280,23 @@ export type Review = {
   createdAt: string;
 };
 
-export const galleryCategories = ["Wildlife", "Landscapes", "Culture", "People"] as const;
+// An album of the gallery page (Admin > Gallery): a name, a description and its photos
+export type GalleryAlbum = {
+  id: string;
+  name: string;
+  description: string;
+  coverId: string | null; // the photo chosen for its card (null = its newest photo)
+  cover: string | null; // the card's picture (a photo URL), null while the album is empty
+  photoCount: number;
+  createdAt: string;
+};
+
+export type GalleryAlbumInput = { name: string; description: string; coverId?: string | null };
 
 export type GalleryItem = {
   id: string;
   title: string;
-  category: string;
+  albumId: string;
   location?: string | null;
   image: string;
   createdAt: string;

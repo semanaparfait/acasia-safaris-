@@ -872,27 +872,6 @@
     "hours": "Lun – ven 8 h – 18 h · Sam 9 h – 14 h"
   },
   "Gallery": {
-    "categories": {
-      "All": "Tout",
-      "Wildlife": "Faune",
-      "Landscapes": "Paysages",
-      "Culture": "Culture",
-      "People": "Portraits"
-    },
-    "stories": {
-      "gorilla": {
-        "title": "La rencontre des gorilles",
-        "desc": "Des moments intimes avec les gorilles de montagne menacés, dans les forêts de bambous brumeuses."
-      },
-      "kivu": {
-        "title": "Heure dorée sur le Kivu",
-        "desc": "Couchers de soleil paisibles et douces vagues sur le plus beau lac du Rwanda."
-      },
-      "culture": {
-        "title": "L'âme de la culture",
-        "desc": "L'énergie vibrante, les riches traditions et la profonde résilience du peuple rwandais."
-      }
-    },
     "close": "Fermer",
     "previous": "Photo précédente",
     "next": "Photo suivante",
@@ -900,9 +879,7 @@
     "title1": "Instants",
     "title2": "sauvages",
     "intro": "Des gorilles dans la brume, des couchers de soleil dorés sur le lac Kivu et les sourires chaleureux des personnes rencontrées en chemin. Découvrez les moments capturés par nos voyageurs et nos guides.",
-    "browse": "Voir les photos",
-    "curated": "Collection choisie",
-    "throughLens": "À travers notre objectif",
+    "browse": "Parcourir les albums",
     "photos": "{count, plural, one {# photo} other {# photos}}",
     "filmTag": "Film à la une",
     "filmTitle1": "Ressentez le rythme",
@@ -913,13 +890,18 @@
     "playFilm": "Lire le film",
     "filmAlt": "Film Visit Rwanda",
     "collections": "Collections",
-    "visualStories": "Histoires en images",
-    "view": "Voir : {category}",
     "yourTurn": "À vous",
     "stepIn": "Entrez dans l'image",
     "stepText": "Ne vous contentez pas de regarder ces moments : vivez-les. Laissez-nous créer pour vous une aventure africaine inoubliable.",
     "exploreTours": "Voir les circuits",
-    "contactUs": "Nous contacter"
+    "contactUs": "Nous contacter",
+    "album": "Album",
+    "allAlbums": "Tous les albums",
+    "albumsTitle": "Nos albums",
+    "albumsText": "Chaque album raconte un lieu, un voyage ou un moment. Ouvrez-en un pour voir toutes ses photos.",
+    "viewAlbum": "Voir l'album",
+    "noAlbums": "Nos albums photo arrivent bientôt.",
+    "emptyAlbum": "Pas encore de photos dans cet album."
   },
   "Planner": {
     "draftRestored": "Nous avons gardé ce que vous aviez rempli la dernière fois.",

@@ -824,6 +824,16 @@ export const reviews = [
 
 // ---------- Gallery (the photos on the gallery page) ----------
 
+// The albums made from the categories below (Admin > Gallery can rename and describe them)
+export const GALLERY_ALBUMS: Record<string, string> = {
+  Wildlife:
+    'Mountain gorillas, chimpanzees, the Big Five and the birds of our national parks.',
+  Landscapes:
+    'Volcanoes, misty forests, Lake Kivu and the thousand hills of Rwanda.',
+  Culture: 'Dance, art, crafts and the traditions of Rwanda and East Africa.',
+  People: 'The guides, communities and travelers who make every journey.',
+};
+
 const PIN736 = 'https://i.pinimg.com/736x';
 
 export const gallery = [

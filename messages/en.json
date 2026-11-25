@@ -872,27 +872,6 @@
     "hours": "Mon – Fri 8:00 – 18:00 · Sat 9:00 – 14:00"
   },
   "Gallery": {
-    "categories": {
-      "All": "All",
-      "Wildlife": "Wildlife",
-      "Landscapes": "Landscapes",
-      "Culture": "Culture",
-      "People": "People"
-    },
-    "stories": {
-      "gorilla": {
-        "title": "The Gorilla Trek",
-        "desc": "Intimate moments with the endangered mountain gorillas in the misty bamboo forests."
-      },
-      "kivu": {
-        "title": "Golden Hour at Kivu",
-        "desc": "Serene sunsets and the gentle ripples of Rwanda's most stunning lake."
-      },
-      "culture": {
-        "title": "Spirit of the Culture",
-        "desc": "The vibrant energy, rich traditions and profound resilience of the Rwandan people."
-      }
-    },
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
@@ -900,9 +879,7 @@
     "title1": "Moments From",
     "title2": "The Wild",
     "intro": "Gorillas in the mist, golden sunsets over Lake Kivu and the warm smiles of the people we meet along the way. Take a look at the moments our guests and guides have captured.",
-    "browse": "Browse Photos",
-    "curated": "Curated Collection",
-    "throughLens": "Through Our Lens",
+    "browse": "Browse the albums",
     "photos": "{count, plural, one {# photo} other {# photos}}",
     "filmTag": "Featured Film",
     "filmTitle1": "Feel the rhythm",
@@ -913,13 +890,18 @@
     "playFilm": "Play film",
     "filmAlt": "Visit Rwanda film",
     "collections": "Collections",
-    "visualStories": "Visual Stories",
-    "view": "View {category}",
     "yourTurn": "Your turn",
     "stepIn": "Step into the picture",
     "stepText": "Don't just look at these moments, live them. Let us create an unforgettable African adventure for you.",
     "exploreTours": "Explore Tours",
-    "contactUs": "Contact Us"
+    "contactUs": "Contact Us",
+    "album": "Album",
+    "allAlbums": "All albums",
+    "albumsTitle": "Our Albums",
+    "albumsText": "Each album tells the story of a place, a trip or a moment. Open one to see all its photos.",
+    "viewAlbum": "View album",
+    "noAlbums": "Our photo albums are coming soon.",
+    "emptyAlbum": "No photos in this album yet."
   },
   "Planner": {
     "draftRestored": "We kept what you filled in last time.",

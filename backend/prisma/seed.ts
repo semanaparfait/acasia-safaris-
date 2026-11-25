@@ -3,7 +3,14 @@
 // Safe to run again: existing rows are updated, not duplicated.
 // Ids are UUIDs made by the database, so packages and destinations are matched by title.
 import { PrismaClient } from '@prisma/client';
-import { destinations, gallery, packages, reviews, workers } from './seed-data';
+import {
+  GALLERY_ALBUMS,
+  destinations,
+  gallery,
+  packages,
+  reviews,
+  workers,
+} from './seed-data';
 
 const prisma = new PrismaClient();
 
@@ -60,11 +67,21 @@ async function main() {
   }
 
   if ((await prisma.galleryItem.count()) === 0) {
+    // One album per category of the list (its description from GALLERY_ALBUMS)
+    const albums = new Map<string, string>();
     // Reversed so the first photo in the list is the newest (shown first)
-    for (const item of [...gallery].reverse()) {
-      await prisma.galleryItem.create({ data: item });
+    for (const { category, ...photo } of [...gallery].reverse()) {
+      let albumId = albums.get(category);
+      if (!albumId) {
+        const album = await prisma.galleryAlbum.create({
+          data: { name: category, description: GALLERY_ALBUMS[category] ?? '' },
+        });
+        albumId = album.id;
+        albums.set(category, albumId);
+      }
+      await prisma.galleryItem.create({ data: { ...photo, albumId } });
     }
-    console.log(`✔ ${gallery.length} gallery photos`);
+    console.log(`✔ ${gallery.length} gallery photos in ${albums.size} albums`);
   }
 }
 
