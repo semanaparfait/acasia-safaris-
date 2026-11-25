@@ -166,7 +166,7 @@ export default function WorkerForm({
           </Section>
 
           <Section icon={StickyNote} title="Private notes">
-            <textarea rows={4} className={inputClass} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} placeholder="Specialties, vehicle, certifications… (only admins see this)" />
+            <textarea rows={4} className={inputClass} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} placeholder="Specialties, vehicle, certifications… (never on the website; the worker can also edit these in Settings › My profile)" />
           </Section>
         </div>
 

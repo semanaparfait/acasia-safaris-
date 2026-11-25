@@ -123,6 +123,24 @@ describe('AuthService', () => {
     expect(storage.deleteByUrl).toHaveBeenCalledWith('old.png');
   });
 
+  it('saves their own About us profile and private notes', async () => {
+    const { service, worker } = setup();
+    worker.findUniqueOrThrow.mockResolvedValue(row());
+    worker.update.mockResolvedValue(row());
+
+    await service.updateAccount('w1', {
+      bio: '  Guide since 2015.  ',
+      notes: '',
+      socials: { instagram: 'https://instagram.com/jean', x: '  ' },
+    });
+    const [{ data }] = worker.update.mock.calls[0] as [
+      { data: Record<string, unknown> },
+    ];
+    expect(data.bio).toBe('Guide since 2015.');
+    expect(data.notes).toBeNull(); // "" removes them
+    expect(data.socials).toEqual({ instagram: 'https://instagram.com/jean' });
+  });
+
   it('refuses a wrong password and keeps the old one', async () => {
     const { service, worker } = setup();
     worker.findUniqueOrThrow.mockResolvedValue({

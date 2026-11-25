@@ -6,13 +6,16 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { api } from "@/lib/api";
-import type { Worker } from "@/lib/types";
+import type { Socials, Worker } from "@/lib/types";
 
 export type AccountChanges = {
   name?: string;
   personalEmail?: string; // where the forgot-password and sign-in codes are sent
   phone?: string;
   photo?: string; // "" removes the photo
+  bio?: string; // About us page ("" removes it)
+  socials?: Socials; // full links; empty ones are removed
+  notes?: string; // private notes ("" removes them)
   currentPassword?: string; // needed to change the personal email
 };
 

@@ -7,6 +7,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { SOCIAL_NETWORKS } from '../workers/dto/worker.dto';
 import { hasAccess } from '../common/permissions';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
@@ -386,7 +387,15 @@ export class AuthService {
 
   // An admin edits their own account
   async updateAccount(workerId: string, dto: UpdateAccountDto) {
-    const { personalEmail: newEmail, photo, currentPassword, ...fields } = dto;
+    const {
+      personalEmail: newEmail,
+      photo,
+      currentPassword,
+      bio,
+      socials,
+      notes,
+      ...fields
+    } = dto;
     const current = await this.prisma.worker.findUniqueOrThrow({
       where: { id: workerId },
     });
@@ -403,6 +412,18 @@ export class AuthService {
         ...fields,
         personalEmail,
         photo: photo === undefined ? undefined : photo || null,
+        // Their About us profile and private notes ("" = remove)
+        bio: bio === undefined ? undefined : bio.trim() || null,
+        notes: notes === undefined ? undefined : notes.trim() || null,
+        socials:
+          socials === undefined
+            ? undefined
+            : Object.fromEntries(
+                SOCIAL_NETWORKS.flatMap((network) => {
+                  const link = socials[network]?.trim();
+                  return link ? [[network, link]] : [];
+                }),
+              ),
       },
     });
 

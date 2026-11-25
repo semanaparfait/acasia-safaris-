@@ -1,11 +1,15 @@
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   Matches,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { SocialsDto } from '../../workers/dto/worker.dto';
 
 // What an admin can change on their own account. Every field is optional.
 // Role, status and admin access are changed in Admin > Workers instead.
@@ -30,6 +34,25 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsString()
   photo?: string;
+
+  // About us page: a few lines for visitors, shown when the main admin puts
+  // this worker on the website (Admin > Workers). "" removes it.
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  bio?: string;
+
+  // Links to their social profiles (empty ones are removed)
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SocialsDto)
+  socials?: SocialsDto;
+
+  // Private notes: never on the website (admins who manage workers see them). "" removes them.
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  notes?: string;
 
   // Needed to change the personal email, because it can reset the password
   @IsOptional()

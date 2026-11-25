@@ -4,7 +4,8 @@ import { PhoneField } from "@/components/ui/phone-field";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Shield, User, Users, KeyRound, MessageSquareText, Pencil, Plus, Trash2, ExternalLink, MailCheck, Save } from "lucide-react";
+import { Shield, User, Users, KeyRound, MessageSquareText, Pencil, Plus, Trash2, ExternalLink, MailCheck, Save, Globe, StickyNote, Contact } from "lucide-react";
+import { SOCIAL_NETWORKS, toLink } from "@/lib/socials";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkersStore } from "@/store/workersStore";
@@ -16,6 +17,7 @@ import { Avatar, Badge, Button, Card, CardHeader, PageHeader, inputClass, labelC
 // Only settings that really work. Company contact details live in lib/company.ts.
 const sections = [
   { id: "account", label: "My account", icon: User },
+  { id: "profile", label: "My profile", icon: Contact },
   { id: "replies", label: "Saved replies", icon: MessageSquareText },
   { id: "team", label: "Team", icon: Users },
   { id: "security", label: "Security", icon: Shield },
@@ -26,7 +28,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" subtitle="Your account, saved replies, team access and security." />
+      <PageHeader title="Settings" subtitle="Your account, your About us profile, saved replies, team access and security." />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
         <nav className="flex lg:flex-col gap-1 overflow-x-auto">
@@ -47,6 +49,7 @@ export default function SettingsPage() {
         </nav>
 
         {tab === "account" && <AccountForm />}
+        {tab === "profile" && <ProfileForm />}
         {tab === "replies" && <SavedRepliesCard />}
         {tab === "team" && <TeamCard />}
         {tab === "security" && (
@@ -282,6 +285,108 @@ function AccountForm() {
         </div>
       </form>
     </Card>
+  );
+}
+
+// The logged-in worker edits their own About us profile (bio, social links) and private notes.
+// Whether they appear on the website, and their title there, stay with the admins of Workers.
+function ProfileForm() {
+  const me = useAuthStore((s) => s.worker);
+  const updateAccount = useAuthStore((s) => s.updateAccount);
+  const [bio, setBio] = useState(me?.bio ?? "");
+  const [socials, setSocials] = useState<Record<string, string>>({ ...(me?.socials ?? {}) });
+  const [notes, setNotes] = useState(me?.notes ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateAccount({
+        bio: bio.trim(),
+        notes: notes.trim(),
+        // "instagram.com/jean" becomes a full link; empty ones are left out
+        socials: Object.fromEntries(SOCIAL_NETWORKS.map(({ key }) => [key, toLink(socials[key] ?? "")]).filter(([, v]) => v)),
+      });
+      toast.success("Profile saved");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onWebsite = Boolean(me?.showOnWebsite && me?.status === "Active");
+
+  return (
+    <form onSubmit={save} className="space-y-6">
+      <Card>
+        <CardHeader
+          title="About us profile"
+          subtitle="What visitors read about you in “Meet the team” on the website."
+        />
+        <div className="px-5 pb-5 space-y-4">
+          <p className={`flex items-start gap-2 rounded-xl px-4 py-3 text-xs ${onWebsite ? "bg-emerald-50 text-emerald-800" : "bg-[#f7f5f0] text-[#0a120b]/60"}`}>
+            <Globe className="size-4 shrink-0" />
+            {onWebsite
+              ? `You are shown on the About us page${me?.companyRole ? ` as “${me.companyRole}”` : ""}. Changes appear there as soon as you save.`
+              : "You are not shown on the About us page yet: an admin turns it on in Workers. You can prepare your bio and links now."}
+          </p>
+          <div>
+            <label className={labelClass}>Bio</label>
+            <textarea
+              rows={5}
+              maxLength={1000}
+              className={`${inputClass} resize-none`}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="A few lines for visitors: your experience, the parks you know best, what you love about safaris…"
+            />
+            <p className="mt-1 text-right text-xs text-[#0a120b]/40">{bio.length}/1000</p>
+          </div>
+          <div>
+            <p className={labelClass}>Social media</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {SOCIAL_NETWORKS.map(({ key, label, icon: Icon, placeholder }) => (
+                <div key={key} className="relative">
+                  <Icon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#0a120b]/40" aria-hidden />
+                  <input
+                    className={`${inputClass} pl-9`}
+                    value={socials[key] ?? ""}
+                    onChange={(e) => setSocials({ ...socials, [key]: e.target.value })}
+                    placeholder={placeholder}
+                    aria-label={label}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-[#0a120b]/45">Leave empty the ones you don&apos;t use. Only filled-in links are shown.</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Private notes" subtitle="Never shown on the website. The admins who manage Workers can read them." />
+        <div className="px-5 pb-5">
+          <div className="relative">
+            <StickyNote className="absolute left-3 top-3 size-4 text-[#0a120b]/35" aria-hidden />
+            <textarea
+              rows={5}
+              maxLength={2000}
+              className={`${inputClass} resize-none pl-9`}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Specialties, languages you guide in, certifications, driving licence, allergies…"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end border-t border-[#0a120b]/[0.06] px-5 py-4">
+          <Button type="submit" disabled={saving}>
+            <Save className="size-4" /> {saving ? "Saving…" : "Save profile"}
+          </Button>
+        </div>
+      </Card>
+    </form>
   );
 }
 
