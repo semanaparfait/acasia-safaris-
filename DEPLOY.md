@@ -29,6 +29,37 @@ visitor ──https──> Vercel (website, /api is forwarded) ──https──
 Keep the **starter** plan (paid): on the free plan the API sleeps, so the 8:00 reminder emails would not
 be sent and the first visitor waits ~30 s.
 
+## 2b. The API on Azure App Service (instead of Render)
+Paid from the Azure for Students credit (Basic B1, about $12-15 a month), always awake, and
+email ports are open (Render's free plan blocks them, so login codes could not be sent).
+Deployment is automatic: `.github/workflows/deploy-backend.yml` (app name `acacia-safaris`).
+
+1. **Create the Web App** (portal > App Services > Create > Web App): Code, **Node 22 LTS**,
+   **Linux**, an allowed region (Azure for Students only allows a few: Policy > Assignments >
+   "Allowed resource deployment regions"; we use **Switzerland North**), plan **Basic B1**,
+   continuous deployment off, Application Insights **No**.
+2. **Settings > Configuration > General settings**: startup command
+   `npx prisma migrate deploy && node dist/main`, **Web sockets On**, **Always on On**,
+   **SCM Basic Auth Publishing Credentials On**. Save.
+3. **Settings > Environment variables**: the values from Render (same `JWT_SECRET`), plus
+   `PUBLIC_API_URL` = the app's address, `NODE_ENV=production`, `TRUST_PROXY=2`,
+   `CHAT_BUCKET=chat`, `SCM_DO_BUILD_DURING_DEPLOYMENT=false`. Apply.
+4. **Overview > Download publish profile** > GitHub > Settings > Secrets and variables >
+   Actions > secret `AZURE_WEBAPP_PUBLISH_PROFILE` = the whole file. Then GitHub > Actions >
+   Deploy backend > Run workflow. Check `https://<app address>/api/packages`.
+5. **Photos saved with the old address**: app > Development Tools > **SSH** > Go, then once:
+   ```
+   cd /home/site/wwwroot
+   npx ts-node prisma/move-file-urls.ts https://<old render address> https://<app address> --dry
+   npx ts-node prisma/move-file-urls.ts https://<old render address> https://<app address>
+   ```
+6. **Vercel**: `NEXT_PUBLIC_API_URL` = `https://<app address>/api`, then redeploy the website.
+7. **Budget alert**: Cost Management > Budgets > Add (e.g. $15 a month, email at 80%).
+   When the $100 credit is used up, Azure stops the app: plan ahead (renew the student offer
+   each year, or move to a paid plan).
+
+Logs: app > **Log stream**. After changing a setting the app restarts by itself.
+
 ## 3. The website on Vercel
 1. vercel.com > **Add New > Project** > import the repository (root folder: the repository root).
 2. Environment variables:

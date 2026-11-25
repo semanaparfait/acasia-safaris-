@@ -1,0 +1,65 @@
+# Puts the backend (NestJS API) online on Azure App Service, on every push to main that
+# changes backend/ (or by hand: GitHub > Actions > Deploy backend > Run workflow).
+#
+# Built and tested here, then sent ready to run: Azure only starts it with the startup command
+#   npx prisma migrate deploy && node dist/main
+# (applies new database changes, then starts the API). Setup: DEPLOY.md.
+#
+# Needs the repository secret AZURE_WEBAPP_PUBLISH_PROFILE
+# (Azure > the web app > Overview > Download publish profile, paste the whole file).
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", ".github/workflows/deploy-backend.yml"]
+  workflow_dispatch:
+
+# One deployment at a time; a newer push waits for the running one
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+env:
+  AZURE_WEBAPP_NAME: acacia-safaris
+
+jobs:
+  deploy:
+    name: Build, test and deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Placeholders for the unit tests (they never touch a real database)
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # Also runs "prisma generate" (the database client for Azure's Linux)
+      - run: npm ci
+      - name: Unit tests
+        run: npx jest --ci
+      - name: Build
+        run: npm run build
+
+      # The built API, its node_modules (prisma included: the startup command uses it to
+      # apply database changes), the migrations and the logo used in emails / PDFs
+      - name: Package
+        run: |
+          mkdir -p ../deploy
+          cp -r dist node_modules prisma assets package.json package-lock.json ../deploy/
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deploy
