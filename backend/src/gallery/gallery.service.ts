@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import type { Lang } from '../translations/content';
+import { TranslationsService } from '../translations/translations.service';
 import { GalleryAlbumDto, GalleryItemDto } from './dto/gallery.dto';
 
 // The gallery page: albums (a name, a description, a cover photo) and their photos.
@@ -14,14 +16,17 @@ export class GalleryService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private translations: TranslationsService,
   ) {}
 
   // ---------- Albums ----------
 
-  // Every album with its number of photos and the picture of its card
-  async albums() {
+  // Every album with its number of photos and the picture of its card,
+  // in the visitor's language (no lang = English, as typed in Admin > Gallery)
+  async albums(lang?: Lang) {
     const albums = await this.prisma.galleryAlbum.findMany({
       orderBy: { createdAt: 'desc' },
+      omit: { translations: false },
       include: {
         _count: { select: { photos: true } },
         photos: {
@@ -38,7 +43,7 @@ export class GalleryService {
       select: { id: true, image: true },
     });
     return albums.map(({ _count, photos, ...album }) => ({
-      ...album,
+      ...this.translations.localizeAlbum(album, lang),
       photoCount: _count.photos,
       cover:
         covers.find((c) => c.id === album.coverId)?.image ??
@@ -53,13 +58,15 @@ export class GalleryService {
     return album;
   }
 
-  createAlbum(dto: GalleryAlbumDto) {
-    return this.prisma.galleryAlbum.create({
+  async createAlbum(dto: GalleryAlbumDto) {
+    const album = await this.prisma.galleryAlbum.create({
       data: {
         name: dto.name.trim(),
         description: dto.description?.trim() ?? '',
       },
     });
+    this.translations.refreshLater('album', album.id); // French + Swahili, in the background
+    return album;
   }
 
   async updateAlbum(id: string, dto: GalleryAlbumDto) {
@@ -75,7 +82,7 @@ export class GalleryService {
         );
       }
     }
-    return this.prisma.galleryAlbum.update({
+    const album = await this.prisma.galleryAlbum.update({
       where: { id },
       data: {
         name: dto.name.trim(),
@@ -83,6 +90,8 @@ export class GalleryService {
         coverId: dto.coverId ?? null,
       },
     });
+    this.translations.refreshLater('album', id); // only new or changed texts
+    return album;
   }
 
   // The album and every photo in it (their files too)
@@ -99,8 +108,12 @@ export class GalleryService {
 
   // ---------- Photos ----------
 
-  findAll() {
-    return this.prisma.galleryItem.findMany({ orderBy: { createdAt: 'desc' } });
+  // Every photo; with lang, its title and place in that language
+  async findAll(lang?: Lang) {
+    const photos = await this.prisma.galleryItem.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return this.translations.localizePhotos(photos, lang);
   }
 
   async findOne(id: string) {
@@ -111,7 +124,9 @@ export class GalleryService {
 
   async create(dto: GalleryItemDto) {
     await this.checkAlbum(dto.albumId);
-    return this.prisma.galleryItem.create({ data: dto });
+    const item = await this.prisma.galleryItem.create({ data: dto });
+    this.translations.refreshLater('album', dto.albumId); // its title and place
+    return item;
   }
 
   async update(id: string, dto: GalleryItemDto) {
@@ -125,6 +140,9 @@ export class GalleryService {
     if (old.albumId !== dto.albumId) await this.forgetCover(old.albumId, id);
     // The photo was replaced: remove the old file from the bucket
     if (old.image !== dto.image) await this.storage.deleteByUrl(old.image);
+    this.translations.refreshLater('album', dto.albumId);
+    if (old.albumId !== dto.albumId)
+      this.translations.refreshLater('album', old.albumId);
     return item;
   }
 
@@ -133,6 +151,7 @@ export class GalleryService {
     await this.prisma.galleryItem.delete({ where: { id } });
     await this.forgetCover(item.albumId, id);
     await this.storage.deleteByUrl(item.image);
+    this.translations.refreshLater('album', item.albumId); // forgets its title's translation
     return { deleted: true };
   }
 

@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { TranslationsService } from '../translations/translations.service';
 import { GalleryService } from './gallery.service';
 
 const setup = () => {
@@ -23,6 +24,11 @@ const setup = () => {
   const service = new GalleryService(
     { galleryAlbum, galleryItem } as unknown as PrismaService,
     storage as unknown as StorageService,
+    {
+      refreshLater: jest.fn(),
+      localizeAlbum: <T>(a: T) => a,
+      localizePhotos: <T>(p: T) => p,
+    } as unknown as TranslationsService,
   );
   return { service, galleryAlbum, galleryItem, storage };
 };

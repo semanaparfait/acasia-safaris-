@@ -1,4 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { TranslationsService } from '../translations/translations.service';
 import { LiveGateway } from '../live/live.gateway';
 import { RolesService } from '../roles/roles.service';
 import { StorageService } from '../storage/storage.service';
@@ -32,6 +33,7 @@ const setup = () => {
     {} as StorageService,
     { checkExists: jest.fn() } as unknown as RolesService,
     live as unknown as LiveGateway,
+    { refreshLater: jest.fn() } as unknown as TranslationsService,
   );
   return { service, worker, live };
 };

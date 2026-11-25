@@ -8,6 +8,7 @@ import type { Trip, TripInput } from "@/lib/types";
 import { useTripsStore } from "@/store/tripsStore";
 import { Card, EmptyState } from "../../components/ui";
 import TripForm, { toInput } from "../TripForm";
+import TranslationsPanel from "../../components/TranslationsPanel";
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -41,12 +42,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
   // key: after saving, the form starts again from what the server kept
   return (
-    <TripForm
-      key={trip.updatedAt}
-      initial={toInput(trip)}
-      isNew={false}
-      previewHref={trip.active ? `/trips/${trip.id}` : undefined}
-      onSave={save}
-    />
+    <>
+      <TripForm
+        key={trip.updatedAt}
+        initial={toInput(trip)}
+        isNew={false}
+        previewHref={trip.active ? `/trips/${trip.id}` : undefined}
+        onSave={save}
+      />
+      {/* French and Swahili texts of the trip page (price option names stay in English) */}
+      <div className="mt-6">
+        <TranslationsPanel kind="trips" id={trip.id} version={trip.updatedAt} />
+      </div>
+    </>
   );
 }

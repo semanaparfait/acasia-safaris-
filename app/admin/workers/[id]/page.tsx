@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft, Pencil, Trash2, Mail, Phone, Languages, Briefcase, CalendarDays, ShieldCheck, StickyNote, Clock, KeyRound } from "lucide-react";
 import { useWorkersStore } from "@/store/workersStore";
 import { PERMISSIONS } from "@/lib/permissions";
+import TranslationsPanel from "../../components/TranslationsPanel";
 import { Button, Card, ConfirmDialog, EmptyState, StatusBadge } from "../../components/ui";
 import { AdminBadge, LanguageChips, WorkerPhoto, useRoles, useWorker, useWorkerPermissions } from "../parts";
 
@@ -137,6 +138,13 @@ export default function WorkerDetailsPage() {
           </InfoCard>
         </div>
       </div>
+
+      {/* About us page: their title and bio in French and Swahili */}
+      {w.showOnWebsite && (w.companyRole || w.bio) && (
+        <div className="mt-6">
+          <TranslationsPanel kind="workers" id={w.id} version={`${w.companyRole}|${w.bio}`} />
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmDelete}

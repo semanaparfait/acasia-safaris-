@@ -7,10 +7,12 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Put,
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import { isLang } from '../translations/content';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard } from '../common/admin.guard';
@@ -57,8 +59,8 @@ export class TripsController {
   constructor(private trips: TripsService) {}
 
   @Get()
-  findPublished() {
-    return this.trips.findPublished();
+  findPublished(@Query('lang') lang?: string) {
+    return this.trips.findPublished(isLang(lang) ? lang : undefined);
   }
 
   @Get('all')
@@ -223,8 +225,11 @@ export class TripsController {
   }
 
   @Get(':id')
-  findPublishedOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.trips.findPublishedOne(id);
+  findPublishedOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.trips.findPublishedOne(id, isLang(lang) ? lang : undefined);
   }
 
   @Post()

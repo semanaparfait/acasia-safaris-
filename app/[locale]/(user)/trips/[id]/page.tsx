@@ -12,7 +12,7 @@ type Props = { params: Promise<{ locale: string; id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
-  const trip = await getTrip(id);
+  const trip = await getTrip(id, locale);
   if (!trip) return {};
   const text = trip.tagline ? `${trip.tagline}. ${trip.description}` : trip.description;
   const description = text.length > 160 ? `${text.slice(0, 157)}…` : text;
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TripDetailPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const trip = await getTrip(id);
+  const trip = await getTrip(id, locale);
   if (!trip) notFound();
 
   // Structured data (schema.org): the trip, its days and one offer per price option

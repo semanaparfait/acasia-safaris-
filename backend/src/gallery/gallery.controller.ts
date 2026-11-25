@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Audit } from '../audit/audit.decorator';
@@ -15,6 +16,7 @@ import { AdminGuard } from '../common/admin.guard';
 import { Access } from '../common/permissions';
 import { GalleryAlbumDto, GalleryItemDto } from './dto/gallery.dto';
 import { GalleryService } from './gallery.service';
+import { isLang } from '../translations/content';
 
 // Routes under /api/gallery. Reading is public, changing needs an admin with Gallery access.
 //   GET    /api/gallery                 every photo (each with its albumId)
@@ -30,9 +32,10 @@ export class GalleryController {
 
   // ---------- Albums ----------
 
+  // ?lang=fr / ?lang=sw: names and descriptions in that language
   @Get('albums')
-  albums() {
-    return this.galleryService.albums();
+  albums(@Query('lang') lang?: string) {
+    return this.galleryService.albums(isLang(lang) ? lang : undefined);
   }
 
   @Post('albums')
@@ -68,8 +71,8 @@ export class GalleryController {
   // ---------- Photos ----------
 
   @Get()
-  findAll() {
-    return this.galleryService.findAll();
+  findAll(@Query('lang') lang?: string) {
+    return this.galleryService.findAll(isLang(lang) ? lang : undefined);
   }
 
   @Post()

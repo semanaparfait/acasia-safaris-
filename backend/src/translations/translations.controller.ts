@@ -14,18 +14,18 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Audit } from '../audit/audit.decorator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
-import { OwnerOnly, checkAccess } from '../common/permissions';
+import { OwnerOnly, checkAccess, type Permission } from '../common/permissions';
 import { isLang, type Kind } from './content';
 import { TRANSLATION_ERROR } from './machine-translate';
 import { SaveTranslationsDto } from './translations.dto';
 import { TranslationsService } from './translations.service';
 
-// French and Swahili texts of packages and destinations (admin).
+// French and Swahili texts (admin).
 //   GET  /api/translations/packages/<id>             every text, its translations and their status
 //   PUT  /api/translations/packages/<id>/fr          save corrections { values: { "<key>": "text" } }
-//   POST /api/translations/packages/<id>/refresh     translate what is missing now (Google)
-//   POST /api/translations/refresh-all               the same for every package and destination
-// Same routes with "destinations" instead of "packages".
+//   POST /api/translations/packages/<id>/refresh     translate what is missing now
+//   POST /api/translations/refresh-all               the same for everything (main admin)
+// Same routes with "destinations", "trips", "albums" or "workers" instead of "packages".
 @ApiTags('Translations')
 @Controller('translations')
 @UseGuards(AdminGuard)
@@ -85,15 +85,22 @@ export class TranslationsController {
   }
 }
 
-// Also checks the admin may edit that kind (Tour packages or Destinations access)
+// "packages" -> "package"… Also checks the admin may edit that kind (their access area)
+const KIND_OF: Record<string, [Kind, Permission]> = {
+  packages: ['package', 'packages'],
+  destinations: ['destination', 'destinations'],
+  trips: ['trip', 'trips'],
+  albums: ['album', 'gallery'],
+  workers: ['worker', 'workers'],
+};
+
 function toKind(kind: string, request: AdminRequest): Kind {
-  if (kind === 'packages') {
-    checkAccess(request.worker, 'packages');
-    return 'package';
+  const found = KIND_OF[kind];
+  if (!found) {
+    throw new BadRequestException(
+      `Use one of: ${Object.keys(KIND_OF).join(', ')}`,
+    );
   }
-  if (kind === 'destinations') {
-    checkAccess(request.worker, 'destinations');
-    return 'destination';
-  }
-  throw new BadRequestException('Use "packages" or "destinations"');
+  checkAccess(request.worker, found[1]);
+  return found[0];
 }

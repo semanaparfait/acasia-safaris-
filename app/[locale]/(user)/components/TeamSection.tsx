@@ -7,8 +7,8 @@ import SmartImage from "@/components/ui/smart-image";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Languages, Mail, Phone, X } from "lucide-react";
-import { api } from "@/lib/api";
-import { useTranslations } from "next-intl";
+import { api, langQuery } from "@/lib/api";
+import { useLocale, useTranslations } from "next-intl";
 import { usedSocials } from "@/lib/socials";
 import type { TeamMember } from "@/lib/types";
 
@@ -30,14 +30,16 @@ function Photo({ member, className }: { member: TeamMember; className: string })
 
 export default function TeamSection() {
   const t = useTranslations("Team");
+  const locale = useLocale();
   const [team, setTeam] = useState<TeamMember[] | null>(null); // null = loading
   const [open, setOpen] = useState<TeamMember | null>(null);
 
   useEffect(() => {
-    api<TeamMember[]>("/team")
+    // Titles and bios in the page's language
+    api<TeamMember[]>(`/team${langQuery(locale)}`)
       .then(setTeam)
       .catch(() => setTeam([]));
-  }, []);
+  }, [locale]);
 
   // Nobody is shown on the website yet: hide the whole section
   if (team && team.length === 0) return null;

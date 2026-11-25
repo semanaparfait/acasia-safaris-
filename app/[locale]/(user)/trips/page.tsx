@@ -24,6 +24,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TripsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const trips = await getTrips();
+  const trips = await getTrips(locale);
   return <TripsList trips={trips} />;
 }

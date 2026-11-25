@@ -1,4 +1,5 @@
-// Which texts of a package / destination are translated, and how a translation is applied.
+// Which texts of a package, destination, trip, gallery album or team member are translated,
+// and how a translation is applied.
 // Pure functions (no database), so they are easy to test: see content.spec.ts.
 //
 // A record's translations are stored in its "translations" column:
@@ -24,7 +25,14 @@ export type Translations = Partial<Record<Lang, LangTranslations>>;
 export type Unit = { key: string; en: string };
 
 // The kinds of records that are translated
-export type Kind = 'package' | 'destination';
+export type Kind = 'package' | 'destination' | 'trip' | 'album' | 'worker';
+export const KINDS: Kind[] = [
+  'package',
+  'destination',
+  'trip',
+  'album',
+  'worker',
+];
 
 type Day = { day: number; title: string; description: string };
 
@@ -52,6 +60,37 @@ export type DestinationTexts = {
   fromKigali: string;
   highlights: string[];
 };
+
+// A special trip (Admin > Trips). Price option names and units stay in English: bookings
+// and the price calculation use them. Their description and included/excluded items are translated.
+type TripDay = { title?: string; description?: string };
+type TripPriceTexts = {
+  description?: string;
+  included?: string[];
+  excluded?: string[];
+};
+export type TripTexts = {
+  title: string;
+  tagline?: string | null;
+  location: string;
+  duration?: string | null;
+  groupSize?: string | null;
+  description: string;
+  highlights: string[];
+  itinerary?: unknown; // [{ title, description }]
+  prices?: unknown; // [{ name, unit, description, included[], excluded[] }]
+};
+
+// A gallery album, and the titles and places of its photos
+type PhotoTexts = { title: string; location?: string | null };
+export type AlbumTexts = {
+  name: string;
+  description: string;
+  photos?: PhotoTexts[];
+};
+
+// A team member on the About us page
+export type WorkerTexts = { companyRole?: string | null; bio?: string | null };
 
 // Translated fields, in the order the admin sees them
 const PACKAGE_FIELDS = [
@@ -110,10 +149,89 @@ export function destinationUnits(d: DestinationTexts): Unit[] {
   return dedupe(filled(units));
 }
 
-export const unitsOf = (kind: Kind, record: PackageTexts | DestinationTexts) =>
-  kind === 'package'
-    ? packageUnits(record as PackageTexts)
-    : destinationUnits(record as DestinationTexts);
+const TRIP_FIELDS = [
+  'title',
+  'tagline',
+  'location',
+  'duration',
+  'groupSize',
+  'description',
+] as const;
+
+// JSON lists (trip itinerary and prices) read safely
+const objects = <T>(value: unknown): T[] =>
+  Array.isArray(value)
+    ? (value.filter((v) => v && typeof v === 'object') as T[])
+    : [];
+const texts = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.filter((v): v is string => typeof v === 'string')
+    : [];
+
+export function tripUnits(t: TripTexts): Unit[] {
+  const units: Unit[] = TRIP_FIELDS.map((f) => ({ key: f, en: t[f] ?? '' }));
+  for (const en of t.highlights ?? [])
+    units.push({ key: itemKey('highlights', en), en });
+  for (const d of objects<TripDay>(t.itinerary)) {
+    if (d.title)
+      units.push({ key: itemKey('itinerary.title', d.title), en: d.title });
+    if (d.description)
+      units.push({
+        key: itemKey('itinerary.description', d.description),
+        en: d.description,
+      });
+  }
+  for (const p of objects<TripPriceTexts>(t.prices)) {
+    if (p.description)
+      units.push({
+        key: itemKey('prices.description', p.description),
+        en: p.description,
+      });
+    for (const en of texts(p.included))
+      units.push({ key: itemKey('prices.included', en), en });
+    for (const en of texts(p.excluded))
+      units.push({ key: itemKey('prices.excluded', en), en });
+  }
+  return dedupe(filled(units));
+}
+
+export function albumUnits(a: AlbumTexts): Unit[] {
+  const units: Unit[] = [
+    { key: 'name', en: a.name },
+    { key: 'description', en: a.description ?? '' },
+  ];
+  for (const p of a.photos ?? []) {
+    units.push({ key: itemKey('photos.title', p.title), en: p.title });
+    if (p.location)
+      units.push({
+        key: itemKey('photos.location', p.location),
+        en: p.location,
+      });
+  }
+  return dedupe(filled(units));
+}
+
+export function workerUnits(w: WorkerTexts): Unit[] {
+  return filled([
+    { key: 'companyRole', en: w.companyRole ?? '' },
+    { key: 'bio', en: w.bio ?? '' },
+  ]);
+}
+
+export function unitsOf(kind: Kind, record: unknown): Unit[] {
+  switch (kind) {
+    case 'package':
+      return packageUnits(record as PackageTexts);
+    case 'destination':
+      return destinationUnits(record as DestinationTexts);
+    case 'trip':
+      return tripUnits(record as TripTexts);
+    case 'album':
+      return albumUnits(record as AlbumTexts);
+    case 'worker':
+      return workerUnits(record as WorkerTexts);
+  }
+}
 
 // The same item twice in a list has one translation
 function dedupe(units: Unit[]) {
@@ -215,6 +333,102 @@ export function applyDestination<T extends DestinationTexts>(
     (out as Record<string, unknown>)[list] = pickList(tr, list, d[list]);
   }
   return out;
+}
+
+export function applyTrip<T extends TripTexts>(
+  t: T,
+  tr: LangTranslations | undefined,
+): T {
+  const out: T = { ...t };
+  for (const f of TRIP_FIELDS) {
+    const en = t[f];
+    if (typeof en === 'string' && en)
+      (out as Record<string, unknown>)[f] = pick(tr, f, en);
+  }
+  out.highlights = pickList(tr, 'highlights', t.highlights);
+  if (Array.isArray(t.itinerary)) {
+    out.itinerary = objects<TripDay>(t.itinerary).map((d) => ({
+      ...d,
+      ...(d.title
+        ? { title: pick(tr, itemKey('itinerary.title', d.title), d.title) }
+        : {}),
+      ...(d.description
+        ? {
+            description: pick(
+              tr,
+              itemKey('itinerary.description', d.description),
+              d.description,
+            ),
+          }
+        : {}),
+    }));
+  }
+  if (Array.isArray(t.prices)) {
+    // name and unit stay as they are (bookings use them)
+    out.prices = objects<TripPriceTexts>(t.prices).map((p) => ({
+      ...p,
+      ...(p.description
+        ? {
+            description: pick(
+              tr,
+              itemKey('prices.description', p.description),
+              p.description,
+            ),
+          }
+        : {}),
+      ...(Array.isArray(p.included)
+        ? { included: pickList(tr, 'prices.included', texts(p.included)) }
+        : {}),
+      ...(Array.isArray(p.excluded)
+        ? { excluded: pickList(tr, 'prices.excluded', texts(p.excluded)) }
+        : {}),
+    }));
+  }
+  return out;
+}
+
+export function applyAlbum<T extends AlbumTexts>(
+  a: T,
+  tr: LangTranslations | undefined,
+): T {
+  return {
+    ...a,
+    name: pick(tr, 'name', a.name),
+    description: a.description ? pick(tr, 'description', a.description) : '',
+  };
+}
+
+// A photo, with the translations of its album
+export function applyPhoto<T extends PhotoTexts>(
+  p: T,
+  tr: LangTranslations | undefined,
+): T {
+  return {
+    ...p,
+    title: pick(tr, itemKey('photos.title', p.title), p.title),
+    ...(p.location
+      ? {
+          location: pick(
+            tr,
+            itemKey('photos.location', p.location),
+            p.location,
+          ),
+        }
+      : {}),
+  };
+}
+
+export function applyWorker<T extends WorkerTexts>(
+  w: T,
+  tr: LangTranslations | undefined,
+): T {
+  return {
+    ...w,
+    ...(w.companyRole
+      ? { companyRole: pick(tr, 'companyRole', w.companyRole) }
+      : {}),
+    ...(w.bio ? { bio: pick(tr, 'bio', w.bio) } : {}),
+  };
 }
 
 // The stored JSON, read safely (an old or broken value counts as "no translations")

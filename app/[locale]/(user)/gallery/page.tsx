@@ -7,7 +7,7 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SmartImage from "@/components/ui/smart-image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, Images, Link2, MapPin, Maximize2, Play, X } from "lucide-react";
@@ -43,9 +43,11 @@ function Gallery() {
   const loading = useGalleryStore((s) => s.loading);
   const loadGallery = useGalleryStore((s) => s.load);
 
+  // Album names, descriptions and photo titles in the page's language
+  const locale = useLocale();
   useEffect(() => {
-    loadGallery();
-  }, [loadGallery]);
+    loadGallery(locale);
+  }, [loadGallery, locale]);
 
   // Albums with photos only (an album being prepared stays hidden)
   const shown = useMemo(() => albums.filter((a) => photosOf(items, a.id).length > 0), [albums, items]);

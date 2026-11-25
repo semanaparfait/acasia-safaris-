@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { isLang } from '../translations/content';
 import { WorkersService } from './workers.service';
 
 // GET /api/team (public): the workers shown on the About us page.
@@ -9,8 +10,9 @@ import { WorkersService } from './workers.service';
 export class TeamController {
   constructor(private workersService: WorkersService) {}
 
+  // ?lang=fr / ?lang=sw: titles and bios in that language
   @Get()
-  team() {
-    return this.workersService.team();
+  team(@Query('lang') lang?: string) {
+    return this.workersService.team(isLang(lang) ? lang : undefined);
   }
 }

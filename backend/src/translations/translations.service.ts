@@ -8,18 +8,26 @@ import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  KINDS,
   LANGUAGES,
+  applyAlbum,
   applyDestination,
   applyPackage,
+  applyPhoto,
+  applyTrip,
+  applyWorker,
   prune,
   readTranslations,
   statusOf,
   toTranslate,
   unitsOf,
+  type AlbumTexts,
   type DestinationTexts,
   type Kind,
   type Lang,
   type PackageTexts,
+  type TripTexts,
+  type WorkerTexts,
   type Translations,
   type Unit,
 } from './content';
@@ -27,7 +35,16 @@ import { MachineTranslate } from './machine-translate';
 
 const withItinerary = { itinerary: { orderBy: { day: 'asc' as const } } };
 
-// French and Swahili versions of the packages and destinations.
+const NAMES: Record<Kind, string> = {
+  package: 'Package',
+  destination: 'Destination',
+  trip: 'Trip',
+  album: 'Album',
+  worker: 'Worker',
+};
+
+// French and Swahili versions of the packages, destinations, special trips, gallery albums
+// (with their photos' titles and places) and team members' titles and bios.
 // - After an admin saves a package/destination, the new or changed texts are translated by
 //   the translation service in the background (refreshLater). Unchanged texts are never translated twice.
 // - Admins can correct any translation (save); a correction stays until the English text changes.
@@ -74,6 +91,58 @@ export class TranslationsService implements OnApplicationBootstrap {
       ) as Omit<T, 'translations'>),
       titleEn: d.title,
     };
+  }
+
+  // A trip in this language (price option names and units stay in English)
+  localizeTrip<T extends TripTexts & { translations?: unknown }>(
+    trip: T,
+    lang?: Lang,
+  ) {
+    const { translations, ...rest } = trip;
+    if (!lang) return rest;
+    return applyTrip(
+      rest as TripTexts,
+      readTranslations(translations)[lang],
+    ) as Omit<T, 'translations'>;
+  }
+
+  localizeAlbum<T extends AlbumTexts & { translations?: unknown }>(
+    album: T,
+    lang?: Lang,
+  ) {
+    const { translations, ...rest } = album;
+    if (!lang) return rest;
+    return applyAlbum(
+      rest as AlbumTexts,
+      readTranslations(translations)[lang],
+    ) as Omit<T, 'translations'>;
+  }
+
+  // Photos in this language, from the translations of their albums
+  async localizePhotos<
+    T extends { albumId: string; title: string; location?: string | null },
+  >(photos: T[], lang?: Lang) {
+    if (!lang || !photos.length) return photos;
+    const albums = await this.prisma.galleryAlbum.findMany({
+      where: { id: { in: [...new Set(photos.map((p) => p.albumId))] } },
+      select: { id: true, translations: true },
+    });
+    const byAlbum = new Map(
+      albums.map((a) => [a.id, readTranslations(a.translations)[lang]]),
+    );
+    return photos.map((p) => applyPhoto(p, byAlbum.get(p.albumId)));
+  }
+
+  localizeWorker<T extends WorkerTexts & { translations?: unknown }>(
+    worker: T,
+    lang?: Lang,
+  ) {
+    const { translations, ...rest } = worker;
+    if (!lang) return rest;
+    return applyWorker(
+      rest as WorkerTexts,
+      readTranslations(translations)[lang],
+    ) as Omit<T, 'translations'>;
   }
 
   // ---------- Admin ----------
@@ -140,36 +209,49 @@ export class TranslationsService implements OnApplicationBootstrap {
     );
   }
 
-  // Every package and destination (the first time, and each night to catch anything missed)
+  // Everything (the first time, and each night to catch anything missed)
   async refreshAll() {
-    const result = { packages: 0, destinations: 0, texts: 0, failed: 0 };
+    const result: Record<string, number | string> = { texts: 0, failed: 0 };
     if (!this.translator.enabled)
       return { ...result, skipped: 'No translation key is set' };
-    const packages = await this.prisma.package.findMany({
-      select: { id: true },
-    });
-    const destinations = await this.prisma.destination.findMany({
-      select: { id: true },
-    });
-    const jobs: [Kind, string][] = [
-      ...packages.map((p): [Kind, string] => ['package', p.id]),
-      ...destinations.map((d): [Kind, string] => ['destination', d.id]),
-    ];
-    for (const [kind, id] of jobs) {
-      try {
-        const texts = await this.withLock(kind, id, () =>
-          this.translateRecord(kind, id),
-        );
-        result.texts += texts;
-        if (kind === 'package') result.packages++;
-        else result.destinations++;
-      } catch (error) {
-        result.failed++;
-        this.logger.error(`Translating ${kind} ${id} failed: ${error}`);
+    for (const kind of KINDS) {
+      let done = 0;
+      for (const id of await this.ids(kind)) {
+        try {
+          result.texts =
+            (result.texts as number) +
+            (await this.withLock(kind, id, () =>
+              this.translateRecord(kind, id),
+            ));
+          done++;
+        } catch (error) {
+          result.failed = (result.failed as number) + 1;
+          this.logger.error(`Translating ${kind} ${id} failed: ${error}`);
+        }
       }
+      result[`${kind}s`] = done;
     }
     this.logger.log(`Translations: ${JSON.stringify(result)}`);
     return result;
+  }
+
+  // The records of a kind worth translating (team: only those shown on the website)
+  private async ids(kind: Kind): Promise<string[]> {
+    const select = { id: true } as const;
+    const rows =
+      kind === 'package'
+        ? await this.prisma.package.findMany({ select })
+        : kind === 'destination'
+          ? await this.prisma.destination.findMany({ select })
+          : kind === 'trip'
+            ? await this.prisma.trip.findMany({ select })
+            : kind === 'album'
+              ? await this.prisma.galleryAlbum.findMany({ select })
+              : await this.prisma.worker.findMany({
+                  where: { showOnWebsite: true },
+                  select,
+                });
+    return rows.map((r) => r.id);
   }
 
   // Shortly after the server starts: translates what is still missing (e.g. the existing
@@ -235,21 +317,38 @@ export class TranslationsService implements OnApplicationBootstrap {
     kind: Kind,
     id: string,
   ): Promise<{ units: Unit[]; translations: Translations }> {
-    const record =
+    const keep = { translations: false } as const;
+    const record: { translations: unknown } | null =
       kind === 'package'
         ? await this.prisma.package.findUnique({
             where: { id },
             include: withItinerary,
-            omit: { translations: false },
+            omit: keep,
           })
-        : await this.prisma.destination.findUnique({
-            where: { id },
-            omit: { translations: false },
-          });
+        : kind === 'destination'
+          ? await this.prisma.destination.findUnique({
+              where: { id },
+              omit: keep,
+            })
+          : kind === 'trip'
+            ? await this.prisma.trip.findUnique({ where: { id }, omit: keep })
+            : kind === 'album'
+              ? await this.prisma.galleryAlbum.findUnique({
+                  where: { id },
+                  include: {
+                    photos: {
+                      orderBy: { createdAt: 'desc' },
+                      select: { title: true, location: true },
+                    },
+                  },
+                  omit: keep,
+                })
+              : await this.prisma.worker.findUnique({
+                  where: { id },
+                  select: { companyRole: true, bio: true, translations: true },
+                });
     if (!record)
-      throw new NotFoundException(
-        `${kind === 'package' ? 'Package' : 'Destination'} "${id}" not found`,
-      );
+      throw new NotFoundException(`${NAMES[kind]} "${id}" not found`);
     return {
       units: unitsOf(kind, record),
       translations: readTranslations(record.translations),
@@ -257,19 +356,16 @@ export class TranslationsService implements OnApplicationBootstrap {
   }
 
   private async write(kind: Kind, id: string, translations: Translations) {
-    const data = { translations: translations as Prisma.InputJsonValue };
-    if (kind === 'package')
-      await this.prisma.package.update({
-        where: { id },
-        data,
-        select: { id: true },
-      });
-    else
-      await this.prisma.destination.update({
-        where: { id },
-        data,
-        select: { id: true },
-      });
+    const args = {
+      where: { id },
+      data: { translations: translations as Prisma.InputJsonValue },
+      select: { id: true },
+    };
+    if (kind === 'package') await this.prisma.package.update(args);
+    else if (kind === 'destination') await this.prisma.destination.update(args);
+    else if (kind === 'trip') await this.prisma.trip.update(args);
+    else if (kind === 'album') await this.prisma.galleryAlbum.update(args);
+    else await this.prisma.worker.update(args);
   }
 
   private withLock<T>(

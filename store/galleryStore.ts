@@ -3,7 +3,7 @@
 // always right after an upload, a move or a deletion.
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { api } from "@/lib/api";
+import { api, langQuery } from "@/lib/api";
 import type { GalleryAlbum, GalleryAlbumInput, GalleryInput, GalleryItem } from "@/lib/types";
 
 type GalleryState = {
@@ -12,7 +12,7 @@ type GalleryState = {
   loading: boolean;
   error: string | null;
 
-  load: () => Promise<void>; // albums and photos
+  load: (locale?: string) => Promise<void>; // albums and photos (the website: in its language)
   createAlbum: (input: GalleryAlbumInput) => Promise<GalleryAlbum>; // admin
   updateAlbum: (id: string, input: GalleryAlbumInput) => Promise<void>; // admin
   deleteAlbum: (id: string) => Promise<void>; // admin: the album and its photos
@@ -38,10 +38,11 @@ export const useGalleryStore = create<GalleryState>()(
       loading: false,
       error: null,
 
-      load: async () => {
+      load: async (locale) => {
         set({ loading: true, error: null }, false, "gallery/load/start");
         try {
-          const [albums, items] = await Promise.all([api<GalleryAlbum[]>("/gallery/albums"), api<GalleryItem[]>("/gallery")]);
+          const lang = langQuery(locale); // "" for English and the admin panel
+          const [albums, items] = await Promise.all([api<GalleryAlbum[]>(`/gallery/albums${lang}`), api<GalleryItem[]>(`/gallery${lang}`)]);
           set({ albums, items, loading: false }, false, "gallery/load/success");
         } catch (error) {
           set({ error: (error as Error).message, loading: false }, false, "gallery/load/error");

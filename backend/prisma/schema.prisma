@@ -112,6 +112,7 @@ model Worker {
   companyRole   String? // title on the website, e.g. "CEO & Founder" (role above is the internal job)
   bio           String? // short text for visitors (notes stay private)
   socials       Json    @default("{}") // links: { youtube, instagram, x, tiktok, snapchat, facebook }
+  translations  Json    @default("{}") // French and Swahili companyRole and bio (src/translations)
   photo         String? // image URL (uploaded to the "workers" bucket)
 
   // Second role: workers with isAdmin can log in to the admin panel with email + password
@@ -212,6 +213,8 @@ model Trip {
   groupPercent      Int? // e.g. 5 = 5% off for groupMinTravelers travelers or more
   groupMinTravelers Int?
   active            Boolean   @default(true) // false = draft, hidden from the website
+  // French and Swahili texts (see src/translations/content.ts), made automatically after each save
+  translations      Json      @default("{}")
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -415,13 +418,15 @@ model Review {
 
 // An album of the gallery page (Admin > Gallery), e.g. "Gorillas of the Virunga"
 model GalleryAlbum {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  description String        @default("")
-  coverId     String?       @db.Uuid // the photo on the album's card (empty = its newest photo)
-  photos      GalleryItem[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  description  String        @default("")
+  coverId      String?       @db.Uuid // the photo on the album's card (empty = its newest photo)
+  // French and Swahili texts of the album and its photos\' titles and places (src/translations)
+  translations Json          @default("{}")
+  photos       GalleryItem[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model GalleryItem {

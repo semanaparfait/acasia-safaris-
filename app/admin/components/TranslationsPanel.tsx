@@ -1,6 +1,6 @@
 "use client";
 
-// The French and Swahili texts of a package or destination (Admin > Packages / Destinations > one item).
+// The French and Swahili texts of a package, destination, trip, gallery album or team member.
 // The translation service (Azure Translator, or Google) translates new and changed English texts automatically after each save; here the team
 // can check them and correct any text. A correction is kept until the English text changes.
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -38,6 +38,20 @@ const FIELD_LABELS: Record<string, string> = {
   bestTime: "Best time to visit",
   fromKigali: "From Kigali",
   highlights: "Highlight",
+  // Trips
+  tagline: "Tagline",
+  duration: "Duration",
+  groupSize: "Group size",
+  "prices.description": "Price option description",
+  "prices.included": "Price option: included",
+  "prices.excluded": "Price option: not included",
+  // Gallery albums
+  name: "Album name",
+  "photos.title": "Photo title",
+  "photos.location": "Photo place",
+  // Team (About us)
+  companyRole: "Title on the website",
+  bio: "Bio",
 };
 
 const STATUS: Record<Status, { label: string; tone: "gray" | "gold" | "amber" | "red" }> = {
@@ -54,7 +68,7 @@ export default function TranslationsPanel({
   id,
   version,
 }: {
-  kind: "packages" | "destinations";
+  kind: "packages" | "destinations" | "trips" | "albums" | "workers";
   id: string;
   version?: string; // changes when the item is saved: the texts are loaded again
 }) {

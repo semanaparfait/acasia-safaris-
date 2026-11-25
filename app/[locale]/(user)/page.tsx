@@ -10,10 +10,12 @@ import GalleryStrip from "@/app/[locale]/(user)/components/GalleryStrip";
 import Testimonials from "@/app/[locale]/(user)/components/Testimonials";
 import { getTrips } from "@/lib/server-api";
 
-export default async function Home() {
-  // Published trips with a start date still ahead: the countdown banner only shows when there is one
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  // Published trips with a start date still ahead (in the page's language): the countdown
+  // banner only shows when there is one
   const today = new Date().toISOString().slice(0, 10);
-  const trips = (await getTrips()).filter((t) => t.startDate && t.startDate.slice(0, 10) >= today);
+  const trips = (await getTrips(locale)).filter((t) => t.startDate && t.startDate.slice(0, 10) >= today);
 
   return (
     <>

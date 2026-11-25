@@ -17,6 +17,8 @@ import { buildTripTicketPdf } from './trip-ticket-pdf';
 import { toE164 } from '../common/phone';
 import { LiveGateway } from '../live/live.gateway';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Lang as ContentLang } from '../translations/content';
+import { TranslationsService } from '../translations/translations.service';
 import {
   adminTripHtml,
   adminTripSubject,
@@ -185,6 +187,7 @@ export class TripsService {
     private live: LiveGateway,
     private mail: MailService,
     config: ConfigService,
+    private translations: TranslationsService,
   ) {
     // FRONTEND_URL can hold several addresses: the first one is the website
     this.siteUrl = (
@@ -254,23 +257,31 @@ export class TripsService {
 
   // ---------- Website ----------
 
-  async findPublished() {
+  // In the visitor's language (no lang = English, as typed in Admin > Trips)
+  async findPublished(lang?: ContentLang) {
     const trips = await this.prisma.trip.findMany({
       where: onWebsite(),
+      omit: { translations: false },
       orderBy: [
         { startDate: { sort: 'asc', nulls: 'last' } },
         { createdAt: 'desc' },
       ],
     });
-    return this.withSeatsLeft(trips);
+    return (await this.withSeatsLeft(trips)).map((t) =>
+      this.translations.localizeTrip(t, lang),
+    );
   }
 
-  async findPublishedOne(id: string) {
+  async findPublishedOne(id: string, lang?: ContentLang) {
     const trip = await this.prisma.trip.findFirst({
       where: { id, ...onWebsite() },
+      omit: { translations: false },
     });
     if (!trip) throw new NotFoundException('Trip not found');
-    return (await this.withSeatsLeft([trip]))[0];
+    return this.translations.localizeTrip(
+      (await this.withSeatsLeft([trip]))[0],
+      lang,
+    );
   }
 
   // A visitor reserves a trip. The price is copied from the chosen option.
@@ -351,6 +362,7 @@ export class TripsService {
 
   async create(dto: TripDto) {
     const trip = await this.prisma.trip.create({ data: this.toData(dto) });
+    this.translations.refreshLater('trip', trip.id); // French + Swahili, in the background
     return (await this.withStats([trip]))[0];
   }
 
@@ -366,6 +378,7 @@ export class TripsService {
       data: this.toData(dto),
     });
     void this.notifyWaitlist(id); // more seats, or no limit anymore
+    this.translations.refreshLater('trip', id); // only new or changed texts are translated
     return (await this.withStats([trip]))[0];
   }
 

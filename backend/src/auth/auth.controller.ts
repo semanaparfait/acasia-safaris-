@@ -10,6 +10,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { TranslationsService } from '../translations/translations.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -79,7 +80,10 @@ class ResendLoginCodeDto {
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private translations: TranslationsService,
+  ) {}
 
   // Login, step 1: POST /api/auth/login   body: { "email": "...", "password": "..." }
   // -> { twoStep: true, challenge, sentTo }: a 6 digit code was emailed (step 2 below)
@@ -190,8 +194,16 @@ export class AuthController {
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
   @Audit('Edited their own account')
-  updateAccount(@Req() request: AdminRequest, @Body() dto: UpdateAccountDto) {
-    return this.authService.updateAccount(request.worker.id, dto);
+  async updateAccount(
+    @Req() request: AdminRequest,
+    @Body() dto: UpdateAccountDto,
+  ) {
+    const worker = await this.authService.updateAccount(request.worker.id, dto);
+    // Their About us title and bio in French and Swahili, in the background
+    if (dto.bio !== undefined && worker.showOnWebsite) {
+      this.translations.refreshLater('worker', worker.id);
+    }
+    return worker;
   }
 
   // PATCH /api/auth/me/password   body: { "currentPassword": "...", "newPassword": "..." }

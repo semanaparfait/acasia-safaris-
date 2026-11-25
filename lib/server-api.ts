@@ -33,12 +33,13 @@ export async function getPackages(locale?: string) {
 }
 
 // A published trip (Admin > Trips), or null
-export async function getTrip(id: string) {
+// A published trip (Admin > Trips) in the page's language, or null
+export async function getTrip(id: string, locale?: string) {
   if (!UUID.test(id)) return null;
-  return get<Trip>(`/trips/${id}`);
+  return get<Trip>(`/trips/${id}${langQuery(locale)}`);
 }
 
 // Published trips that have not ended (empty when the backend cannot be reached)
-export async function getTrips() {
-  return (await get<Trip[]>("/trips")) ?? [];
+export async function getTrips(locale?: string) {
+  return (await get<Trip[]>(`/trips${langQuery(locale)}`)) ?? [];
 }

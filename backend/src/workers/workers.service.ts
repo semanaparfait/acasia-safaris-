@@ -7,6 +7,8 @@ import {
 import { passwordProblem } from '../common/password';
 import { PERMISSIONS } from '../common/permissions';
 import { LiveGateway } from '../live/live.gateway';
+import type { Lang } from '../translations/content';
+import { TranslationsService } from '../translations/translations.service';
 import { toE164 } from '../common/phone';
 import type { Worker } from '@prisma/client';
 import { hash } from 'bcryptjs';
@@ -78,6 +80,7 @@ export class WorkersService {
     private storage: StorageService,
     private roles: RolesService,
     private live: LiveGateway,
+    private translations: TranslationsService,
   ) {}
 
   // Each worker gets "hasPassword" (true/false) instead of the password hash
@@ -93,8 +96,9 @@ export class WorkersService {
   }
 
   // About us page (public): only what visitors may see, founders and longest-serving first
-  team() {
-    return this.prisma.worker.findMany({
+  // About us page, in the visitor's language (titles and bios; no lang = as typed)
+  async team(lang?: Lang) {
+    const team = await this.prisma.worker.findMany({
       where: { showOnWebsite: true, status: 'Active' },
       orderBy: [{ joined: 'asc' }, { name: 'asc' }],
       select: {
@@ -107,8 +111,10 @@ export class WorkersService {
         phone: true,
         languages: true,
         socials: true,
+        translations: true,
       },
     });
+    return team.map((w) => this.translations.localizeWorker(w, lang));
   }
 
   async findOne(id: string) {
@@ -162,6 +168,8 @@ export class WorkersService {
         passwordHash: password ? await hash(password, 10) : null,
       },
     });
+    if (worker.showOnWebsite)
+      this.translations.refreshLater('worker', worker.id); // title + bio
     return { ...worker, hasPassword: Boolean(password) };
   }
 
@@ -226,6 +234,7 @@ export class WorkersService {
     });
     // Their open admin panel follows at once (new menu, lost pages closed, or logged out)
     void this.live.accessChanged(id);
+    if (worker.showOnWebsite) this.translations.refreshLater('worker', id); // only changed texts
     return { ...worker, hasPassword: Boolean(password) || current.hasPassword };
   }
 

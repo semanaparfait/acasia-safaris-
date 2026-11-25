@@ -28,11 +28,14 @@ export class PrismaService
           replyPinHash: true,
           replyPinAttempts: true,
           replyPinLockedUntil: true,
+          translations: true,
         },
         // The lowest bargaining price is for admins only (see PackagesService)
         // Translations are read by TranslationsService only: the website gets the texts already translated
         package: { minPrice: true, translations: true },
         destination: { translations: true },
+        trip: { translations: true },
+        galleryAlbum: { translations: true },
         booking: { floorAmount: true, accessToken: true },
       },
     });

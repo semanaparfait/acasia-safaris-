@@ -13,6 +13,7 @@ import type { GalleryItem } from "@/lib/types";
 import { albumCover, photosOf, useGalleryStore } from "@/store/galleryStore";
 import { Button, Card, ConfirmDialog, EmptyState } from "../../components/ui";
 import { AlbumForm, PhotoForm } from "../parts";
+import TranslationsPanel from "../../components/TranslationsPanel";
 
 export default function GalleryAlbumPage() {
   const id = useParams<{ id: string }>().id;
@@ -193,6 +194,11 @@ export default function GalleryAlbumPage() {
           })}
         </div>
       )}
+
+      {/* French and Swahili: album name, description, and the titles and places of its photos */}
+      <div className="mt-8">
+        <TranslationsPanel kind="albums" id={album.id} version={`${album.name}|${album.description}|${photos.length}`} />
+      </div>
 
       {editingAlbum && (
         <AlbumForm

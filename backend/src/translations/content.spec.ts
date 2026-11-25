@@ -1,6 +1,13 @@
 import {
+  albumUnits,
+  applyAlbum,
   applyDestination,
   applyPackage,
+  applyPhoto,
+  applyTrip,
+  applyWorker,
+  tripUnits,
+  workerUnits,
   packageUnits,
   prune,
   readTranslations,
@@ -125,5 +132,98 @@ describe('content translations', () => {
       100, 100, 50,
     ]);
     expect(batches(['x'.repeat(15_000), 'y'.repeat(15_000)]).length).toBe(2);
+  });
+});
+
+describe('trips, albums and team', () => {
+  const fr = (
+    pairs: Record<string, string>,
+    units: { key: string; en: string }[],
+  ) =>
+    Object.fromEntries(
+      units.map((u) => [u.key, { t: pairs[u.en] ?? u.en, src: u.en }]),
+    );
+
+  it('translates a trip but keeps price option names and units in English', () => {
+    const trip = {
+      title: 'Christmas in the Virunga',
+      tagline: null,
+      location: 'Musanze',
+      description: 'Gorillas and lakes.',
+      highlights: ['Gorilla trek'],
+      itinerary: [{ title: 'Arrival', description: 'Drive to Musanze.' }],
+      prices: [
+        {
+          name: 'Full package',
+          unit: 'per person',
+          price: 1200,
+          description: 'Everything included',
+          included: ['Permits'],
+          excluded: ['Flights'],
+        },
+      ],
+    };
+    const units = tripUnits(trip);
+    expect(units.map((u) => u.key)).toEqual([
+      'title',
+      'location',
+      'description',
+      'highlights|Gorilla trek',
+      'itinerary.title|Arrival',
+      'itinerary.description|Drive to Musanze.',
+      'prices.description|Everything included',
+      'prices.included|Permits',
+      'prices.excluded|Flights',
+    ]);
+    const out = applyTrip(
+      trip,
+      fr(
+        {
+          Permits: 'Permis',
+          'Gorilla trek': 'Trek des gorilles',
+          Arrival: 'Arrivée',
+        },
+        units,
+      ),
+    );
+    const price = (
+      out.prices as { name: string; unit: string; included: string[] }[]
+    )[0];
+    expect(price.name).toBe('Full package');
+    expect(price.unit).toBe('per person');
+    expect(price.included).toEqual(['Permis']);
+    expect(out.highlights).toEqual(['Trek des gorilles']);
+    expect((out.itinerary as { title: string }[])[0].title).toBe('Arrivée');
+  });
+
+  it('translates an album and its photos by their English text', () => {
+    const album = {
+      name: 'Gorillas',
+      description: 'Our treks.',
+      photos: [{ title: 'Silverback', location: 'Volcanoes Park' }],
+    };
+    const tr = fr(
+      { Gorillas: 'Gorilles', Silverback: 'Dos argenté' },
+      albumUnits(album),
+    );
+    expect(applyAlbum(album, tr).name).toBe('Gorilles');
+    expect(
+      applyPhoto({ title: 'Silverback', location: 'Volcanoes Park' }, tr).title,
+    ).toBe('Dos argenté');
+    // A photo whose English title changed shows the English until translated again
+    expect(applyPhoto({ title: 'Mother and baby' }, tr).title).toBe(
+      'Mother and baby',
+    );
+  });
+
+  it('translates a team member title and bio only', () => {
+    const units = workerUnits({ companyRole: 'Head Guide', bio: '' });
+    expect(units.map((u) => u.key)).toEqual(['companyRole']);
+    expect(
+      applyWorker(
+        { companyRole: 'Head Guide', bio: null },
+        fr({ 'Head Guide': 'Guide principal' }, units),
+      ).companyRole,
+    ).toBe('Guide principal');
   });
 });
