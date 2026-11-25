@@ -23,13 +23,13 @@ import {
   type Translations,
   type Unit,
 } from './content';
-import { GoogleTranslate } from './google-translate';
+import { MachineTranslate } from './machine-translate';
 
 const withItinerary = { itinerary: { orderBy: { day: 'asc' as const } } };
 
 // French and Swahili versions of the packages and destinations.
 // - After an admin saves a package/destination, the new or changed texts are translated by
-//   Google in the background (refreshLater). Unchanged texts are never translated twice.
+//   the translation service in the background (refreshLater). Unchanged texts are never translated twice.
 // - Admins can correct any translation (save); a correction stays until the English text changes.
 // - The website asks for a language (?lang=fr) and gets the record already translated (localize*).
 //   A text without an up-to-date translation is shown in English.
@@ -41,7 +41,7 @@ export class TranslationsService implements OnApplicationBootstrap {
 
   constructor(
     private prisma: PrismaService,
-    private google: GoogleTranslate,
+    private translator: MachineTranslate,
   ) {}
 
   // ---------- Website ----------
@@ -96,7 +96,7 @@ export class TranslationsService implements OnApplicationBootstrap {
         ];
       }),
     );
-    return { autoTranslate: this.google.enabled, languages };
+    return { autoTranslate: this.translator.enabled, languages };
   }
 
   // An admin wrote or corrected translations: { "<key>": "text" }. An empty text removes it
@@ -132,7 +132,7 @@ export class TranslationsService implements OnApplicationBootstrap {
     return this.forAdmin(kind, id);
   }
 
-  // Same, in the background after a save: the admin does not wait for Google
+  // Same, in the background after a save: the admin does not wait for the translation service
   refreshLater(kind: Kind, id: string) {
     void this.withLock(kind, id, () => this.translateRecord(kind, id)).catch(
       (error) =>
@@ -143,8 +143,8 @@ export class TranslationsService implements OnApplicationBootstrap {
   // Every package and destination (the first time, and each night to catch anything missed)
   async refreshAll() {
     const result = { packages: 0, destinations: 0, texts: 0, failed: 0 };
-    if (!this.google.enabled)
-      return { ...result, skipped: 'GOOGLE_TRANSLATE_API_KEY is not set' };
+    if (!this.translator.enabled)
+      return { ...result, skipped: 'No translation key is set' };
     const packages = await this.prisma.package.findMany({
       select: { id: true },
     });
@@ -173,9 +173,9 @@ export class TranslationsService implements OnApplicationBootstrap {
   }
 
   // Shortly after the server starts: translates what is still missing (e.g. the existing
-  // packages, the first time the key is set). Nothing is sent to Google when all is up to date.
+  // packages, the first time the key is set). Nothing is sent to the translation service when all is up to date.
   onApplicationBootstrap() {
-    if (!this.google.enabled || process.env.NODE_ENV === 'test') return;
+    if (!this.translator.enabled || process.env.NODE_ENV === 'test') return;
     setTimeout(
       () => void this.refreshAll().catch(() => undefined),
       30_000,
@@ -188,23 +188,23 @@ export class TranslationsService implements OnApplicationBootstrap {
     timeZone: 'Africa/Kigali',
   })
   async nightly() {
-    if (this.google.enabled) await this.refreshAll().catch(() => undefined); // already logged
+    if (this.translator.enabled) await this.refreshAll().catch(() => undefined); // already logged
   }
 
   // ---------- Inside ----------
 
   // Returns how many texts were translated
   private async translateRecord(kind: Kind, id: string) {
-    if (!this.google.enabled) return 0;
+    if (!this.translator.enabled) return 0;
     const { units, translations: before } = await this.load(kind, id);
 
-    // Ask Google first (slow), then save on top of the latest version
+    // Ask the translation service first (slow), then save on top of the latest version
     const fresh: Partial<Record<Lang, Map<string, string>>> = {};
     let count = 0;
     for (const lang of LANGUAGES) {
       const need = toTranslate(before[lang], units);
       if (!need.length) continue;
-      const out = await this.google.translate(
+      const out = await this.translator.translate(
         need.map((u) => u.en),
         lang,
       );

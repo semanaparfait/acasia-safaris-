@@ -16,6 +16,7 @@ import { Audit } from '../audit/audit.decorator';
 import { AdminGuard, type AdminRequest } from '../common/admin.guard';
 import { OwnerOnly, checkAccess } from '../common/permissions';
 import { isLang, type Kind } from './content';
+import { TRANSLATION_ERROR } from './machine-translate';
 import { SaveTranslationsDto } from './translations.dto';
 import { TranslationsService } from './translations.service';
 
@@ -75,7 +76,7 @@ export class TranslationsController {
     } catch (error) {
       if (
         error instanceof Error &&
-        error.message.startsWith('Google Translate')
+        error.message.startsWith(TRANSLATION_ERROR)
       ) {
         throw new BadRequestException(`Could not translate: ${error.message}`);
       }

@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { GoogleTranslate } from './google-translate';
+import { MachineTranslate } from './machine-translate';
 import { TranslationsController } from './translations.controller';
 import { TranslationsService } from './translations.service';
 
@@ -8,7 +8,7 @@ import { TranslationsService } from './translations.service';
 @Global()
 @Module({
   controllers: [TranslationsController],
-  providers: [TranslationsService, GoogleTranslate],
+  providers: [TranslationsService, MachineTranslate],
   exports: [TranslationsService],
 })
 export class TranslationsModule {}

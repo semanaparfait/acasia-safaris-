@@ -9,7 +9,7 @@ import {
   type LangTranslations,
   type PackageTexts,
 } from './content';
-import { batches } from './google-translate';
+import { batches } from './machine-translate';
 
 const pkg: PackageTexts = {
   title: 'Gorilla Trek',

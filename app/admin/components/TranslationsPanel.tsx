@@ -1,7 +1,7 @@
 "use client";
 
 // The French and Swahili texts of a package or destination (Admin > Packages / Destinations > one item).
-// Google translates new and changed English texts automatically after each save; here the team
+// The translation service (Azure Translator, or Google) translates new and changed English texts automatically after each save; here the team
 // can check them and correct any text. A correction is kept until the English text changes.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -41,7 +41,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 const STATUS: Record<Status, { label: string; tone: "gray" | "gold" | "amber" | "red" }> = {
-  auto: { label: "Google", tone: "gray" },
+  auto: { label: "Automatic", tone: "gray" },
   edited: { label: "Edited by hand", tone: "gold" },
   outdated: { label: "English changed", tone: "amber" },
   missing: { label: "Not translated", tone: "red" },
@@ -77,7 +77,7 @@ export default function TranslationsPanel({
     void load();
   }, [load, version]);
 
-  // Just after a save, Google is still translating in the background: look again a few times
+  // Just after a save, the translation service is still working in the background: look again a few times
   const pending = data?.autoTranslate && LANGS.some(({ value }) => data.languages[value].some(needsWork));
   const [checks, setChecks] = useState(0);
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function TranslationsPanel({
         <>
           {!data.autoTranslate && (
             <p className="mb-4 rounded-lg bg-amber-50 text-amber-800 text-xs leading-relaxed px-3 py-2.5">
-              Automatic translation is off: add <code>GOOGLE_TRANSLATE_API_KEY</code> to the backend settings. You can
+              Automatic translation is off: add <code>AZURE_TRANSLATOR_KEY</code> and <code>AZURE_TRANSLATOR_REGION</code> to the backend settings. You can
               still write the translations below.
             </p>
           )}
@@ -214,7 +214,7 @@ export default function TranslationsPanel({
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-[#0a120b]/[0.06]">
             <p className="text-xs text-[#0a120b]/45">
-              To get Google&apos;s version again, empty the text, save, then press Translate now.
+              To get the automatic version again, empty the text, save, then press Translate now.
             </p>
             <div className="flex gap-2 shrink-0">
               {dirty && (
