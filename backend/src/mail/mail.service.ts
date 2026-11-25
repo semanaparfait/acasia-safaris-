@@ -157,6 +157,38 @@ export class MailService {
 
   // Booking news for the visitor (booking received, new message, new price...),
   // with a button to their booking page. Never throws: a failed email is only logged.
+  // A message from the team to every traveler of a group (Admin > Groups), one email each.
+  // Returns false when it could not be sent.
+  async sendGroupMessage(email: GroupEmail) {
+    if (!this.transport) {
+      this.logger.warn('Email is not configured: group message not sent');
+      return false;
+    }
+    const T = GROUP_TEXTS[email.lang];
+    try {
+      await this.transport.sendMail({
+        from: this.from,
+        to: email.to,
+        subject: email.subject,
+        text: [
+          EMAIL_TEXTS[email.lang].hello(email.name),
+          ...email.paragraphs,
+          ...(email.whatsappLink ? [`${T.join}: ${email.whatsappLink}`] : []),
+          ...(email.link
+            ? [`${EMAIL_TEXTS[email.lang].openBooking}: ${email.link}`]
+            : []),
+          T.why(email.group),
+          'Acacia Safaris',
+        ].join('\n\n'),
+        html: groupHtml(email),
+      });
+      return true;
+    } catch (error) {
+      this.logger.error(`Group email to ${email.to} failed: ${error}`);
+      return false;
+    }
+  }
+
   async sendBookingUpdate(email: BookingEmail) {
     if (!this.transport) {
       this.logger.warn('Email is not configured: booking update not sent');
@@ -306,6 +338,62 @@ export type BookingEmail = {
   qrPng?: Buffer; // the ticket QR code, shown in the email and attached
   ticketCode?: string;
 };
+
+export type GroupEmail = {
+  lang: Lang;
+  to: string;
+  name: string;
+  group: string; // e.g. "Christmas in the Virunga · 20 – 26 Dec 2026"
+  subject: string;
+  paragraphs: string[];
+  whatsappLink?: string | null; // the group's WhatsApp invite link
+  link?: string | null; // the traveler's booking page, when they have one
+};
+
+const GROUP_TEXTS: Record<
+  Lang,
+  { join: string; why: (group: string) => string; eyebrow: string }
+> = {
+  en: {
+    join: 'Join the WhatsApp group',
+    why: (g) => `You receive this as a traveler of ${g}.`,
+    eyebrow: 'Message for your group',
+  },
+  fr: {
+    join: 'Rejoindre le groupe WhatsApp',
+    why: (g) => `Vous recevez ce message en tant que voyageur de ${g}.`,
+    eyebrow: 'Message pour votre groupe',
+  },
+  sw: {
+    join: 'Jiunge na kikundi cha WhatsApp',
+    why: (g) => `Unapokea ujumbe huu kama msafiri wa ${g}.`,
+    eyebrow: 'Ujumbe kwa kikundi chako',
+  },
+};
+
+function groupHtml(e: GroupEmail) {
+  const T = GROUP_TEXTS[e.lang];
+  const body = e.paragraphs
+    .map((p) => `<p style="margin:0 0 14px">${escapeHtml(p)}</p>`)
+    .join('');
+  const button = (href: string, label: string, bg: string, color: string) =>
+    `<a href="${escapeHtml(href)}" style="background:${bg};color:${color};text-decoration:none;font-weight:bold;padding:13px 24px;border-radius:6px;display:inline-block;margin:0 8px 10px 0">${escapeHtml(label)}</a>`;
+  return `
+<div style="background:#f7f5f0;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#0a120b">
+  <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden">
+    <div style="background:#12231a;padding:28px 32px">
+      <p style="margin:0;color:#c5a86d;font-size:11px;letter-spacing:3px;text-transform:uppercase">${escapeHtml(T.eyebrow)}</p>
+      <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;font-weight:normal">${escapeHtml(e.group)}</h1>
+    </div>
+    <div style="padding:28px 32px;font-size:15px;line-height:1.6">
+      <p style="margin:0 0 14px">${escapeHtml(EMAIL_TEXTS[e.lang].hello(e.name))}</p>
+      ${body}
+      <p style="margin:24px 0 8px">${e.whatsappLink ? button(e.whatsappLink, T.join, '#25D366', '#ffffff') : ''}${e.link ? button(e.link, EMAIL_TEXTS[e.lang].openBooking, '#c5a86d', '#0e1d16') : ''}</p>
+      <p style="margin:0;color:#0a120b99;font-size:13px">${escapeHtml(T.why(e.group))}</p>
+    </div>
+  </div>
+</div>`;
+}
 
 function bookingHtml({
   lang,

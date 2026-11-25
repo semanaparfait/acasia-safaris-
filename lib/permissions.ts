@@ -38,6 +38,7 @@ const PAGES: [prefix: string, needs: Permission[] | "owner"][] = [
   ["/admin/bookings", ["bookings"]],
   ["/admin/customers", ["bookings"]],
   ["/admin/departures", ["departures"]],
+  ["/admin/groups", ["bookings", "trips"]],
   ["/admin/check-in", ["checkin"]],
   ["/admin/messages", ["messages", "bookings"]],
   ["/admin/packages", ["packages"]],

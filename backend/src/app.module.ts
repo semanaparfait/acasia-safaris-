@@ -9,6 +9,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { BackupsModule } from './backups/backups.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { GroupsModule } from './groups/groups.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { DeparturesModule } from './departures/departures.module';
 import { TripsModule } from './trips/trips.module';
@@ -55,6 +56,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     WorkersModule,
     RolesModule,
     BookingsModule,
+    GroupsModule,
     MessagesModule,
     ReviewsModule,
     GalleryModule,

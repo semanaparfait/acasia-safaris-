@@ -446,3 +446,43 @@ export type TripBookingInput = {
 
 // A ready answer for the booking conversations (Admin > Settings > Saved replies)
 export type SavedReply = { id: string; title: string; text: string };
+
+// Admin > Groups: travelers going on the same trip at the same time (worked out from the bookings)
+export type TravelGroupType = "trip" | "departure" | "package" | "destination";
+
+export type GroupMember = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  travelers: number;
+  status: string;
+  lang: "en" | "fr" | "sw";
+  link: string | null; // their booking page (special trips have none)
+};
+
+export type GroupMessage = {
+  id: string;
+  subject: string;
+  body: string;
+  translated: boolean;
+  sentBy: string;
+  recipients: number;
+  failed: number;
+  createdAt: string;
+};
+
+export type TravelGroup = {
+  key: string; // "trip:<id>", "departure:<id>", "package:<id>:<date>", "destination:<date>:<title>"
+  type: TravelGroupType;
+  name: string;
+  place: string | null;
+  startDate: string;
+  endDate: string | null;
+  members: GroupMember[];
+  travelers: number;
+  whatsappLink: string | null;
+  messageCount: number;
+  lastMessageAt: string | null;
+  messages?: GroupMessage[]; // one group only
+};

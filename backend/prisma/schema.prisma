@@ -489,3 +489,34 @@ model SavedReply {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ---------- Travel groups (Admin > Groups) ----------
+
+// Travelers on the same special trip, group departure, or the same package / destination
+// starting the same day form a group. Members are read from the bookings (src/groups);
+// only the group's WhatsApp invite link and the messages sent to it are saved here.
+//   key: "trip:<id>", "departure:<id>", "package:<id>:2026-12-20", "destination:2026-12-20:<title>"
+model TravelGroup {
+  key          String         @id
+  whatsappLink String? // https://chat.whatsapp.com/… made by the team in WhatsApp: a button in every email
+  messages     GroupMessage[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+// An email sent to every traveler of a group (one personal email each)
+model GroupMessage {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupKey   String
+  group      TravelGroup @relation(fields: [groupKey], references: [key], onDelete: Cascade)
+  groupName  String // the group's name when it was sent
+  subject    String
+  body       String
+  translated Boolean     @default(false) // sent in each traveler's language
+  sentBy     String // the team member
+  recipients Int // emails sent
+  failed     Int         @default(0)
+  createdAt  DateTime    @default(now())
+
+  @@index([groupKey, createdAt])
+}
