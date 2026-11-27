@@ -7,7 +7,7 @@ import { langQuery } from "./api";
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
 // The website's public address (sitemap, links Google shows, social previews)
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.acaciasafarisrwanda.com/").replace(/\/$/, "");
 
 async function get<T>(path: string): Promise<T | null> {
   try {
