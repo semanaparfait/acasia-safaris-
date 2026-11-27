@@ -4,7 +4,8 @@ import type { TourPackage, Trip } from "./types";
 import { langQuery } from "./api";
 
 // NEXT_PUBLIC_API_URL is the backend, e.g. https://api.example.com/api
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+// const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
 // The website's public address (sitemap, links Google shows, social previews)
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.acaciasafarisrwanda.com/").replace(/\/$/, "");
